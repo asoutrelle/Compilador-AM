@@ -1,4 +1,4 @@
-,L,l,D,%,.,:,=,<,>,"""",#," "" """,!,U,I,D,+,-,*,/,(,),{,},_,;,nl,tab,otro,$
+,L,l,D,%,.,:,=,<,>,"""",#," "" """,!,"""U""","""I""","""D""",+,-,*,/,(,),{,},_,;,nl,tab,otro,$
 0,1,6,7,error,9,2,3,5,5,16,17,0,error,1,1,1,F,4,F,F,F,F,F,F,F,error,0,0,error,F
 1,1,F,1,1,F,F,F,F,F,F,F,F,F,1,1,1,F,F,F,F,F,F,F,F,F,F,F,F,F,F
 2,error,error,error,error,error,error,F,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,F
@@ -10,12 +10,12 @@
 8,error,error,error,error,error,error,error,error,error,error,error,error,error,error,F,error,error,error,error,error,error,error,error,error,error,error,error,error,error,F
 9,error,error,12,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,F
 10,error,error,12,error,error,error,error,error,error,error,error,11,error,error,error,error,error,error,error,error,error,error,error,error,error,error,F,F,error,F
-11,F,F,13,F,F,F,F,F,F,F,F,F,F,F,F,13,F,F,F,F,F,F,F,F,F,F,F,F,F,F
+11,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,13,F,F,F,F,F,F,F,F,F,F,F,F,F,F
 12,F,F,12,F,F,F,F,F,F,F,F,F,F,F,F,13,F,F,F,F,F,F,F,F,F,F,F,F,F,F
-13,error,error,error,error,error,error,error,error,error,error,error,error,error,error,F,error,14,14,error,error,error,error,error,error,error,error,error,error,error,F
+13,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,14,14,error,error,error,error,error,error,error,error,error,error,error,F
 14,error,error,15,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,F
 15,F,F,15,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F
 16,16,16,16,16,16,16,16,16,16,F,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,error,16,16,F
 17,error,error,error,error,error,error,error,error,error,error,18,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,error,F
 18,18,18,18,18,18,18,18,18,18,18,19,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,F
-19,18,18,18,18,18,18,18,18,18,18,0,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,F
+19,18,18,18,18,18,18,18,18,18,18,F,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,F

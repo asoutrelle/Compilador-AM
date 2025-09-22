@@ -31,6 +31,7 @@ public class ASMatrix {
                 Token t = analizadorLexico.reconocerToken(estadoAnterior);
                 String valor = analizadorLexico.devolverCadena();
                 if (valor.length() > 20) {
+                    System.out.println("Identificador con mas de 20 caracteres en linea: " + analizadorLexico.getNroLinea());
                     valor = valor.substring(0, 20); // truncar a 20 caracteres
                 }
                 if(!(t == null)){
@@ -116,63 +117,64 @@ public class ASMatrix {
             }
         });
         mapa.put(-1, new AccionSemantica() {
-            public void ejecutar() {
-                //analizadorLexico.agregarCaracter();
+            public void ejecutar() throws IOException {
+                analizadorLexico.devolverCaracterAEntrada();
                 String err = "ERROR LINEA "+ analizadorLexico.getNroLinea()+ ": Caracter invalido, las asignaciones se escriben con :=";
                 analizadorLexico.addError(err);
                 analizadorLexico.vaciarCadena();
             }
         });
         mapa.put(-2, new AccionSemantica() {
-            public void ejecutar() {
-                //analizadorLexico.agregarCaracter();
+            public void ejecutar() throws IOException {
+                analizadorLexico.devolverCaracterAEntrada();
                 String err ="ERROR LINEA "+ analizadorLexico.getNroLinea()+ ": Salto de linea dentro de cadena de 1 linea";
                 analizadorLexico.addError(err);
                 analizadorLexico.vaciarCadena();
             }
         });
         mapa.put(-3, new AccionSemantica() {
-            public void ejecutar() {
-                //analizadorLexico.agregarCaracter();
+            public void ejecutar() throws IOException {
+                analizadorLexico.devolverCaracterAEntrada();
                 String err ="ERROR LINEA "+ analizadorLexico.getNroLinea()+ ": Caracter invalido abriendo o cerrando comentario multilinea";
                 analizadorLexico.addError(err);
                 analizadorLexico.vaciarCadena();
             }
         });
         mapa.put(-4, new AccionSemantica() {
-            public void ejecutar() {
-                //analizadorLexico.agregarCaracter();
+            public void ejecutar() throws IOException {
+                analizadorLexico.devolverCaracterAEntrada();
                 String err ="ERROR LINEA "+ analizadorLexico.getNroLinea()+ ": Caracter invalido declarando un numero";
                 analizadorLexico.addError(err);
                 analizadorLexico.vaciarCadena();
             }
         });
         mapa.put(-5, new AccionSemantica() {
-            public void ejecutar() {
-                //analizadorLexico.agregarCaracter();
+            public void ejecutar() throws IOException {
+                analizadorLexico.devolverCaracterAEntrada();
                 String err ="ERROR LINEA "+ analizadorLexico.getNroLinea()+ ": Caracter invalido declarando punto flotante";
                 analizadorLexico.addError(err);
                 analizadorLexico.vaciarCadena();
             }
         });
         mapa.put(-6, new AccionSemantica() {
-            public void ejecutar() {
-                //analizadorLexico.agregarCaracter();
+            public void ejecutar() throws IOException {
+                analizadorLexico.devolverCaracterAEntrada();
                 String err ="ERROR LINEA "+ analizadorLexico.getNroLinea()+ ": Caracter invalido, debe ir I para declarar entero sin signo";
                 analizadorLexico.addError(err);
                 analizadorLexico.vaciarCadena();
             }
         });
         mapa.put(-7, new AccionSemantica() {
-            public void ejecutar() {
-                //analizadorLexico.agregarCaracter();
+            public void ejecutar() throws IOException {
+                analizadorLexico.devolverCaracterAEntrada();
                 String err ="ERROR LINEA "+ analizadorLexico.getNroLinea()+ ": Operador no permitido";
                 analizadorLexico.addError(err);
                 analizadorLexico.vaciarCadena();
             }
         });
         mapa.put(-8, new AccionSemantica() {
-            public void ejecutar() {
+            public void ejecutar() throws IOException {
+                analizadorLexico.devolverCaracterAEntrada();
                 String err ="ERROR LINEA "+ analizadorLexico.getNroLinea()+ ": El exponente debe tener al menos un digito";
                 analizadorLexico.addError(err);
                 analizadorLexico.vaciarCadena();
