@@ -81,7 +81,7 @@ public class ASMatrix {
             public void ejecutar() throws IOException {
                 analizadorLexico.devolverCaracterAEntrada();
                 String valor = analizadorLexico.devolverCadena();
-                String valor_normalizado = valor.replace(" D", "E")
+                String valor_normalizado = valor.replace(" ", "")
                         .replace("D", "E")
                         .replace("+", "");
                 BigDecimal numero = new BigDecimal(valor_normalizado);
