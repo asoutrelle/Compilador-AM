@@ -63,12 +63,6 @@ public class AnalizadorLexico {
                 case '\r':
                     break;
             }
-//            if(codigo == '\n' || codigo == '\r') {
-//                if (codigo == '\n') {
-//                    nroLinea++;
-//                    //System.out.println("salto de linea");
-//                }
-//            }
             char caracter = (char) codigo;
             caracterLeido = caracter;
             System.out.println("caracter leido: " + caracter);
@@ -80,8 +74,9 @@ public class AnalizadorLexico {
         System.out.println("-------------------Impresion de Tabla de Simbolos-----------------------");
         tablaDeSimbolos.imprimir();
         System.out.println("-------------------Token-----------------------");
+
         for (Token token : tokens) {
-            System.out.println(token.getLexema());
+            System.out.println(imprimirToken(token.getLexema()));
         }
     }
 
@@ -165,5 +160,75 @@ public class AnalizadorLexico {
         if(!errores.contains(err)){
             errores.add(err);
         }
+    }
+
+    private String imprimirToken(int codigo){
+        switch (codigo) {
+            case 1:
+                return "ID";
+            case 2:
+                return "+";
+            case 3:
+                return "-";
+            case 4:
+                return "*";
+            case 5:
+                return "/";
+            case 6:
+                return ":=";
+            case 7:
+                return "==";
+            case 8:
+                return "=!";
+            case 9:
+                return "<";
+            case 10:
+                return ">";
+            case 11:
+                return "<=";
+            case 12:
+                return ">=";
+            case 13:
+                return "(";
+            case 14:
+                return ")";
+            case 15:
+                return "{";
+            case 16:
+                return "}";
+            case 17:
+                return "_";
+            case 18:
+                return ";";
+            case 19:
+                return "->";
+            case 20:
+                return "if";
+            case 21:
+                return "else";
+            case 22:
+                return "endif";
+            case 23:
+                return "print";
+            case 24:
+                return "return";
+            case 25:
+                return "CTE";
+            case 26:
+                return "PF64";
+            case 27:
+                return "Cadena";
+            case 28:
+                return "dfloat";
+            case 29:
+                return "do";
+            case 30:
+                return "while";
+            case 31:
+                return "=";
+            default:
+                throw new IllegalArgumentException("Código de token no reconocido: " + codigo);
+        }
+
     }
 }
