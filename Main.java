@@ -11,7 +11,7 @@ public class Main {
         int[][] matriz_estados = CSVtoMatrix.CsvToMatrix("MatrizEstado - Hoja 1.csv");
         StateMatrix matrisEstados = new StateMatrix(matriz_estados);
 
-        String rutaArchivo = "C:\\Users\\JS\\Desktop\\Compiladores\\Codigo_Fuente.txt";
+        String rutaArchivo = "Codigo_Fuente.txt";
         AnalizadorLexico analizadorLexico = new AnalizadorLexico(rutaArchivo);
 
         int[][] matriz_as = CSVtoMatrix.CsvToMatrix("MatrizAS - Hoja 1.csv");
