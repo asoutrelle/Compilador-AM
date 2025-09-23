@@ -116,6 +116,15 @@ public class ASMatrix {
                 analizadorLexico.vaciarCadena();
             }
         });
+        mapa.put(9, new AccionSemantica() {
+            public void ejecutar() {
+                analizadorLexico.agregarCaracter();
+                String valor = analizadorLexico.devolverCadena();
+                Token t = analizadorLexico.reconocerToken(estadoAnterior);
+                analizadorLexico.agregarTS(valor,t);
+                analizadorLexico.vaciarCadena();
+            }
+        });
         mapa.put(-1, new AccionSemantica() {
             public void ejecutar() throws IOException {
                 analizadorLexico.devolverCaracterAEntrada();
