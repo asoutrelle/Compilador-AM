@@ -14,6 +14,7 @@ public class AnalizadorLexico {
     private HashMap <String, Integer> tablaTokens = new HashMap<>();
     private TablaDeSimbolos tablaDeSimbolos = new TablaDeSimbolos();
     private ArrayList<String> errores = new ArrayList<>();
+    private ArrayList<String> warnings = new ArrayList<>();
 
 
 
@@ -70,6 +71,9 @@ public class AnalizadorLexico {
         }
         for(String error: errores){
             System.out.println(error);
+        }
+        for (String warning: warnings){
+            System.out.println(warning);
         }
         System.out.println("-------------------Impresion de Tabla de Simbolos-----------------------");
         tablaDeSimbolos.imprimir();
@@ -160,6 +164,9 @@ public class AnalizadorLexico {
         if(!errores.contains(err)){
             errores.add(err);
         }
+    }
+    public void addWarning(String war){
+        warnings.add(war);
     }
 
     private String imprimirToken(int codigo){

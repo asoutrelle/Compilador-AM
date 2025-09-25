@@ -30,9 +30,12 @@ public class ASMatrix {
                 analizadorLexico.devolverCaracterAEntrada();
                 Token t = analizadorLexico.reconocerToken(estadoAnterior);
                 String valor = analizadorLexico.devolverCadena();
+                String valor_truncado;
                 if (valor.length() > 20) {
-                    System.out.println("Identificador con mas de 20 caracteres en linea: " + analizadorLexico.getNroLinea());
-                    valor = valor.substring(0, 20); // truncar a 20 caracteres
+                    valor_truncado = valor.substring(0, 20);
+                    String war ="WARNING LINEA "+ analizadorLexico.getNroLinea() +": El identificador " +valor+ " fue truncado a "+valor_truncado;
+                    analizadorLexico.addWarning(war);
+                    valor = valor_truncado;
                 }
                 if(!(t == null)){
                     analizadorLexico.agregarTS(valor, t);
