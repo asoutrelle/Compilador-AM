@@ -18,8 +18,8 @@ public class AnalizadorLexico {
 
 
 
-    public AnalizadorLexico(String rutaArchivo) throws IOException {
-        codigoFuente = new PushbackReader(new FileReader(rutaArchivo),1);
+    public AnalizadorLexico() throws IOException {
+        codigoFuente = new PushbackReader(new FileReader("Codigo_Fuente.txt"),1);
         tablaTokens.put("+",2);
         tablaTokens.put("-",3);
         tablaTokens.put("*",4);
