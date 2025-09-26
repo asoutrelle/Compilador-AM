@@ -10,12 +10,15 @@ public class Main {
 
         int[][] matriz_estados = CSVtoMatrix.CsvToMatrix("MatrizEstado - Hoja 1.csv");
         StateMatrix matrisEstados = new StateMatrix(matriz_estados);
-
-        String rutaArchivo = "Codigo_Fuente.txt";
-        AnalizadorLexico analizadorLexico = new AnalizadorLexico(rutaArchivo);
+        AnalizadorLexico analizadorLexico = new AnalizadorLexico();
 
         int[][] matriz_as = CSVtoMatrix.CsvToMatrix("MatrizAS - Hoja 1.csv");
         ASMatrix matrizas = new ASMatrix(matriz_as, analizadorLexico);
-        analizadorLexico.leerCaracter();
+        AnalizadorLexico lexer = new AnalizadorLexico();
+
+        Parser parser = new Parser(true);
+        parser.yyparse();
+        lexer.print();
     }
+
 }
