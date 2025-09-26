@@ -44,26 +44,25 @@ public class StateMatrix {
         mapa.put('￿', 29);
     }
 
-    public static void siguiente_estado(char caracter, int nroLinea) throws IOException {
-        /*
-         */
+    public static Token siguiente_estado(char caracter, int nroLinea) throws IOException {
+        Token tokenEncontrado = null;
         if (!mapa.containsKey(caracter)) {
             System.out.println("No se encuentra el estado de la matriz");
-            ASMatrix.ejecutarAccion(estado_actual, 28, caracter, nroLinea);
+            tokenEncontrado = ASMatrix.ejecutarAccion(estado_actual, 28, caracter, nroLinea);
             estado_actual = matrix[estado_actual][28];
         } else {
             int col = mapa.get(caracter);
             if (estado_actual == 7 && caracter == 'U') {
-                ASMatrix.ejecutarAccion(estado_actual, 13, caracter, nroLinea);
+                tokenEncontrado = ASMatrix.ejecutarAccion(estado_actual, 13, caracter, nroLinea);
                 estado_actual = matrix[estado_actual][13];
             } else if (estado_actual == 8 && caracter == 'I') {
-                ASMatrix.ejecutarAccion(estado_actual, 14, caracter, nroLinea);
+                tokenEncontrado = ASMatrix.ejecutarAccion(estado_actual, 14, caracter, nroLinea);
                 estado_actual = matrix[estado_actual][14];
             } else if ((estado_actual == 11 || estado_actual == 12) && caracter == 'D') {
-                ASMatrix.ejecutarAccion(estado_actual, 15, caracter, nroLinea);
+                tokenEncontrado = ASMatrix.ejecutarAccion(estado_actual, 15, caracter, nroLinea);
                 estado_actual = matrix[estado_actual][15];
             } else {
-                ASMatrix.ejecutarAccion(estado_actual, col, caracter, nroLinea);
+                tokenEncontrado = ASMatrix.ejecutarAccion(estado_actual, col, caracter, nroLinea);
                 estado_actual = matrix[estado_actual][col];
             }
         }
@@ -71,6 +70,7 @@ public class StateMatrix {
             estado_actual = 0;
         }
         System.out.println("estado actual: " + estado_actual);
+        return tokenEncontrado;
     }
 
     public int getDimColm() {
