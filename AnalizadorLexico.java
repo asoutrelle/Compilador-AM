@@ -21,11 +21,11 @@ public class AnalizadorLexico {
     public AnalizadorLexico() throws IOException {
         codigoFuente = new PushbackReader(new FileReader("Codigo_Fuente.txt"),1);
         tablaTokens.put(":=",(int) Parser.ASIG);
-        tablaTokens.put("==",(int) Parser.EQUAL);
-        tablaTokens.put("=!",(int) Parser.NOTEQUAL);
-        tablaTokens.put("<=",(int) Parser.LEQ);
-        tablaTokens.put(">=",(int) Parser.GEQ);
-        tablaTokens.put("->",(int) Parser.ARROW);
+        tablaTokens.put("==",(int) Parser.IGUAL);
+        tablaTokens.put("=!",(int) Parser.NOIGUAL);
+        tablaTokens.put("<=",(int) Parser.MENORIGUAL);
+        tablaTokens.put(">=",(int) Parser.MAYORIGUAL);
+        tablaTokens.put("->",(int) Parser.FLECHA);
         tablaTokens.put("+",43);
         tablaTokens.put("-",45);
         tablaTokens.put("*",42);
@@ -47,7 +47,8 @@ public class AnalizadorLexico {
         tablaTokens.put("return",(int) Parser.RETURN);
         tablaTokens.put("do",(int) Parser.DO);
         tablaTokens.put("while",(int) Parser.WHILE);
-        tablaTokens.put("uint",(int) Parser.UNIT);
+        tablaTokens.put("uint",(int) Parser.UINT);
+        tablaTokens.put("cr",(int) Parser.CR);
         tablaTokens.put(",",44);
     }
 
@@ -78,43 +79,43 @@ public class AnalizadorLexico {
         String aux = cadena.toString();
         switch (estadoAnterior){
             case 1:
-                System.out.println("Token ID "+aux);
+                System.out.println(Colores.VERDE+"Token ID "+aux+Colores.RESET);
                 token = new Token(Parser.ID,nroLinea);
                 tokens.add(token);
                 return token;
             case 8:
-                System.out.println("Token CTE "+aux);
+                System.out.println(Colores.VERDE+"Token CTE "+aux+Colores.RESET);
                 token = new Token(Parser.CTE,nroLinea);
                 tokens.add(token);
                 return token;
             case 11:
-                System.out.println("Token PF64 "+aux);
+                System.out.println(Colores.VERDE+"Token PF64 "+aux+Colores.RESET);
                 token = new Token(Parser.PF64,nroLinea);
                 tokens.add(token);
                 return token;
             case 10:
-                System.out.println("Token PF64 "+aux);
+                System.out.println(Colores.VERDE+"Token PF64 "+aux+Colores.RESET);
                 token = new Token(Parser.PF64,nroLinea);
                 tokens.add(token);
                 return token;
             case 12:
-                System.out.println("Token PF64 "+aux);
+                System.out.println(Colores.VERDE+"Token PF64 "+aux+Colores.RESET);
                 token = new Token(Parser.PF64,nroLinea);
                 tokens.add(token);
                 return token;
             case 15:
-                System.out.println("Token PF64 "+aux);
+                System.out.println(Colores.VERDE+"Token PF64 "+aux+Colores.RESET);
                 token = new Token(Parser.PF64,nroLinea);
                 tokens.add(token);
                 return token;
             case 16:
-                System.out.println("Token CADENA 1 LINEA " + aux);
+                System.out.println(Colores.VERDE+"Token CADENA 1 LINEA " + aux+Colores.RESET);
                 token = new Token(Parser.CADENA,nroLinea);
                 tokens.add(token);
                 return token;
         }
         if(tablaTokens.containsKey(aux)){
-            System.out.println("Token " + aux);
+            System.out.println(Colores.VERDE+"Token " + aux+Colores.RESET);
             token = new Token(tablaTokens.get(aux),nroLinea);
             tokens.add(token);
             return token;
