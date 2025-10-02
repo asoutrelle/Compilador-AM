@@ -12,57 +12,65 @@ prog: ID '{' list_sentencia '}'
 ;
 
 list_sentencia: sentencia
-| list_sentencia sentencia
+    | list_sentencia sentencia
 ;
 
 sentencia: asig ';'
-| if ';'
-| declaracion ';'
-| salida_msj ';'
-| func
-| invocacion ';'
+    | if ';'
+    | declaracion ';'
+    | salida_msj ';'
+    | func
+    | invocacion ';'
 ;
+
 asig: ID ASIG exp
 ;
+
 exp: exp '+' term
-| exp '-' term
-| term
+    | exp '-' term
+    | term
 ;
+
 term: term '*' factor
-| term '/' factor
-|factor
+    | term '/' factor
+    | factor
 ;
+
 factor: ID
-| CTE
+    | CTE
 ;
 
 if: IF '(' cond ')' cuerpo_if cuerpo_else ENDIF
 ;
+
 cond: exp IGUAL exp
-| exp NOIGUAL exp
-| exp MENORIGUAL exp
-| exp MAYORIGUAL exp
-| exp '<' exp
-| exp '>' exp
+    | exp NOIGUAL exp
+    | exp MENORIGUAL exp
+    | exp MAYORIGUAL exp
+    | exp '<' exp
+    | exp '>' exp
 ;
+
 cuerpo_if: sentencia
-| bloque_sin_return
+    | bloque_sin_return
 ;
+
 bloque_sin_return: '{' list_sentencia '}'
 ;
+
 cuerpo_else: ELSE cuerpo_if
-| ELSE
+    | ELSE
 ;
 
 declaracion: tipo list_variables
 ;
 
 list_variables: ID
-| list_variables ',' ID
+    | list_variables ',' ID
 ;
 
 salida_msj: PRINT '(' CADENA ')'
-| PRINT '(' exp ')'
+    | PRINT '(' exp ')'
 ;
 
 tipo: UINT
@@ -73,83 +81,70 @@ tipo: UINT
 
 /* -------------- TRATADO DE FUNCIONES -------------- */
 
-
 func: tipo ID '(' parametros_formales ')' cuerpo_funcion
 ;
+
 parametros_formales: /*sem_pasaje*/ tipo ID
-| parametros_formales ',' /*sem_pasaje*/ tipo ID
+    | parametros_formales ',' /*sem_pasaje*/ tipo ID
 ;
+
 cuerpo_funcion: bloque_en_funcion
 ;
+
 bloque_en_funcion: '{' list_sentencia_en_funcion return '}'
-| '{' return '}'
+    | '{' return '}'
 ;
+
 list_sentencia_en_funcion: sentencia_en_funcion
-| list_sentencia_en_funcion sentencia_en_funcion
+    | list_sentencia_en_funcion sentencia_en_funcion
 ;
+
 return: RETURN '(' exp ')' ';'
 ;
 
 sentencia_en_funcion: asig ';'
-| if_en_funcion ';'
-| declaracion ';'
-| salida_msj ';'
-| func
-| invocacion ';'
+    | if_en_funcion ';'
+    | declaracion ';'
+    | salida_msj ';'
+    | func
+    | invocacion ';'
 ;
 
 if_en_funcion: IF '(' cond ')' cuerpo_if_en_funcion cuerpo_else_en_funcion ENDIF
 ;
+
 cuerpo_if_en_funcion: sentencia_en_funcion
-| bloque_en_funcion
+    | bloque_en_funcion
 ;
+
 cuerpo_else_en_funcion: ELSE cuerpo_if_en_funcion
-| ELSE return
-|
+    | ELSE return
+    |
 ;
 
 invocacion: ID '(' parametro_real FLECHA parametro_formal ')'
 ;
+
 parametro_real: exp
 ;
+
 parametro_formal: ID
 ;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 %%
 private int yylex(){
     try {
-      int aux = AnalizadorLexico.leerCaracter().getLexema();
-      if(!AnalizadorLexico.valorTs.isEmpty()){
-        yylval = new ParserVal(AnalizadorLexico.valorTs);
-        AnalizadorLexico.valorTs = "";
-      }
+        int aux = AnalizadorLexico.leerCaracter().getLexema();
+        if(!AnalizadorLexico.valorTs.isEmpty()){
+            yylval = new ParserVal(AnalizadorLexico.valorTs);
+            AnalizadorLexico.valorTs = "";
+        }
         return aux;
     } catch (IOException e) {
         throw new RuntimeException(e);
     }
 }
+
 private void yyerror(String err){
     System.out.println(Colores.ROJO + err + Colores.RESET);
 }
