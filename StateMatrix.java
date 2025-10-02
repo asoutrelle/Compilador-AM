@@ -41,15 +41,16 @@ public class StateMatrix {
         mapa.put(';', 25);
         mapa.put('\n', 26);
         mapa.put('\r', 26);
-        mapa.put('￿', 29);
+        mapa.put(',', 28);
+        mapa.put('￿', 30);
     }
 
     public static Token siguiente_estado(char caracter, int nroLinea) throws IOException {
         Token tokenEncontrado = null;
         if (!mapa.containsKey(caracter)) {
             System.out.println("No se encuentra el estado de la matriz");
-            tokenEncontrado = ASMatrix.ejecutarAccion(estado_actual, 28, caracter, nroLinea);
-            estado_actual = matrix[estado_actual][28];
+            tokenEncontrado = ASMatrix.ejecutarAccion(estado_actual, 29, caracter, nroLinea);
+            estado_actual = matrix[estado_actual][29];
         } else {
             int col = mapa.get(caracter);
             if (estado_actual == 7 && caracter == 'U') {
