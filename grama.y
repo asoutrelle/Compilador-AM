@@ -77,7 +77,7 @@ tipo: UINT
 ;
 
 /*sem_pasaje: CR
-;*/
+; */
 
 /* -------------- TRATADO DE FUNCIONES -------------- */
 
