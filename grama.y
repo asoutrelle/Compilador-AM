@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.StringTokenizer;
 %}
 
-%token ID CTE PF64 ELSE ENDIF PRINT RETURN CADENA DFLOAT DO WHILE ASIG IF IGUAL NOIGUAL MENORIGUAL MAYORIGUAL FLECHA UINT CR
+%token ID CTE PF64 ELSE ENDIF PRINT RETURN CADENA DFLOAT DO WHILE ASIG IF IGUAL NOIGUAL MENORIGUAL MAYORIGUAL FLECHA UINT CR TRUNC
 
 
 %%
@@ -39,12 +39,13 @@ lista_sentencia_ejecutable: sentencia_ejecutable
 sentencia_de_control: do {System.out.println(Colores.AZUL + "Sentencia do" + Colores.RESET);}
     ;
 
-asig: ID ASIG exp
+asig: variable ASIG exp ';'
 ;
 
 exp: exp '+' term
     | exp '-' term
     | term
+    | TRUNC '(' exp ')'
 ;
 
 term: term '*' factor
@@ -52,7 +53,7 @@ term: term '*' factor
     | factor
 ;
 
-factor: ID
+factor: variable
     | CTE
     | invocacion
 ;
@@ -81,8 +82,8 @@ cuerpo_if: sentencia_ejecutable
     | bloque_sentencia_ejecutable
 ;
 
-bloque_sin_return: '{' list_sentencia '}'
-;
+bloque_sentencia_ejecutable: '{' lista_sentencia_ejecutable '}'
+    ;
 
 cuerpo_else: ELSE cuerpo_if
     |
@@ -91,8 +92,8 @@ cuerpo_else: ELSE cuerpo_if
 declaracion: tipo lista_variables ';'
 ;
 
-list_variables: ID
-    | list_variables ',' ID
+lista_variables: variable
+    | lista_variables ',' variable
 ;
 
 salida_msj: PRINT '(' CADENA ')' ';'
@@ -124,10 +125,6 @@ bloque_funcion: lista_sentencia_declarativa
     | lista_sentencia_ejecutable
 ;
 
-list_sentencia_en_funcion: sentencia_en_funcion
-    | list_sentencia_en_funcion sentencia_en_funcion
-;
-
 return: RETURN '(' exp ')' ';'
 ;
 
@@ -146,25 +143,49 @@ parametro_formal: ID
 
 
 /* -------------- DO WHILE -------------- */
-do: DO cuerpo_do WHILE '(' cond ')'
-;
+do: DO cuerpo_do WHILE '(' cond ')' ';'
+    ;
 
 cuerpo_do: bloque_sentencia_ejecutable
     | sentencia_ejecutable
     ;
 /* -------------- EXPRESIONES LAMBDA -------------- */
-exp_lambda: parametro_lambda cuerpo argumento
-;
+exp_lambda: '(' parametro ')' bloque_sentencia_ejecutable '(' factor ')' ';'
+    ;
 
 parametro: tipo ID
     ;
 
-cuerpo: bloque_sin_return
-;
+/* -------------- ASIGNACION MULTIPLE -------------- */
+asig_multiple: lista_variables '=' lista_constantes ';'
+    ;
 
-argumento: '(' ID ')'
-    | '(' CTE ')'
-;
+lista_constantes: CTE
+    | lista_constantes ',' CTE
+    ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 %%
 private int yylex(){

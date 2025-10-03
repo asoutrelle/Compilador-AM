@@ -49,6 +49,7 @@ public class AnalizadorLexico {
         tablaTokens.put("while",(int) Parser.WHILE);
         tablaTokens.put("uint",(int) Parser.UINT);
         tablaTokens.put("cr",(int) Parser.CR);
+        tablaTokens.put("trunc",(int) Parser.TRUNC);
         tablaTokens.put(",",44);
     }
 
