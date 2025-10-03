@@ -8,22 +8,36 @@ import java.util.StringTokenizer;
 
 
 %%
-prog: ID '{' list_sentencia '}'
+prog: ID '{' lista_sentencia '}'
 ;
 
-list_sentencia: sentencia
-    | list_sentencia sentencia
+lista_sentencia: sentencia
+    | lista_sentencia sentencia
+;
+sentencia: sentencia_ejecutable
+    | sentencia_declarativa
+    | sentencia_de_control
 ;
 
-sentencia: asig ';'
-    | if ';'
-    | declaracion ';'
-    | salida_msj ';'
-    | func
-    | invocacion ';'
-    | do
-    | exp_lambda
-;
+sentencia_declarativa: declaracion {System.out.println(Colores.AZUL + "declaracion" + Colores.RESET);}
+    | func {System.out.println(Colores.AZUL + "funcion" + Colores.RESET);}
+    ;
+lista_sentencia_declarativa: sentencia_declarativa
+    | lista_sentencia_declarativa sentencia_declarativa
+    ;
+sentencia_ejecutable: invocacion {System.out.println(Colores.AZUL + "invocacion" + Colores.RESET);}
+    | asig {System.out.println(Colores.AZUL + "Asignacion" + Colores.RESET);}
+    | if {System.out.println(Colores.AZUL + "Sentencia if" + Colores.RESET);}
+    | salida_msj {System.out.println(Colores.AZUL + "Salida de mensaje" + Colores.RESET);}
+    | exp_lambda {System.out.println(Colores.AZUL + "Expresion lambda" + Colores.RESET);}
+    | return {System.out.println(Colores.AZUL + "Return" + Colores.RESET);}
+    | asig_multiple {System.out.println(Colores.AZUL + "Asignacion multiple" + Colores.RESET);}
+    ;
+lista_sentencia_ejecutable: sentencia_ejecutable
+    | lista_sentencia_ejecutable sentencia_ejecutable
+    ;
+sentencia_de_control: do {System.out.println(Colores.AZUL + "Sentencia do" + Colores.RESET);}
+    ;
 
 asig: ID ASIG exp
 ;
@@ -40,9 +54,20 @@ term: term '*' factor
 
 factor: ID
     | CTE
+    | invocacion
 ;
 
-if: IF '(' cond ')' cuerpo_if cuerpo_else ENDIF
+variable: ID
+    | variable_prefijada
+    ;
+
+/* -------------- PREFIJADO -------------- */
+variable_prefijada: ID '.' ID
+;
+/* --------------------------------------- */
+
+/* -------------- IF -------------- */
+if: IF '(' cond ')' cuerpo_if cuerpo_else ENDIF ';'
 ;
 
 cond: exp IGUAL exp
@@ -52,49 +77,51 @@ cond: exp IGUAL exp
     | exp '<' exp
     | exp '>' exp
 ;
-
-cuerpo_if: sentencia
-    | bloque_sin_return
+cuerpo_if: sentencia_ejecutable
+    | bloque_sentencia_ejecutable
 ;
 
 bloque_sin_return: '{' list_sentencia '}'
 ;
 
 cuerpo_else: ELSE cuerpo_if
-    | ELSE
-;
-
-declaracion: tipo list_variables
+    |
+    ;
+/* -------------- FIN IF -------------- */
+declaracion: tipo lista_variables ';'
 ;
 
 list_variables: ID
     | list_variables ',' ID
 ;
 
-salida_msj: PRINT '(' CADENA ')'
-    | PRINT '(' exp ')'
+salida_msj: PRINT '(' CADENA ')' ';'
+    | PRINT '(' exp ')' ';'
 ;
 
 tipo: UINT
 ;
 
-/*sem_pasaje: CR
-; */
+sem_pasaje: CR
+;
 
 /* -------------- TRATADO DE FUNCIONES -------------- */
 
-func: tipo ID '(' parametros_formales ')' cuerpo_funcion
+func: parametro '(' parametros_formales ')' cuerpo_funcion
 ;
 
-parametros_formales: /*sem_pasaje*/ tipo ID
-    | parametros_formales ',' /*sem_pasaje*/ tipo ID
+parametros_formales: sem_pasaje parametro
+    | parametros_formales ',' sem_pasaje parametro
 ;
 
-cuerpo_funcion: bloque_en_funcion
+cuerpo_funcion: '{' lista_bloque_funcion '}'
 ;
 
-bloque_en_funcion: '{' list_sentencia_en_funcion return '}'
-    | '{' return '}'
+lista_bloque_funcion: bloque_funcion
+    | lista_bloque_funcion bloque_funcion
+    ;
+bloque_funcion: lista_sentencia_declarativa
+    | lista_sentencia_ejecutable
 ;
 
 list_sentencia_en_funcion: sentencia_en_funcion
@@ -104,27 +131,7 @@ list_sentencia_en_funcion: sentencia_en_funcion
 return: RETURN '(' exp ')' ';'
 ;
 
-sentencia_en_funcion: asig ';'
-    | if_en_funcion ';'
-    | declaracion ';'
-    | salida_msj ';'
-    | func
-    | invocacion ';'
-;
-
-if_en_funcion: IF '(' cond ')' cuerpo_if_en_funcion cuerpo_else_en_funcion ENDIF
-;
-
-cuerpo_if_en_funcion: sentencia_en_funcion
-    | bloque_en_funcion
-;
-
-cuerpo_else_en_funcion: ELSE cuerpo_if_en_funcion
-    | ELSE return
-    |
-;
-
-invocacion: ID '(' parametros reales ')'
+invocacion: ID '(' parametros_reales ')' ';'
 ;
 
 parametros_reales: parametro_real FLECHA parametro_formal
@@ -135,26 +142,22 @@ parametro_real: exp
 
 parametro_formal: ID
 ;
+/*------------------------------------------------- FIN FUNCION --------------------------------*/
+
 
 /* -------------- DO WHILE -------------- */
 do: DO cuerpo_do WHILE '(' cond ')'
 ;
 
-cuerpo_do: bloque_sin_return
-    | sentencia
-;
-
-/* -------------- PREFIJADO -------------- */
-prefijado: ID '.' ID
-;
-/* podriamos cambiar en los lugares donde esta ID y se refiera a una variable por variable que pueda ser un ID o variable prefijada ID.ID? */
-
+cuerpo_do: bloque_sentencia_ejecutable
+    | sentencia_ejecutable
+    ;
 /* -------------- EXPRESIONES LAMBDA -------------- */
 exp_lambda: parametro_lambda cuerpo argumento
 ;
 
-parametro_lambda: tipo ID
-;
+parametro: tipo ID
+    ;
 
 cuerpo: bloque_sin_return
 ;
