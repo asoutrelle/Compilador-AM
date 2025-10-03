@@ -21,6 +21,8 @@ sentencia: asig ';'
     | salida_msj ';'
     | func
     | invocacion ';'
+    | do
+    | exp_lambda
 ;
 
 asig: ID ASIG exp
@@ -122,13 +124,43 @@ cuerpo_else_en_funcion: ELSE cuerpo_if_en_funcion
     |
 ;
 
-invocacion: ID '(' parametro_real FLECHA parametro_formal ')'
+invocacion: ID '(' parametros reales ')'
 ;
+
+parametros_reales: parametro_real FLECHA parametro_formal
+    | parametro_real FLECHA parametro_formal ','
 
 parametro_real: exp
 ;
 
 parametro_formal: ID
+;
+
+/* -------------- DO WHILE -------------- */
+do: DO cuerpo_do WHILE '(' cond ')'
+;
+
+cuerpo_do: bloque_sin_return
+    | sentencia
+;
+
+/* -------------- PREFIJADO -------------- */
+prefijado: ID '.' ID
+;
+/* podriamos cambiar en los lugares donde esta ID y se refiera a una variable por variable que pueda ser un ID o variable prefijada ID.ID? */
+
+/* -------------- EXPRESIONES LAMBDA -------------- */
+exp_lambda: parametro_lambda cuerpo argumento
+;
+
+parametro_lambda: tipo ID
+;
+
+cuerpo: bloque_sin_return
+;
+
+argumento: '(' ID ')'
+    | '(' CTE ')'
 ;
 
 %%
