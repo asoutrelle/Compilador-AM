@@ -10,4 +10,7 @@ public class Token {
     public int getLexema(){
         return lexema;
     }
+    public int getNroLinea(){
+        return nroLinea;
+    }
 }

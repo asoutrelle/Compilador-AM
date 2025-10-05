@@ -40,7 +40,8 @@ sentencia_de_control: do {System.out.println(Colores.AZUL + "Sentencia do" + Col
     ;
 
 asig: variable ASIG exp ';'
-;
+    | error ';' {AnalizadorLexico.addError(Colores.ROJO + "ERROR LINEA "+nroLinea+": en asignacion" + Colores.RESET);}
+    ;
 
 exp: exp '+' term
     | exp '-' term
@@ -92,8 +93,8 @@ cuerpo_else: ELSE cuerpo_if
 declaracion: tipo lista_variables ';'
 ;
 
-lista_variables: variable
-    | lista_variables ',' variable
+lista_variables: variable {sumaVar+=1; System.out.println(Colores.AZUL+"tenemos "+sumaVar+ " var"+Colores.RESET);}
+    | lista_variables ',' variable {sumaVar+=1; System.out.println(Colores.AZUL+"tenemos "+sumaVar+ " var"+Colores.RESET);}
 ;
 
 salida_msj: PRINT '(' CADENA ')' ';'
@@ -157,11 +158,11 @@ parametro: tipo ID
     ;
 
 /* -------------- ASIGNACION MULTIPLE -------------- */
-asig_multiple: lista_variables '=' lista_constantes ';'
+asig_multiple: lista_variables '=' lista_constantes ';' {checkAsignacionMultiple();}
     ;
 
-lista_constantes: CTE
-    | lista_constantes ',' CTE
+lista_constantes: CTE {sumaCte+=1; System.out.println(Colores.AZUL+"tenemos "+sumaCte+ " CTE"+Colores.RESET);}
+    | lista_constantes ',' CTE {sumaCte+=1; System.out.println(Colores.AZUL+"tenemos "+sumaCte+ " CTE"+Colores.RESET);}
     ;
 
 
@@ -188,9 +189,15 @@ lista_constantes: CTE
 
 
 %%
+private int nroLinea;
+private int sumaVar = 0;
+private int sumaCte = 0;
+
 private int yylex(){
     try {
-        int aux = AnalizadorLexico.leerCaracter().getLexema();
+      Token t = AnalizadorLexico.leerCaracter();
+        nroLinea = t.getNroLinea() -1;
+        int aux = t.getLexema();
         if(!AnalizadorLexico.valorTs.isEmpty()){
             yylval = new ParserVal(AnalizadorLexico.valorTs);
             AnalizadorLexico.valorTs = "";
@@ -203,4 +210,11 @@ private int yylex(){
 
 private void yyerror(String err){
     System.out.println(Colores.ROJO + err + Colores.RESET);
+}
+private boolean checkAsignacionMultiple(){
+  if (sumaVar > sumaCte){
+    System.out.println(Colores.ROJO+"HAY MAS DEL EZ QUE DEL DER"+Colores.RESET);
+    return false;
+  }
+  return true;
 }

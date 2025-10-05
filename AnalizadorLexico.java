@@ -51,6 +51,7 @@ public class AnalizadorLexico {
         tablaTokens.put("cr",(int) Parser.CR);
         tablaTokens.put("trunc",(int) Parser.TRUNC);
         tablaTokens.put(",",44);
+        tablaTokens.put(".",46);
     }
 
 
@@ -148,7 +149,7 @@ public class AnalizadorLexico {
         valorTs = valor;
         tablaDeSimbolos.agregar(valor, t);
     }
-    public void addError(String err){
+    public static void addError(String err){
         if(!errores.contains(err)){
             errores.add(err);
         }
