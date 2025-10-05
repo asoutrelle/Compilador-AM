@@ -22,9 +22,7 @@ sentencia: sentencia_ejecutable
 sentencia_declarativa: declaracion {System.out.println(Colores.AZUL + "declaracion" + Colores.RESET);}
     | func {System.out.println(Colores.AZUL + "funcion" + Colores.RESET);}
     ;
-lista_sentencia_declarativa: sentencia_declarativa
-    | lista_sentencia_declarativa sentencia_declarativa
-    ;
+
 sentencia_ejecutable: invocacion {System.out.println(Colores.AZUL + "invocacion" + Colores.RESET);}
     | asig {System.out.println(Colores.AZUL + "Asignacion" + Colores.RESET);}
     | if {System.out.println(Colores.AZUL + "Sentencia if" + Colores.RESET);}
@@ -33,9 +31,7 @@ sentencia_ejecutable: invocacion {System.out.println(Colores.AZUL + "invocacion"
     | return {System.out.println(Colores.AZUL + "Return" + Colores.RESET);}
     | asig_multiple {System.out.println(Colores.AZUL + "Asignacion multiple" + Colores.RESET);}
     ;
-lista_sentencia_ejecutable: sentencia_ejecutable
-    | lista_sentencia_ejecutable sentencia_ejecutable
-    ;
+
 sentencia_de_control: do {System.out.println(Colores.AZUL + "Sentencia do" + Colores.RESET);}
     ;
 
@@ -69,7 +65,7 @@ variable_prefijada: ID '.' ID
 /* --------------------------------------- */
 
 /* -------------- IF -------------- */
-if: IF '(' cond ')' cuerpo_if cuerpo_else ENDIF ';'
+if: IF '(' cond ')' cuerpo_sentencia_control cuerpo_else ENDIF ';'
 ;
 
 cond: exp IGUAL exp
@@ -79,14 +75,16 @@ cond: exp IGUAL exp
     | exp '<' exp
     | exp '>' exp
 ;
-cuerpo_if: sentencia_ejecutable
-    | bloque_sentencia_ejecutable
+
+cuerpo_sentencia_control: sentencia_ejecutable
+    | '{' lista_sentencia_ejecutable '}'
 ;
 
-bloque_sentencia_ejecutable: '{' lista_sentencia_ejecutable '}'
-    ;
+lista_sentencia_ejecutable: sentencia_ejecutable
+    | lista_sentencia_ejecutable sentencia_ejecutable
+;
 
-cuerpo_else: ELSE cuerpo_if
+cuerpo_else: ELSE cuerpo_sentencia_control
     |
     ;
 /* -------------- FIN IF -------------- */
@@ -116,24 +114,24 @@ parametros_formales: sem_pasaje parametro
     | parametros_formales ',' sem_pasaje parametro
 ;
 
-cuerpo_funcion: '{' lista_bloque_funcion '}'
+cuerpo_funcion: '{' lista_sentencia_funcion '}'
 ;
 
-lista_bloque_funcion: bloque_funcion
-    | lista_bloque_funcion bloque_funcion
+lista_sentencia_funcion: sentencia_funcion
+    | lista_sentencia_funcion sentencia_funcion
     ;
-bloque_funcion: lista_sentencia_declarativa
-    | lista_sentencia_ejecutable
+sentencia_funcion: sentencia_declarativa
+    | sentencia_ejecutable
 ;
 
 return: RETURN '(' exp ')' ';'
 ;
 
-invocacion: ID '(' parametros_reales ')' ';'
+invocacion: ID '(' parametros_reales ')'
 ;
 
 parametros_reales: parametro_real FLECHA parametro_formal
-    | parametro_real FLECHA parametro_formal ','
+    | parametros_reales ',' parametro_real FLECHA parametro_formal
 
 parametro_real: exp
 ;
@@ -144,14 +142,11 @@ parametro_formal: ID
 
 
 /* -------------- DO WHILE -------------- */
-do: DO cuerpo_do WHILE '(' cond ')' ';'
+do: DO cuerpo_sentencia_control WHILE '(' cond ')' ';'
     ;
 
-cuerpo_do: bloque_sentencia_ejecutable
-    | sentencia_ejecutable
-    ;
 /* -------------- EXPRESIONES LAMBDA -------------- */
-exp_lambda: '(' parametro ')' bloque_sentencia_ejecutable '(' factor ')' ';'
+exp_lambda: '(' parametro ')' '{' lista_sentencia_ejecutable '}' '(' factor ')' ';'
     ;
 
 parametro: tipo ID
