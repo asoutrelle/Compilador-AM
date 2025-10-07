@@ -130,10 +130,10 @@ cuerpo_else
     ;
 /* -------------- FIN IF -------------- */
 declaracion
-    : tipo lista_variables ';' {print("declaracion");}
+    : tipo lista_variables_declaracion ';' {print("declaracion");}
     ;
 
-lista_variables
+lista_variables_declaracion
     : ID
     | lista_variables ',' ID
     | lista_variables ID {yyerror("falta , en lista de variables");}
@@ -154,6 +154,7 @@ parametro
 
 parametros_formales
     : sem_pasaje parametro
+    | parametro
     | parametros_formales ',' sem_pasaje parametro
     | sem_pasaje {yyerror("falta tipo e ID en parametros de funcion");}
     ;
@@ -219,6 +220,12 @@ exp_lambda
 /* -------------- ASIGNACION MULTIPLE -------------- */
 asig_multiple
     : lista_variables '=' lista_constantes ';' {print("asignacion multiple");}
+    ;
+
+lista_variables
+    : variable
+    | lista_variables ',' variable
+    | lista_variables variable {yyerror("falta , en lista de variables");}
     ;
 
 lista_constantes
