@@ -48,19 +48,25 @@ asig: variable ASIG exp ';' {print("asignacion");}
 exp
     : exp '+' termino
     | exp '-' termino
+    | exp '+' error {yyerror("falta operando después de '+'"); }
+    | exp '-' error {yyerror("falta operando después de '-'"); }
     | termino
-    | TRUNC '(' exp ')'
     ;
 
 termino: termino '*' factor
     | termino '/' factor
+    | termino '*' error {yyerror("falta operando después de *"); }
+    | termino '/' error {yyerror("falta operando después de /"); }
     | factor
-    | termino error {yyerror("falta operador");}
 ;
 
 factor: variable
     | CTE
     | invocacion
+    | TRUNC '(' exp ')'
+    | TRUNC '(' ')' {yyerror("falta argumento en trunc"); }
+    | TRUNC error ')' {yyerror("falta ( en trunc"); }
+    | TRUNC '(' exp error {yyerror("falta ) en trunc"); }
 ;
 
 salida_msj
@@ -189,8 +195,12 @@ do
     ;
 
 /* -------------- EXPRESIONES LAMBDA -------------- */
-exp_lambda: '(' tipo ID ')' '{' lista_sentencia_ejecutable '}' '(' factor ')' ';' {print("lambda");}
+exp_lambda
+    : '(' tipo ID ')' '{' lista_sentencia_ejecutable '}' '(' factor ')' ';' {print("lambda");}
+    | '(' tipo ID ')' error lista_sentencia_ejecutable '}' '(' factor ')' ';' {yyerror("falta { en lambda");}
+    | '(' tipo ID ')' '{' lista_sentencia_ejecutable error ')' ';' {yyerror("falta } en lambda");}
     ;
+
 
 
 /* -------------- ASIGNACION MULTIPLE -------------- */
@@ -198,6 +208,7 @@ asig_multiple: lista_variables '=' lista_constantes ';' /*{checkAsignacionMultip
 
 lista_constantes: CTE
     | lista_constantes ',' CTE
+    | lista_constantes CTE {yyerror("falta , en lista de constantes");}
     ;
 
 
