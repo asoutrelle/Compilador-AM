@@ -10,10 +10,12 @@ import java.util.StringTokenizer;
 %%
 prog
     : ID '{' lista_sentencia '}'
-    | error '{' lista_sentencia '}' {yyerror("ERROR falta nombre de programa");}
-    | error '{' lista_sentencia error {yyerror("ERROR EN NOMBRE DE PROGRAMA y cierre");}
-    | ID '{' lista_sentencia error {yyerror("ERROR falta cierre de programa");}
-    | ID error {yyerror("ERROR falta inicio de programa");}
+    | '{' lista_sentencia '}' {yyerror("ERROR falta nombre de programa");}
+    | ID '{' lista_sentencia  {yyerror("ERROR falta cierre de programa");}
+    | ID  lista_sentencia '}' {yyerror("ERROR falta inicio de programa");}
+    | '{' lista_sentencia  {yyerror("ERROR EN NOMBRE DE PROGRAMA y cierre");}
+    | error lista_sentencia '}' {yyerror("ERROR EN NOMBRE DE PROGRAMA e inicio");}
+    | ID lista_sentencia {yyerror("ERROR no hay llaves del programa");}
     ;
 
 lista_sentencia: sentencia
@@ -24,34 +26,36 @@ sentencia: sentencia_ejecutable
     | sentencia_de_control
 ;
 
-sentencia_declarativa: declaracion {System.out.println(Colores.AZUL + "declaracion" + Colores.RESET);}
-    | func {System.out.println(Colores.AZUL + "funcion" + Colores.RESET);}
+sentencia_declarativa: declaracion
+    | func
     ;
 
 sentencia_ejecutable
-    : asig {System.out.println(Colores.AZUL + "Asignacion" + Colores.RESET);}
-    | if  {System.out.println(Colores.AZUL + "Sentencia if" + Colores.RESET);}
-    | salida_msj {System.out.println(Colores.AZUL + "Salida de mensaje" + Colores.RESET);}
-    | exp_lambda {System.out.println(Colores.AZUL + "Expresion lambda" + Colores.RESET);}
-    | return {System.out.println(Colores.AZUL + "Return" + Colores.RESET);}
-    | asig_multiple {System.out.println(Colores.AZUL + "Asignacion multiple" + Colores.RESET);}
+    : asig
+    | if
+    | salida_msj
+    | exp_lambda
+    | return
+    | asig_multiple
     ;
 
-sentencia_de_control: do {System.out.println(Colores.AZUL + "Sentencia do" + Colores.RESET);}
+sentencia_de_control: do
     ;
 
-asig: variable ASIG exp ';'
+asig: variable ASIG exp ';' {print("asignacion");}
     ;
 
-exp: exp '+' term
-    | exp '-' term
-    | term
+exp
+    : exp '+' termino
+    | exp '-' termino
+    | termino
     | TRUNC '(' exp ')'
-;
+    ;
 
-term: term '*' factor
-    | term '/' factor
+termino: termino '*' factor
+    | termino '/' factor
     | factor
+    | termino error {yyerror("falta operador");}
 ;
 
 factor: variable
@@ -59,25 +63,33 @@ factor: variable
     | invocacion
 ;
 
-variable: ID
-    | variable_prefijada
+salida_msj
+    : PRINT '(' CADENA ')' ';' {print("print");}
+    | PRINT '(' exp ')' ';' {print("print");}
+    | PRINT '(' ')' ';' {yyerror("falta argumento en print");}
     ;
 
 /* -------------- PREFIJADO -------------- */
-variable_prefijada: ID '.' ID
-;
+variable: ID
+    | variable '.' ID
+    ;
 /* --------------------------------------- */
+invocacion
+    : ID '(' parametros_de_invocacion ')' {print("invocacion a funcion");}
+    ;
+
 
 /* -------------- IF -------------- */
 if
-    : IF cuerpo_condicion cuerpo_sentencia_control cuerpo_else ENDIF ';'
+    : IF cuerpo_condicion cuerpo_sentencia_control cuerpo_else ENDIF ';' {print("sentencia if");}
+    | IF cuerpo_condicion cuerpo_sentencia_control cuerpo_else ';' {yyerror("ERRROR FALTA ENDIF");}
     ;
 
 cuerpo_condicion
     : '(' cond ')'
-    | cond ')' {yyerror("falta ( ");}
-    | '(' error {yyerror("falta ) ");}
-    | error {yyerror("faltan parentesis ");}
+    | cond ')' {yyerror("falta abrir parentesis");}
+    | '(' cond {yyerror("falta cerrar parentesis");}
+    | cond {yyerror("faltan parentesis en condicion ");}
     ;
 
 cond: exp IGUAL exp
@@ -86,6 +98,7 @@ cond: exp IGUAL exp
     | exp MAYORIGUAL exp
     | exp '<' exp
     | exp '>' exp
+    | exp exp {yyerror("falta comparador");}
 ;
 
 cuerpo_sentencia_control: sentencia_ejecutable
@@ -102,7 +115,7 @@ cuerpo_else: ELSE cuerpo_sentencia_control
     |
     ;
 /* -------------- FIN IF -------------- */
-declaracion: tipo lista_variables ';'
+declaracion: tipo lista_variables ';' {print("declaracion");}
 ;
 
 lista_variables
@@ -111,55 +124,53 @@ lista_variables
     | lista_variables variable {yyerror("falta , en lista de variables");}
     ;
 
-salida_msj
-    : PRINT '(' CADENA ')' ';'
-    | PRINT '(' exp ')' ';'
-    | PRINT '(' ')' ';' {yyerror("falta argumento en print");}
-    ;
-
-tipo: UINT
-;
-
-sem_pasaje: CR
-;
-
 /* -------------- TRATADO DE FUNCIONES -------------- */
 
-func: tipo ID '(' parametros_formales ')' '{' lista_sentencia_funcion '}'
-    | tipo error '(' parametros_formales ')' '{' lista_sentencia_funcion '}' {yyerror("falta nombre de func");}
-    | error '(' parametros_formales ')' '{' lista_sentencia_funcion '}' {yyerror("falta tipo de func");}
+func
+    : tipo ID '(' parametros_formales ')' '{' lista_sentencia_funcion '}' {print("funcion");}
+    | tipo '(' parametros_formales ')' '{' lista_sentencia_funcion '}' {yyerror("falta nombre de func");}
     ;
+
 parametro
     : tipo ID
-    | error ID {yyerror("Falta tipo en parametro");}
-    | tipo error {yyerror("Falta nombre en parametro");}
+    | ID {yyerror("Falta tipo en parametro");}
+    | tipo {yyerror("Falta nombre en parametro");}
     ;
 
-parametros_formales: sem_pasaje parametro
+parametros_formales
+    : sem_pasaje parametro
     | parametros_formales ',' sem_pasaje parametro
-    | sem_pasaje error
-;
+    | sem_pasaje {yyerror("falta tipo e ID en parametros de funcion");}
+    ;
 
+tipo
+    : UINT
+    ;
+
+sem_pasaje
+    : CR
+    ;
 
 lista_sentencia_funcion: sentencia_funcion
     | lista_sentencia_funcion sentencia_funcion
     ;
+
 sentencia_funcion: sentencia_declarativa
     | sentencia_ejecutable
-;
-
-return
-    : RETURN '(' exp ')' ';'
     ;
 
-invocacion: ID '(' parametros_reales ')'
-;
+return
+    : RETURN '(' exp ')' ';' {print("return");}
+    ;
 
-parametros_reales: parametro_real FLECHA parametro_formal
-    | parametros_reales ',' parametro_real FLECHA parametro_formal
-    | parametros_reales ',' parametro_real FLECHA error {yyerror("Falta parametro formal");}
-    | parametro_real FLECHA error {yyerror("Falta parametro formal");}
-    | parametros_reales ',' parametro_real error {yyerror("Falta parametro formal");}
+
+parametros_de_invocacion
+    : parametro_real FLECHA parametro_formal
+    | parametro_real FLECHA {yyerror("Falta parametro formal");}
+    | parametro_real {yyerror("Falta flecha y parametro formal");}
+    | parametros_de_invocacion ',' parametro_real FLECHA parametro_formal
+    | parametros_de_invocacion ',' parametro_real FLECHA {yyerror("Falta parametro formal");}
+    | parametros_de_invocacion ',' parametro_real {yyerror("Falta flecha y parametro formal");}
     ;
 
 parametro_real: exp
@@ -172,16 +183,18 @@ parametro_formal: ID
 
 
 /* -------------- DO WHILE -------------- */
-do: DO cuerpo_sentencia_control WHILE cuerpo_condicion ';'
+do
+    : DO cuerpo_sentencia_control WHILE cuerpo_condicion ';' {print("sentencia do while");}
+    | DO cuerpo_sentencia_control error cuerpo_condicion ';' {yyerror("falta while");}
     ;
 
 /* -------------- EXPRESIONES LAMBDA -------------- */
-exp_lambda: '(' tipo ID ')' '{' lista_sentencia_ejecutable '}' '(' factor ')' ';'
+exp_lambda: '(' tipo ID ')' '{' lista_sentencia_ejecutable '}' '(' factor ')' ';' {print("lambda");}
     ;
 
 
 /* -------------- ASIGNACION MULTIPLE -------------- */
-asig_multiple: lista_variables '=' lista_constantes ';' /*{checkAsignacionMultiple();}*/
+asig_multiple: lista_variables '=' lista_constantes ';' /*{checkAsignacionMultiple();}*/ {print("asignacion multiple");}
 
 lista_constantes: CTE
     | lista_constantes ',' CTE
@@ -211,4 +224,9 @@ private int yylex(){
 private void yyerror(String err){
     System.out.println(Colores.ROJO + err + Colores.RESET);
     AnalizadorLexico.addError(Colores.ROJO + err + Colores.RESET);
+}
+
+private void print(String str){
+  Main.estructurasDetectadas.add(Colores.AZUL+str+Colores.RESET);
+  System.out.println(Colores.AZUL+str+Colores.RESET);
 }
