@@ -18,15 +18,18 @@ prog
     | ID lista_sentencia {yyerror("ERROR no hay llaves del programa");}
     ;
 
-lista_sentencia: sentencia
+lista_sentencia
+    : sentencia
     | lista_sentencia sentencia
-;
-sentencia: sentencia_ejecutable
+    ;
+sentencia
+    : sentencia_ejecutable
     | sentencia_declarativa
     | sentencia_de_control
-;
+    ;
 
-sentencia_declarativa: declaracion
+sentencia_declarativa
+    : declaracion
     | func
     ;
 
@@ -39,10 +42,12 @@ sentencia_ejecutable
     | asig_multiple
     ;
 
-sentencia_de_control: do
+sentencia_de_control
+    : do
     ;
 
-asig: variable ASIG exp ';' {print("asignacion");}
+asig
+    : variable ASIG exp ';' {print("asignacion");}
     ;
 
 exp
@@ -60,31 +65,30 @@ termino: termino '*' factor
     | factor
 ;
 
-factor: variable
-    | CTE
+factor
+    :  variable
     | invocacion
+    | CTE
     | TRUNC '(' exp ')'
     | TRUNC '(' ')' {yyerror("falta argumento en trunc"); }
     | TRUNC error ')' {yyerror("falta ( en trunc"); }
     | TRUNC '(' exp error {yyerror("falta ) en trunc"); }
 ;
 
+variable
+    : ID '.' ID
+    | ID
+    ;
+
+invocacion
+    : ID '(' parametros_de_invocacion ')' {print("invocacion a funcion");}
+    ;
+
 salida_msj
     : PRINT '(' CADENA ')' ';' {print("print");}
     | PRINT '(' exp ')' ';' {print("print");}
     | PRINT '(' ')' ';' {yyerror("falta argumento en print");}
     ;
-
-/* -------------- PREFIJADO -------------- */
-variable: ID
-    | variable '.' ID
-    ;
-/* --------------------------------------- */
-invocacion
-    : ID '(' parametros_de_invocacion ')' {print("invocacion a funcion");}
-    ;
-
-
 /* -------------- IF -------------- */
 if
     : IF cuerpo_condicion cuerpo_sentencia_control cuerpo_else ENDIF ';' {print("sentencia if");}
@@ -92,42 +96,47 @@ if
     ;
 
 cuerpo_condicion
-    : '(' cond ')'
-    | cond ')' {yyerror("falta abrir parentesis");}
-    | '(' cond {yyerror("falta cerrar parentesis");}
-    | cond {yyerror("faltan parentesis en condicion ");}
+    : '(' comparacion ')'
+    | comparacion ')' {yyerror("falta abrir parentesis");}
+    | '(' comparacion error {yyerror("falta cerrar parentesis");}
+    | comparacion {yyerror("faltan parentesis en condicion ");}
     ;
 
-cond: exp IGUAL exp
+comparacion
+    : exp IGUAL exp
     | exp NOIGUAL exp
     | exp MENORIGUAL exp
     | exp MAYORIGUAL exp
     | exp '<' exp
     | exp '>' exp
     | exp exp {yyerror("falta comparador");}
-;
+    ;
 
-cuerpo_sentencia_control: sentencia_ejecutable
+cuerpo_sentencia_control
+    : sentencia_ejecutable
     | '{' lista_sentencia_ejecutable '}'
     | {yyerror("no hay sentencias");}
     | '{' '}' {yyerror("no hay sentencias entre llaves");}
-;
+    ;
 
-lista_sentencia_ejecutable: sentencia_ejecutable
+lista_sentencia_ejecutable
+    : sentencia_ejecutable
     | lista_sentencia_ejecutable sentencia_ejecutable
-;
+    ;
 
-cuerpo_else: ELSE cuerpo_sentencia_control
+cuerpo_else
+    : ELSE cuerpo_sentencia_control
     |
     ;
 /* -------------- FIN IF -------------- */
-declaracion: tipo lista_variables ';' {print("declaracion");}
-;
+declaracion
+    : tipo lista_variables ';' {print("declaracion");}
+    ;
 
 lista_variables
-    : variable
-    | lista_variables ',' variable
-    | lista_variables variable {yyerror("falta , en lista de variables");}
+    : ID
+    | lista_variables ',' ID
+    | lista_variables ID {yyerror("falta , en lista de variables");}
     ;
 
 /* -------------- TRATADO DE FUNCIONES -------------- */
@@ -157,11 +166,13 @@ sem_pasaje
     : CR
     ;
 
-lista_sentencia_funcion: sentencia_funcion
+lista_sentencia_funcion
+    : sentencia_funcion
     | lista_sentencia_funcion sentencia_funcion
     ;
 
-sentencia_funcion: sentencia_declarativa
+sentencia_funcion
+    : sentencia_declarativa
     | sentencia_ejecutable
     ;
 
@@ -179,11 +190,13 @@ parametros_de_invocacion
     | parametros_de_invocacion ',' parametro_real {yyerror("Falta flecha y parametro formal");}
     ;
 
-parametro_real: exp
-;
+parametro_real
+    : exp
+    ;
 
-parametro_formal: ID
-;
+parametro_formal
+    : ID
+    ;
 
 /*------------------------------------------------- FIN FUNCION --------------------------------*/
 
@@ -204,9 +217,12 @@ exp_lambda
 
 
 /* -------------- ASIGNACION MULTIPLE -------------- */
-asig_multiple: lista_variables '=' lista_constantes ';' /*{checkAsignacionMultiple();}*/ {print("asignacion multiple");}
+asig_multiple
+    : lista_variables '=' lista_constantes ';' {print("asignacion multiple");}
+    ;
 
-lista_constantes: CTE
+lista_constantes
+    : CTE
     | lista_constantes ',' CTE
     | lista_constantes CTE {yyerror("falta , en lista de constantes");}
     ;
