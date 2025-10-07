@@ -1,5 +1,8 @@
 import java.io.IOException;
+import java.util.ArrayList;
+
 public class Main {
+    static ArrayList<String> estructurasDetectadas = new ArrayList<>();
     public static void main(String[] args) throws IOException {
 
         /*if (args.length < 1) {
@@ -19,6 +22,10 @@ public class Main {
         Parser parser = new Parser(true);
         parser.yyparse();
         lexer.print();
+        System.out.println(Colores.AZUL+"------------------ ESTRUCTURAS DETECTADAS ------------------"+Colores.RESET);
+        for(String str : estructurasDetectadas){
+            System.out.println(str);
+        }
     }
 
 }
