@@ -68,7 +68,7 @@ public class AnalizadorLexico {
                     continue;
             }
             caracterLeido = (char) codigo;
-            System.out.println("caracter leido: " + caracterLeido);
+            //System.out.println("caracter leido: " + caracterLeido);
             token = StateMatrix.siguiente_estado(caracterLeido,nroLinea);
         }
         if (codigo == -1){
@@ -134,6 +134,9 @@ public class AnalizadorLexico {
         cadena.setLength(0);
     }
     public void devolverCaracterAEntrada() throws IOException {
+        if(caracterLeido=='\n'){
+            nroLinea--;
+        }
         codigoFuente.unread(caracterLeido);
     }
     public void agregarCaracter(){
@@ -150,9 +153,8 @@ public class AnalizadorLexico {
         tablaDeSimbolos.agregar(valor, t);
     }
     public static void addError(String err){
-        if(!errores.contains(err)){
             errores.add(err);
-        }
+
     }
     public void addWarning(String war){
         warnings.add(war);

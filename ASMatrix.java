@@ -223,7 +223,7 @@ public class ASMatrix {
     public static Token ejecutarAccion(int fil, int col, char caracter, int nroLinea) throws IOException {
         int as = matrix[fil][col];
         estadoAnterior = fil;
-        System.out.println("se ejecuta A.S." + as );
+        //System.out.println("se ejecuta A.S." + as );
         return mapa.get(as).ejecutar();
     }
 }

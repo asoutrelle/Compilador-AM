@@ -1,16 +1,4 @@
-PROG
+PROG1
 {
-    uint FUNC(uint A)
-    {
-        if(A==B)
-        {
-            return(A);
-        }
-        else {
-            A:=B;
-            return(A);
-        }endif;
-        return (A);
-    }
-    FUNC(A+A -> A);
+do { } while (A>B);
 }

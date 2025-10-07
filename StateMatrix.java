@@ -70,7 +70,7 @@ public class StateMatrix {
         if(estado_actual < 0){
             estado_actual = 0;
         }
-        System.out.println("estado actual: " + estado_actual);
+        //System.out.println("estado actual: " + estado_actual);
         return tokenEncontrado;
     }
 

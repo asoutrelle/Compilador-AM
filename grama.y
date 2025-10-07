@@ -8,8 +8,13 @@ import java.util.StringTokenizer;
 
 
 %%
-prog: ID '{' lista_sentencia '}'
-;
+prog
+    : ID '{' lista_sentencia '}'
+    | error '{' lista_sentencia '}' {yyerror("ERROR falta nombre de programa");}
+    | error '{' lista_sentencia error {yyerror("ERROR EN NOMBRE DE PROGRAMA y cierre");}
+    | ID '{' lista_sentencia error {yyerror("ERROR falta cierre de programa");}
+    | ID error {yyerror("ERROR falta inicio de programa");}
+    ;
 
 lista_sentencia: sentencia
     | lista_sentencia sentencia
@@ -23,9 +28,9 @@ sentencia_declarativa: declaracion {System.out.println(Colores.AZUL + "declaraci
     | func {System.out.println(Colores.AZUL + "funcion" + Colores.RESET);}
     ;
 
-sentencia_ejecutable: invocacion {System.out.println(Colores.AZUL + "invocacion" + Colores.RESET);}
-    | asig {System.out.println(Colores.AZUL + "Asignacion" + Colores.RESET);}
-    | if {System.out.println(Colores.AZUL + "Sentencia if" + Colores.RESET);}
+sentencia_ejecutable
+    : asig {System.out.println(Colores.AZUL + "Asignacion" + Colores.RESET);}
+    | if  {System.out.println(Colores.AZUL + "Sentencia if" + Colores.RESET);}
     | salida_msj {System.out.println(Colores.AZUL + "Salida de mensaje" + Colores.RESET);}
     | exp_lambda {System.out.println(Colores.AZUL + "Expresion lambda" + Colores.RESET);}
     | return {System.out.println(Colores.AZUL + "Return" + Colores.RESET);}
@@ -36,7 +41,6 @@ sentencia_de_control: do {System.out.println(Colores.AZUL + "Sentencia do" + Col
     ;
 
 asig: variable ASIG exp ';'
-    | error ';' {AnalizadorLexico.addError(Colores.ROJO + "ERROR LINEA "+nroLinea+": en asignacion" + Colores.RESET);}
     ;
 
 exp: exp '+' term
@@ -65,8 +69,16 @@ variable_prefijada: ID '.' ID
 /* --------------------------------------- */
 
 /* -------------- IF -------------- */
-if: IF '(' cond ')' cuerpo_sentencia_control cuerpo_else ENDIF ';'
-;
+if
+    : IF cuerpo_condicion cuerpo_sentencia_control cuerpo_else ENDIF ';'
+    ;
+
+cuerpo_condicion
+    : '(' cond ')'
+    | cond ')' {yyerror("falta ( ");}
+    | '(' error {yyerror("falta ) ");}
+    | error {yyerror("faltan parentesis ");}
+    ;
 
 cond: exp IGUAL exp
     | exp NOIGUAL exp
@@ -78,6 +90,8 @@ cond: exp IGUAL exp
 
 cuerpo_sentencia_control: sentencia_ejecutable
     | '{' lista_sentencia_ejecutable '}'
+    | {yyerror("no hay sentencias");}
+    | '{' '}' {yyerror("no hay sentencias entre llaves");}
 ;
 
 lista_sentencia_ejecutable: sentencia_ejecutable
@@ -91,13 +105,17 @@ cuerpo_else: ELSE cuerpo_sentencia_control
 declaracion: tipo lista_variables ';'
 ;
 
-lista_variables: variable {sumaVar+=1; System.out.println(Colores.AZUL+"tenemos "+sumaVar+ " var"+Colores.RESET);}
-    | lista_variables ',' variable {sumaVar+=1; System.out.println(Colores.AZUL+"tenemos "+sumaVar+ " var"+Colores.RESET);}
-;
+lista_variables
+    : variable
+    | lista_variables ',' variable
+    | lista_variables variable {yyerror("falta , en lista de variables");}
+    ;
 
-salida_msj: PRINT '(' CADENA ')' ';'
+salida_msj
+    : PRINT '(' CADENA ')' ';'
     | PRINT '(' exp ')' ';'
-;
+    | PRINT '(' ')' ';' {yyerror("falta argumento en print");}
+    ;
 
 tipo: UINT
 ;
@@ -107,15 +125,21 @@ sem_pasaje: CR
 
 /* -------------- TRATADO DE FUNCIONES -------------- */
 
-func: parametro '(' parametros_formales ')' cuerpo_funcion
-;
+func: tipo ID '(' parametros_formales ')' '{' lista_sentencia_funcion '}'
+    | tipo error '(' parametros_formales ')' '{' lista_sentencia_funcion '}' {yyerror("falta nombre de func");}
+    | error '(' parametros_formales ')' '{' lista_sentencia_funcion '}' {yyerror("falta tipo de func");}
+    ;
+parametro
+    : tipo ID
+    | error ID {yyerror("Falta tipo en parametro");}
+    | tipo error {yyerror("Falta nombre en parametro");}
+    ;
 
 parametros_formales: sem_pasaje parametro
     | parametros_formales ',' sem_pasaje parametro
+    | sem_pasaje error
 ;
 
-cuerpo_funcion: '{' lista_sentencia_funcion '}'
-;
 
 lista_sentencia_funcion: sentencia_funcion
     | lista_sentencia_funcion sentencia_funcion
@@ -124,69 +148,50 @@ sentencia_funcion: sentencia_declarativa
     | sentencia_ejecutable
 ;
 
-return: RETURN '(' exp ')' ';'
-;
+return
+    : RETURN '(' exp ')' ';'
+    ;
 
 invocacion: ID '(' parametros_reales ')'
 ;
 
 parametros_reales: parametro_real FLECHA parametro_formal
     | parametros_reales ',' parametro_real FLECHA parametro_formal
+    | parametros_reales ',' parametro_real FLECHA error {yyerror("Falta parametro formal");}
+    | parametro_real FLECHA error {yyerror("Falta parametro formal");}
+    | parametros_reales ',' parametro_real error {yyerror("Falta parametro formal");}
+    ;
 
 parametro_real: exp
 ;
 
 parametro_formal: ID
 ;
+
 /*------------------------------------------------- FIN FUNCION --------------------------------*/
 
 
 /* -------------- DO WHILE -------------- */
-do: DO cuerpo_sentencia_control WHILE '(' cond ')' ';'
+do: DO cuerpo_sentencia_control WHILE cuerpo_condicion ';'
     ;
 
 /* -------------- EXPRESIONES LAMBDA -------------- */
-exp_lambda: '(' parametro ')' '{' lista_sentencia_ejecutable '}' '(' factor ')' ';'
+exp_lambda: '(' tipo ID ')' '{' lista_sentencia_ejecutable '}' '(' factor ')' ';'
     ;
 
-parametro: tipo ID
-    ;
 
 /* -------------- ASIGNACION MULTIPLE -------------- */
-asig_multiple: lista_variables '=' lista_constantes ';' {checkAsignacionMultiple();}
+asig_multiple: lista_variables '=' lista_constantes ';' /*{checkAsignacionMultiple();}*/
+
+lista_constantes: CTE
+    | lista_constantes ',' CTE
     ;
-
-lista_constantes: CTE {sumaCte+=1; System.out.println(Colores.AZUL+"tenemos "+sumaCte+ " CTE"+Colores.RESET);}
-    | lista_constantes ',' CTE {sumaCte+=1; System.out.println(Colores.AZUL+"tenemos "+sumaCte+ " CTE"+Colores.RESET);}
-    ;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
 
 %%
 private int nroLinea;
-private int sumaVar = 0;
-private int sumaCte = 0;
 
 private int yylex(){
     try {
@@ -205,11 +210,5 @@ private int yylex(){
 
 private void yyerror(String err){
     System.out.println(Colores.ROJO + err + Colores.RESET);
-}
-private boolean checkAsignacionMultiple(){
-  if (sumaVar > sumaCte){
-    System.out.println(Colores.ROJO+"HAY MAS DEL EZ QUE DEL DER"+Colores.RESET);
-    return false;
-  }
-  return true;
+    AnalizadorLexico.addError(Colores.ROJO + err + Colores.RESET);
 }
