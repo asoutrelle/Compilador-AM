@@ -210,8 +210,8 @@ do
 
 /* -------------- EXPRESIONES LAMBDA -------------- */
 exp_lambda
-    : '(' tipo ID ')' '{' lista_sentencia_ejecutable '}' '(' factor ')' ';' {print("lambda");}
-    | '(' tipo ID ')' error lista_sentencia_ejecutable '}' '(' factor ')' ';' {yyerror("falta { en lambda");}
+    : '(' tipo ID ')' '{' lista_sentencia_ejecutable '}' '(' exp ')' ';' {print("lambda");}
+    | '(' tipo ID ')' error lista_sentencia_ejecutable '}' '(' exp ')' ';' {yyerror("falta { en lambda");}
     | '(' tipo ID ')' '{' lista_sentencia_ejecutable error ')' ';' {yyerror("falta } en lambda");}
     ;
 
