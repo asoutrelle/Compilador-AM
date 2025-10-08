@@ -115,8 +115,8 @@ if
 cuerpo_condicion
     : '(' comparacion ')'
     | comparacion ')' {yyerror("ERROR LINEA "+nroLinea()+": falta abrir parentesis");}
-    | '(' comparacion  error ';'{yyerror("ERROR LINEA "+nroLinea()+": falta cerrar parentesis");}
-    | comparacion  error {yyerror("ERROR LINEA "+nroLinea()+": faltan parentesis en condicion ");}
+    | '(' comparacion ';'{yyerror("ERROR LINEA "+nroLinea()+": falta cerrar parentesis");}
+    | comparacion  {yyerror("ERROR LINEA "+nroLinea()+": faltan parentesis en condicion ");}
     ;
 
 comparacion
@@ -138,6 +138,8 @@ cuerpo_sentencia_control
     | '{' lista_sentencia_ejecutable '}'
     | {yyerror("ERROR LINEA "+nroLinea()+": no hay sentencias");}
     | '{' '}' {yyerror("ERROR LINEA "+nroLinea()+": no hay sentencias entre llaves");}
+    | lista_sentencia_ejecutable '}' {yyerror("ERROR LINEA "+nroLinea()+": falta llave {");}
+    | '{' lista_sentencia_ejecutable {yyerror("ERROR LINEA "+nroLinea()+": falta llave }");}
     ;
 
 lista_sentencia_ejecutable
