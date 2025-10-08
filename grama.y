@@ -2,6 +2,7 @@
 import java.lang.Math;
 import java.io.*;
 import java.util.StringTokenizer;
+import java.util.ArrayList;
 %}
 
 %token ID CTE PF64 ELSE ENDIF PRINT RETURN CADENA DFLOAT DO WHILE ASIG IF IGUAL NOIGUAL MENORIGUAL MAYORIGUAL FLECHA UINT CR TRUNC
@@ -10,18 +11,19 @@ import java.util.StringTokenizer;
 %%
 prog
     : ID '{' lista_sentencia '}'
-    | '{' lista_sentencia '}' {yyerror("ERROR falta nombre de programa");}
-    | ID '{' lista_sentencia  {yyerror("ERROR falta cierre de programa");}
-    | ID  lista_sentencia '}' {yyerror("ERROR falta inicio de programa");}
-    | '{' lista_sentencia  {yyerror("ERROR EN NOMBRE DE PROGRAMA y cierre");}
-    | error lista_sentencia '}' {yyerror("ERROR EN NOMBRE DE PROGRAMA e inicio");}
-    | ID lista_sentencia {yyerror("ERROR no hay llaves del programa");}
+    | '{' lista_sentencia '}' {yyerror("ERROR LINEA "+nroLinea()+": falta nombre de programa");}
+    | ID '{' lista_sentencia  {yyerror("ERROR LINEA "+nroLinea()+": falta cierre de programa");}
+    | ID lista_sentencia '}' {yyerror("ERROR LINEA "+nroLinea()+": falta inicio de programa");}
+    | '{' lista_sentencia  {yyerror("ERROR LINEA "+nroLinea()+": falta nombre del programa y cierre");}
+    | error lista_sentencia '}' {yyerror("ERROR LINEA "+nroLinea()+": falta nombre del programa e inicio");}
+    | ID lista_sentencia {yyerror("ERROR LINEA "+nroLinea()+": no hay llaves del programa");}
     ;
 
 lista_sentencia
     : sentencia
     | lista_sentencia sentencia
     ;
+
 sentencia
     : sentencia_ejecutable
     | sentencia_declarativa
@@ -48,35 +50,48 @@ sentencia_de_control
 
 asig
     : variable ASIG exp ';' {print("asignacion");}
+    | variable ASIG error ';' {print("asignacion");} {yyerror("ERROR LINEA "+nroLinea()+": error en asignacion");}
+    | variable ASIG exp_error ';' {print("asignacion");}
+    | variable ASIG exp_error error {print("asignacion");} {yyerror("ERROR LINEA "+nroLinea()+": falta ; asig");}
+    | variable ASIG exp error {print("asignacion");} {yyerror("ERROR LINEA "+nroLinea()+": falta ; asig xd");}
     ;
 
 exp
     : exp '+' termino
     | exp '-' termino
-    | exp '+' error {yyerror("falta operando después de '+'"); }
-    | exp '-' error {yyerror("falta operando después de '-'"); }
+    | exp '+' error {yyerror("ERROR LINEA "+nroLinea()+": falta operando después de '+'"); }
+    | exp '-' error {yyerror("ERROR LINEA "+nroLinea()+": falta operando después de '-'"); }
+    | error '+' termino {yyerror("ERROR LINEA "+nroLinea()+": falta operando antes de '+'"); }
+    | error '-' termino {yyerror("ERROR LINEA "+nroLinea()+": falta operando antes de '-'"); }
     | termino
     ;
 
-termino: termino '*' factor
+exp_error
+    : exp exp {yyerror("ERROR LINEA "+nroLinea()+": falta operador en expresion"); }
+    ;
+
+termino
+    : termino '*' factor
     | termino '/' factor
-    | termino '*' error {yyerror("falta operando después de *"); }
-    | termino '/' error {yyerror("falta operando después de /"); }
+    | termino '*' error {yyerror("ERROR LINEA "+nroLinea()+": falta operando después de *"); }
+    | termino '/' error {yyerror("ERROR LINEA "+nroLinea()+": falta operando después de /"); }
+    | error '*' factor {yyerror("ERROR LINEA "+nroLinea()+": falta operando antes de *"); }
+    | error '/' factor {yyerror("ERROR LINEA "+nroLinea()+": falta operando antes de /"); }
     | factor
-;
+    ;
 
 factor
-    :  variable
+    : variable
     | invocacion
     | CTE
     | TRUNC '(' exp ')'
-    | TRUNC '(' ')' {yyerror("falta argumento en trunc"); }
-    | TRUNC error ')' {yyerror("falta ( en trunc"); }
-    | TRUNC '(' exp error {yyerror("falta ) en trunc"); }
+    | TRUNC '(' ')' {yyerror("ERROR LINEA "+nroLinea()+": falta argumento en trunc"); }
+    | TRUNC  ')' {yyerror("ERROR LINEA "+nroLinea()+": falta ( en trunc"); }
+    | TRUNC '(' exp error {yyerror("ERROR LINEA "+nroLinea()+": falta ) en trunc"); }
 ;
 
 variable
-    : ID '.' ID
+    : variable '.' ID
     | ID
     ;
 
@@ -87,36 +102,42 @@ invocacion
 salida_msj
     : PRINT '(' CADENA ')' ';' {print("print");}
     | PRINT '(' exp ')' ';' {print("print");}
-    | PRINT '(' ')' ';' {yyerror("falta argumento en print");}
+    | PRINT '(' ')' ';' {yyerror("ERROR LINEA "+nroLinea()+": falta argumento en print");}
+    | PRINT '(' CADENA ')' error {yyerror("ERROR LINEA "+nroLinea()+": falta ; print");}
+    | PRINT '(' exp ')' error {yyerror("ERROR LINEA "+nroLinea()+": falta ; print");} {print("print");}
     ;
 /* -------------- IF -------------- */
 if
     : IF cuerpo_condicion cuerpo_sentencia_control cuerpo_else ENDIF ';' {print("sentencia if");}
-    | IF cuerpo_condicion cuerpo_sentencia_control cuerpo_else ';' {yyerror("ERRROR FALTA ENDIF");}
+    | IF cuerpo_condicion cuerpo_sentencia_control cuerpo_else ';' {yyerror("ERROR LINEA "+nroLinea()+": ERRROR FALTA ENDIF");}
     ;
 
 cuerpo_condicion
     : '(' comparacion ')'
-    | comparacion ')' {yyerror("falta abrir parentesis");}
-    | '(' comparacion error {yyerror("falta cerrar parentesis");}
-    | comparacion {yyerror("faltan parentesis en condicion ");}
+    | comparacion ')' {yyerror("ERROR LINEA "+nroLinea()+": falta abrir parentesis");}
+    | '(' comparacion  error ';'{yyerror("ERROR LINEA "+nroLinea()+": falta cerrar parentesis");}
+    | comparacion  error {yyerror("ERROR LINEA "+nroLinea()+": faltan parentesis en condicion ");}
     ;
 
 comparacion
-    : exp IGUAL exp
-    | exp NOIGUAL exp
-    | exp MENORIGUAL exp
-    | exp MAYORIGUAL exp
-    | exp '<' exp
-    | exp '>' exp
-    | exp exp {yyerror("falta comparador");}
+    : exp comparador exp {print("comparacion");}
+    ;
+
+comparador
+    : IGUAL
+    | NOIGUAL
+    | MENORIGUAL
+    | MAYORIGUAL
+    | '<'
+    | '>'
+    | {yyerror("ERROR LINEA "+nroLinea()+": falta comparador");}
     ;
 
 cuerpo_sentencia_control
     : sentencia_ejecutable
     | '{' lista_sentencia_ejecutable '}'
-    | {yyerror("no hay sentencias");}
-    | '{' '}' {yyerror("no hay sentencias entre llaves");}
+    | {yyerror("ERROR LINEA "+nroLinea()+": no hay sentencias");}
+    | '{' '}' {yyerror("ERROR LINEA "+nroLinea()+": no hay sentencias entre llaves");}
     ;
 
 lista_sentencia_ejecutable
@@ -136,27 +157,27 @@ declaracion
 lista_variables_declaracion
     : ID
     | lista_variables ',' ID
-    | lista_variables ID {yyerror("falta , en lista de variables");}
+    | lista_variables ID {yyerror("ERROR LINEA "+nroLinea()+": falta , en lista de variables");}
     ;
 
 /* -------------- TRATADO DE FUNCIONES -------------- */
 
 func
     : tipo ID '(' parametros_formales ')' '{' lista_sentencia_funcion '}' {print("funcion");}
-    | tipo '(' parametros_formales ')' '{' lista_sentencia_funcion '}' {yyerror("falta nombre de func");}
+    | tipo '(' parametros_formales ')' '{' lista_sentencia_funcion '}' {yyerror("ERROR LINEA "+nroLinea()+": falta nombre de func");}
     ;
 
 parametro
     : tipo ID
-    | ID {yyerror("Falta tipo en parametro");}
-    | tipo {yyerror("Falta nombre en parametro");}
+    | ID {yyerror("ERROR LINEA "+nroLinea()+": Falta tipo en parametro");}
+    | tipo {yyerror("ERROR LINEA "+nroLinea()+": Falta nombre en parametro");}
     ;
 
 parametros_formales
     : sem_pasaje parametro
     | parametro
     | parametros_formales ',' sem_pasaje parametro
-    | sem_pasaje {yyerror("falta tipo e ID en parametros de funcion");}
+    | sem_pasaje {yyerror("ERROR LINEA "+nroLinea()+": falta tipo e ID en parametros de funcion");}
     ;
 
 tipo
@@ -184,11 +205,11 @@ return
 
 parametros_de_invocacion
     : parametro_real FLECHA parametro_formal
-    | parametro_real FLECHA {yyerror("Falta parametro formal");}
-    | parametro_real {yyerror("Falta flecha y parametro formal");}
+    | parametro_real FLECHA {yyerror("ERROR LINEA "+nroLinea()+": Falta parametro formal");}
+    | parametro_real {yyerror("ERROR LINEA "+nroLinea()+": Falta flecha y parametro formal");}
     | parametros_de_invocacion ',' parametro_real FLECHA parametro_formal
-    | parametros_de_invocacion ',' parametro_real FLECHA {yyerror("Falta parametro formal");}
-    | parametros_de_invocacion ',' parametro_real {yyerror("Falta flecha y parametro formal");}
+    | parametros_de_invocacion ',' parametro_real FLECHA {yyerror("ERROR LINEA "+nroLinea()+": Falta parametro formal");}
+    | parametros_de_invocacion ',' parametro_real {yyerror("ERROR LINEA "+nroLinea()+": Falta flecha y parametro formal");}
     ;
 
 parametro_real
@@ -205,17 +226,20 @@ parametro_formal
 /* -------------- DO WHILE -------------- */
 do
     : DO cuerpo_sentencia_control WHILE cuerpo_condicion ';' {print("sentencia do while");}
-    | DO cuerpo_sentencia_control error cuerpo_condicion ';' {yyerror("falta while");}
+    | DO cuerpo_sentencia_control error cuerpo_condicion ';' {yyerror("ERROR LINEA "+nroLinea()+": falta while");}
     ;
 
 /* -------------- EXPRESIONES LAMBDA -------------- */
 exp_lambda
-    : '(' tipo ID ')' '{' lista_sentencia_ejecutable '}' '(' exp ')' ';' {print("lambda");}
-    | '(' tipo ID ')' error lista_sentencia_ejecutable '}' '(' exp ')' ';' {yyerror("falta { en lambda");}
-    | '(' tipo ID ')' '{' lista_sentencia_ejecutable error ')' ';' {yyerror("falta } en lambda");}
+    : '(' tipo ID ')' '{' lista_sentencia_ejecutable '}' '(' argumento_lambda ')' ';' {print("lambda");}
+    | '(' tipo ID ')' error lista_sentencia_ejecutable '}' '(' argumento_lambda ')' ';' {yyerror("ERROR LINEA "+nroLinea()+": falta { en lambda");}
+    | '(' tipo ID ')' '{' lista_sentencia_ejecutable error ')' ';' {yyerror("ERROR LINEA "+nroLinea()+": falta } en lambda");}
     ;
 
-
+argumento_lambda
+    : ID
+    | CTE
+    ;
 
 /* -------------- ASIGNACION MULTIPLE -------------- */
 asig_multiple
@@ -225,25 +249,25 @@ asig_multiple
 lista_variables
     : variable
     | lista_variables ',' variable
-    | lista_variables variable {yyerror("falta , en lista de variables");}
+    | lista_variables variable {yyerror("ERROR LINEA "+nroLinea()+": falta , en lista de variables");}
     ;
 
 lista_constantes
     : CTE
     | lista_constantes ',' CTE
-    | lista_constantes CTE {yyerror("falta , en lista de constantes");}
+    | lista_constantes CTE {yyerror("ERROR LINEA "+nroLinea()+": falta , en lista de constantes");}
     ;
 
 
 
 
 %%
-private int nroLinea;
+private ArrayList<Token> tokens = new ArrayList<>();
 
 private int yylex(){
     try {
       Token t = AnalizadorLexico.leerCaracter();
-        nroLinea = t.getNroLinea() -1;
+        tokens.add(t);
         int aux = t.getLexema();
         if(!AnalizadorLexico.valorTs.isEmpty()){
             yylval = new ParserVal(AnalizadorLexico.valorTs);
@@ -263,4 +287,7 @@ private void yyerror(String err){
 private void print(String str){
   Main.estructurasDetectadas.add(Colores.AZUL+str+Colores.RESET);
   System.out.println(Colores.AZUL+str+Colores.RESET);
+}
+private int nroLinea(){
+  return tokens.getLast().getNroLinea();
 }
