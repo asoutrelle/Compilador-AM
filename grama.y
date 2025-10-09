@@ -103,12 +103,14 @@ salida_msj
     | PRINT '(' ')' ';' {yyerror("falta argumento en print");}
     | PRINT '(' CADENA ')' error {yyerror("falta ; print");}
     | PRINT '(' exp ')' error {yyerror("falta ; print");} {print("print");}
-    | PRINT '(' exp_error ')' error {print("print");}
+    | PRINT '(' exp_error ')' error {yyerror("falta ; print");} {print("print");}
     ;
 /* -------------- IF -------------- */
 if
     : IF cuerpo_condicion cuerpo_sentencia_control cuerpo_else ENDIF ';' {print("sentencia if");}
     | IF cuerpo_condicion cuerpo_sentencia_control cuerpo_else ';' {yyerror("ERRROR FALTA ENDIF");}
+    | IF cuerpo_condicion cuerpo_sentencia_control cuerpo_else ENDIF error {yyerror("falta ; if");} {print("sentencia if");}
+    | IF cuerpo_condicion cuerpo_sentencia_control cuerpo_else error {yyerror("falta ; if");} {yyerror("ERRROR FALTA ENDIF");} /* no anda */
     ;
 
 cuerpo_condicion
@@ -202,6 +204,8 @@ sentencia_funcion
 return
     : RETURN '(' exp ')' ';' {print("return");}
     | RETURN '(' exp_error ')' ';' {print("return");}
+    | RETURN '(' exp ')' error {yyerror("falta ; en return");} {print("return");}
+    | RETURN '(' exp_error ')' error {yyerror("falta ; en return");} {print("return");}
     ;
 
 
@@ -230,23 +234,28 @@ parametro_formal
 do
     : DO cuerpo_sentencia_control WHILE cuerpo_condicion ';' {print("sentencia do while");}
     | DO cuerpo_sentencia_control error cuerpo_condicion ';' {yyerror("falta while");}
+    | DO cuerpo_sentencia_control WHILE cuerpo_condicion error {yyerror("falta ; while");} {print("sentencia do while");}
+    | DO cuerpo_sentencia_control error cuerpo_condicion error {yyerror("falta ; while");} {yyerror("falta while");} /* no funciona */
     ;
 
 /* -------------- EXPRESIONES LAMBDA -------------- */
 exp_lambda
     : '(' tipo ID ')' '{' lista_sentencia_ejecutable '}' '(' argumento_lambda ')' ';' {print("lambda");}
-    | '(' tipo ID ')' error lista_sentencia_ejecutable '}' '(' argumento_lambda ')' ';' {yyerror("falta { en lambda");}
-    | '(' tipo ID ')' '{' lista_sentencia_ejecutable error ')' ';' {yyerror("falta } en lambda");}
+    | '(' tipo ID ')' error lista_sentencia_ejecutable '}' '(' argumento_lambda ')' ';' {yyerror("falta { en lambda");} {print("lambda");}
+    | '(' tipo ID ')' '{' lista_sentencia_ejecutable error ')' ';' {yyerror("falta } en lambda");} {print("lambda");}
+    | '(' tipo ID ')' '{' lista_sentencia_ejecutable '}' '(' argumento_lambda ')' error {yyerror("falta ; en lambda");} {print("lambda");}
+    | '(' tipo ID ')' error lista_sentencia_ejecutable '}' '(' argumento_lambda ')' error {yyerror("falta ; en lambda");} {yyerror("falta { en lambda");} {print("lambda");}
+    | '(' tipo ID ')' '{' lista_sentencia_ejecutable error ')' error {yyerror("falta ; en lambda");} {yyerror("falta } en lambda");} {print("lambda");}
     ;
 
 argumento_lambda
     : ID
     | CTE
     ;
-
 /* -------------- ASIGNACION MULTIPLE -------------- */
 asig_multiple
     : lista_variables '=' lista_constantes ';' {print("asignacion multiple");}
+    | lista_variables '=' lista_constantes error {yyerror("falta ; en asig multiple");} {print("asignacion multiple");}
     ;
 
 lista_variables
@@ -293,5 +302,5 @@ private void print(String str){
   System.out.println(Colores.AZUL+str+Colores.RESET);
 }
 private int nroLinea(){
-  return tokens.getLast().getNroLinea();
+  return tokens.get(tokens.size() - 1).getNroLinea();
 }
