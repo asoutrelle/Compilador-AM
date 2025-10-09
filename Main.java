@@ -20,7 +20,12 @@ public class Main {
         AnalizadorLexico lexer = new AnalizadorLexico();
 
         Parser parser = new Parser(true);
-        parser.yyparse();
+        int parserval= parser.yyparse();
+        if(parserval == 0){
+            System.out.println(Colores.AMARILLO+"PARSER TERMINO CORRECTAMENTE "+Colores.RESET);
+        } else{
+            System.out.println(Colores.AMARILLO+"PARSER TERMINO MAL "+Colores.RESET);
+        }
         lexer.print();
         System.out.println(Colores.AZUL+"------------------ ESTRUCTURAS DETECTADAS ------------------"+Colores.RESET);
         for(String str : estructurasDetectadas){
