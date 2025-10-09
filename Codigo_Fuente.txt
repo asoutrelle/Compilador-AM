@@ -1,4 +1,0 @@
-PROG1
-{
-do { } while (A>B);
-}
