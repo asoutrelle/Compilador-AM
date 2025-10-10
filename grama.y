@@ -22,6 +22,7 @@ prog
 lista_sentencia
     : sentencia
     | lista_sentencia sentencia
+    | error ';' {yyerror("error en sentencia");}
     ;
 
 sentencia
@@ -32,14 +33,13 @@ sentencia
 
 sentencia_declarativa
     : declaracion
-    | func
+    | funcion
     ;
 
 sentencia_ejecutable
     : asig
     | if
     | salida_msj
-    | exp_lambda
     | return
     | asig_multiple
     ;
@@ -49,31 +49,28 @@ sentencia_de_control
     ;
 
 asig
-    : variable ASIG exp ';' {print("asignacion normal");}
-    | variable ASIG exp error {yyerror("falta ; en asignacion");} {print("asignacion mal");}
+    : variable ASIG exp punto_coma {print("asignacion");}
     ;
+
+
 
 exp
     : exp '+' termino
     | exp '-' termino
-    | exp '+' error {yyerror("falta operando después de '+'"); }
-    | exp '-' error {yyerror("falta operando después de '-'"); }
-    | error '+' termino {yyerror("falta operando antes de '+'"); }
-    | error '-' termino {yyerror("falta operando antes de '-'"); }
+    | '+' termino {yyerror("falta operador a izquierda de +");}
+    | '-' termino {yyerror("falta operador a izquierda de -");}
+    | exp '+' error {yyerror("falta operador a derecha de +");}
+    | exp '-' error {yyerror("falta operador a derecha de -");}
     | termino
-    ;
-
-exp_error
-    : exp exp {yyerror("falta operador en expresion"); }
     ;
 
 termino
     : termino '*' factor
     | termino '/' factor
-    | termino '*' error {yyerror("falta operando después de *"); }
-    | termino '/' error {yyerror("falta operando después de /"); }
-    | error '*' factor {yyerror("falta operando antes de *"); }
-    | error '/' factor {yyerror("falta operando antes de /"); }
+    | termino '/' error {yyerror("falta operador a derecha de /");}
+    | termino '*' error {yyerror("falta operador a derecha de *");}
+    | '/' factor {yyerror("falta operador a izquierda de /");}
+    | '*' factor {yyerror("falta operador a izquierda de *");}
     | factor
     ;
 
@@ -81,15 +78,16 @@ factor
     : variable
     | invocacion
     | CTE
-    | TRUNC '(' exp ')'
-    | TRUNC '(' ')' {yyerror("ERROR LINEA "+nroLinea()+": falta argumento en trunc"); }
-    | TRUNC  exp ')' {yyerror("ERROR LINEA "+nroLinea()+": falta ( en trunc"); }
-    | TRUNC '(' exp error {yyerror("ERROR LINEA "+nroLinea()+": falta ) en trunc"); }
-    | TRUNC exp error {yyerror("faltan parentesis en trunc"); }
+    | exp_lambda
+    | TRUNC '(' exp ')' {print("trunc");}
+    | TRUNC  exp ')' {print("trunc");yyerror("falta ( en trunc");}
+    | TRUNC '(' error {print("trunc");yyerror("falta ) en trunc");}
+    | TRUNC  '(' ')' {print("trunc");yyerror("falta argumento en trunc");}
+    | factor CTE {yyerror("falta operador");}
 ;
 
 variable
-    : variable '.' ID
+    : ID '.' ID
     | ID
     ;
 
@@ -97,31 +95,55 @@ invocacion
     : ID '(' parametros_de_invocacion ')' {print("invocacion a funcion");}
     ;
 
-salida_msj
-    : PRINT '(' CADENA ')' ';' {print("print");}
-    | PRINT '(' exp ')' ';' {print("print");}
-    | PRINT '(' ')' ';' {yyerror("falta argumento en print");}
-    | PRINT '(' CADENA ')' error {yyerror("falta ; print");}
-    | PRINT '(' exp ')' error {yyerror("falta ; print");} {print("print");}
-    | PRINT '(' exp_error ')' error {yyerror("falta ; print");} {print("print");}
+parametros_de_invocacion
+    : parametro_real FLECHA ID
+    | parametro_real FLECHA {yyerror("Falta parametro formal");}
+    | parametro_real {yyerror("Falta flecha y parametro formal");}
+    | parametros_de_invocacion ',' parametro_real FLECHA ID
+    | parametros_de_invocacion ',' parametro_real FLECHA {yyerror("Falta parametro formal");}
+    | parametros_de_invocacion ',' parametro_real {yyerror("Falta flecha y parametro formal");}
     ;
-/* -------------- IF -------------- */
+
+salida_msj
+    : PRINT '(' argumento_print ')' punto_coma
+    | PRINT '('  ')' punto_coma {yyerror("falta argumento en print");}
+    ;
+
+punto_coma
+    : ';'
+    | error {yyerror("falta ;");}
+    ;
+
+argumento_print
+    : exp
+    | CADENA
+    ;
+/* -------------------------------------------------------- IF -------------------------------------------------------- */
 if
-    : IF cuerpo_condicion cuerpo_sentencia_control cuerpo_else ENDIF ';' {print("sentencia if");}
-    | IF cuerpo_condicion cuerpo_sentencia_control cuerpo_else ';' {yyerror("ERRROR FALTA ENDIF");}
-    | IF cuerpo_condicion cuerpo_sentencia_control cuerpo_else ENDIF error {yyerror("falta ; if");} {print("sentencia if");}
-    | IF cuerpo_condicion cuerpo_sentencia_control cuerpo_else error {yyerror("falta ; if");} {yyerror("ERRROR FALTA ENDIF");} /* no anda */
+    : IF cuerpo_condicion cuerpo_sentencia_ejecutable ELSE cuerpo_sentencia_ejecutable ENDIF punto_coma {print("sentencia if");}
+    | IF cuerpo_condicion cuerpo_sentencia_ejecutable ELSE ENDIF punto_coma {print("sentencia if");yyerror("no hay sentencias en else");}
+    | IF cuerpo_condicion cuerpo_sentencia_ejecutable ENDIF punto_coma {print("sentencia if");}
+    /*sin endif*/
+    | IF cuerpo_condicion cuerpo_sentencia_ejecutable ELSE cuerpo_sentencia_ejecutable punto_coma {print("sentencia if"); yyerror("falta endif");}
+    | IF cuerpo_condicion cuerpo_sentencia_ejecutable ELSE  punto_coma {print("sentencia if"); yyerror("falta endif");yyerror("no hay sentencias en else");}
+    | IF cuerpo_condicion cuerpo_sentencia_ejecutable punto_coma {print("sentencia if"); yyerror("falta endif");}
+
+    /*con endif, sin then*/
+    | IF cuerpo_condicion ELSE cuerpo_sentencia_ejecutable ENDIF punto_coma {print("sentencia if");yyerror("no hay sentencias en then");}
+    | IF cuerpo_condicion ELSE  ENDIF punto_coma {print("sentencia if");yyerror("no hay sentencias en then");yyerror("no hay sentencias en else");}
+    | IF cuerpo_condicion ENDIF punto_coma {print("sentencia if");yyerror("no hay sentencias en then");}
+
+    /*sin endif, sin then*/
+    | IF cuerpo_condicion ELSE cuerpo_sentencia_ejecutable punto_coma {print("sentencia if");yyerror("no hay sentencias en then");yyerror("falta endif");}
+    | IF cuerpo_condicion ELSE punto_coma {print("sentencia if");yyerror("no hay sentencias en then");yyerror("no hay sentencias en else");yyerror("falta endif");}
+    | IF cuerpo_condicion punto_coma {print("sentencia if");yyerror("no hay sentencias en then");yyerror("falta endif");}
     ;
 
 cuerpo_condicion
-    : '(' comparacion ')'
-    | comparacion ')' {yyerror("falta abrir parentesis");}
-    | '(' comparacion ';'{yyerror("falta cerrar parentesis");}
-    | comparacion  {yyerror("faltan parentesis en condicion ");}
-    ;
-
-comparacion
-    : exp comparador exp {print("comparacion");}
+    : '(' exp comparador exp ')'
+    | '(' exp comparador exp {yyerror("falta cerrar parentesis");}
+    |  exp comparador exp ')' {yyerror("falta abrir parentesis");}
+    |  exp comparador exp {yyerror("faltan parentesis");}
     ;
 
 comparador
@@ -131,65 +153,45 @@ comparador
     | MAYORIGUAL
     | '<'
     | '>'
-    | {yyerror("falta comparador");}
     ;
 
-cuerpo_sentencia_control
-    : sentencia_ejecutable
-    | '{' lista_sentencia_ejecutable '}'
-    | {yyerror("no hay sentencias");}
-    | '{' '}' {yyerror("no hay sentencias entre llaves");}
-    | lista_sentencia_ejecutable '}' {yyerror("falta llave {");}
-    | '{' lista_sentencia_ejecutable {yyerror("falta llave }");}
-    ;
 
 lista_sentencia_ejecutable
     : sentencia_ejecutable
     | lista_sentencia_ejecutable sentencia_ejecutable
     ;
 
-cuerpo_else
-    : ELSE cuerpo_sentencia_control
-    |
-    ;
 /* -------------- FIN IF -------------- */
 declaracion
-    : tipo lista_variables_declaracion ';' {print("declaracion");}
+    : tipo lista_variables_declaracion punto_coma
     ;
 
 lista_variables_declaracion
     : ID
-    | lista_variables ',' ID
-    | lista_variables ID {yyerror("falta , en lista de variables");}
+    | lista_variables_declaracion ',' ID
+    | lista_variables_declaracion ID {yyerror("falta , en lista de variables");}
     ;
 
 /* -------------- TRATADO DE FUNCIONES -------------- */
 
-func
+funcion
     : tipo ID '(' parametros_formales ')' '{' lista_sentencia_funcion '}' {print("funcion");}
-    | tipo '(' parametros_formales ')' '{' lista_sentencia_funcion '}' {yyerror("falta nombre de func");}
-    ;
-
-parametro
-    : tipo ID
-    | ID {yyerror("Falta tipo en parametro");}
-    | tipo {yyerror("Falta nombre en parametro");}
+    | tipo '(' parametros_formales ')' '{' lista_sentencia_funcion '}' {print("funcion"); yyerror("falta declarar nombre de funcion");}
+    | tipo ID '(' ')' '{' lista_sentencia_funcion '}' {yyerror("faltan parametros formales");}
+    | tipo '(' ')' '{' lista_sentencia_funcion '}' {yyerror("falta declarar nombre de funcion"); yyerror("faltan parametros formales");}
     ;
 
 parametros_formales
-    : sem_pasaje parametro
-    | parametro
-    | parametros_formales ',' sem_pasaje parametro
-    | sem_pasaje {yyerror("falta tipo e ID en parametros de funcion");}
+    : CR tipo ID
+    | tipo ID
+    | parametros_formales ',' CR tipo ID
+    | parametros_formales ',' tipo ID
     ;
 
 tipo
     : UINT
     ;
 
-sem_pasaje
-    : CR
-    ;
 
 lista_sentencia_funcion
     : sentencia_funcion
@@ -202,60 +204,57 @@ sentencia_funcion
     ;
 
 return
-    : RETURN '(' exp ')' ';' {print("return");}
-    | RETURN '(' exp_error ')' ';' {print("return");}
-    | RETURN '(' exp ')' error {yyerror("falta ; en return");} {print("return");}
-    | RETURN '(' exp_error ')' error {yyerror("falta ; en return");} {print("return");}
+    : RETURN '(' exp ')' punto_coma {print("return");}
     ;
 
-
-parametros_de_invocacion
-    : parametro_real FLECHA parametro_formal
-    | parametro_real FLECHA {yyerror("Falta parametro formal");}
-    | parametro_real {yyerror("Falta flecha y parametro formal");}
-    | parametros_de_invocacion ',' parametro_real FLECHA parametro_formal
-    | parametros_de_invocacion ',' parametro_real FLECHA {yyerror("Falta parametro formal");}
-    | parametros_de_invocacion ',' parametro_real {yyerror("Falta flecha y parametro formal");}
-    ;
 
 parametro_real
     : exp
-    | exp_error
-    ;
-
-parametro_formal
-    : ID
+   /* | exp_error */
     ;
 
 /*------------------------------------------------- FIN FUNCION --------------------------------*/
 
 
-/* -------------- DO WHILE -------------- */
+/* ------------------------------------------ DO WHILE ------------------------------------------ */
 do
-    : DO cuerpo_sentencia_control WHILE cuerpo_condicion ';' {print("sentencia do while");}
-    | DO cuerpo_sentencia_control error cuerpo_condicion ';' {yyerror("falta while");}
-    | DO cuerpo_sentencia_control WHILE cuerpo_condicion error {yyerror("falta ; while");} {print("sentencia do while");}
-    | DO cuerpo_sentencia_control error cuerpo_condicion error {yyerror("falta ; while");} {yyerror("falta while");} /* no funciona */
+    : DO cuerpo_sentencia_ejecutable WHILE cuerpo_condicion punto_coma {print("sentencia do while");}
+    | DO WHILE cuerpo_condicion punto_coma {print("sentencia do while");yyerror("falta cuerpo sentencias");}
+    | DO cuerpo_sentencia_ejecutable WHILE cuerpo_condicion {print("sentencia do while");yyerror("falta de ( ) en condicion");yyerror("falta de ;");}
+    | DO WHILE cuerpo_condicion {print("sentencia do while"); yyerror("falta de sentencias");yyerror("falta de ( ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");}
+    | DO cuerpo_sentencia_ejecutable WHILE cuerpo_condicion {print("sentencia do while");yyerror("falta de ) en condicion");yyerror("falta de ;");}
+    | DO WHILE cuerpo_condicion {print("sentencia do while");yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");}
+
+    | DO cuerpo_sentencia_ejecutable cuerpo_condicion punto_coma {print("sentencia do while"); yyerror("falta while");}
+    | DO cuerpo_condicion punto_coma {print("sentencia do while");yyerror("falta cuerpo sentencias"); yyerror("falta while");}
+    | DO cuerpo_sentencia_ejecutable cuerpo_condicion {print("sentencia do while");yyerror("falta de ;"); yyerror("falta while");}
+    | DO cuerpo_condicion {print("sentencia do while"); yyerror("falta de sentencias");yyerror("falta de ;");yyerror("falta cuerpo sentencias");yyerror("falta while");}
+    | DO cuerpo_sentencia_ejecutable cuerpo_condicion {print("sentencia do while");yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta while");}
+    | DO cuerpo_condicion {print("sentencia do while");yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");yyerror("falta while");}
+    ;
+
+cuerpo_sentencia_ejecutable
+    : '{' lista_sentencia_ejecutable '}'
+    | '{' '}' {yyerror("error en sentencias dentro de { }");}
+    | sentencia_ejecutable
     ;
 
 /* -------------- EXPRESIONES LAMBDA -------------- */
 exp_lambda
-    : '(' tipo ID ')' '{' lista_sentencia_ejecutable '}' '(' argumento_lambda ')' ';' {print("lambda");}
-    | '(' tipo ID ')' error lista_sentencia_ejecutable '}' '(' argumento_lambda ')' ';' {yyerror("falta { en lambda");} {print("lambda");}
-    | '(' tipo ID ')' '{' lista_sentencia_ejecutable error ')' ';' {yyerror("falta } en lambda");} {print("lambda");}
-    | '(' tipo ID ')' '{' lista_sentencia_ejecutable '}' '(' argumento_lambda ')' error {yyerror("falta ; en lambda");} {print("lambda");}
-    | '(' tipo ID ')' error lista_sentencia_ejecutable '}' '(' argumento_lambda ')' error {yyerror("falta ; en lambda");} {yyerror("falta { en lambda");} {print("lambda");}
-    | '(' tipo ID ')' '{' lista_sentencia_ejecutable error ')' error {yyerror("falta ; en lambda");} {yyerror("falta } en lambda");} {print("lambda");}
+    : '(' tipo ID ')' '{' lista_sentencia_ejecutable '}' argumento_lambda {print("lambda");}
+    | '(' tipo ID ')'  lista_sentencia_ejecutable '}' argumento_lambda {print("lambda"); yyerror("falta abrir llave en cuerpo de sentencia lambda");}
+    | '(' tipo ID ')'  '{' lista_sentencia_ejecutable argumento_lambda {print("lambda"); yyerror("falta cerra llave en cuerpo de sentencia lambda");}
+    | '(' tipo ID ')'   lista_sentencia_ejecutable argumento_lambda {print("lambda"); yyerror("faltan llaves en cuerpo de sentencia lambda");}
     ;
 
+
 argumento_lambda
-    : ID
-    | CTE
+    : '(' ID ')'
+    | '(' CTE ')'
     ;
 /* -------------- ASIGNACION MULTIPLE -------------- */
 asig_multiple
-    : lista_variables '=' lista_constantes ';' {print("asignacion multiple");}
-    | lista_variables '=' lista_constantes error {yyerror("falta ; en asig multiple");} {print("asignacion multiple");}
+    : lista_variables '=' lista_constantes punto_coma {print("asignacion multiple");}
     ;
 
 lista_variables
