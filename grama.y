@@ -140,10 +140,14 @@ if
     ;
 
 cuerpo_condicion
-    : '(' exp comparador exp ')'
-    | '(' exp comparador exp {yyerror("falta cerrar parentesis");}
-    |  exp comparador exp ')' {yyerror("falta abrir parentesis");}
-    |  exp comparador exp {yyerror("faltan parentesis");}
+    : '(' comparacion ')'
+    | '(' comparacion {yyerror("falta cerrar parentesis");}
+    |  comparacion ')' {yyerror("falta abrir parentesis");}
+    |  comparacion {yyerror("faltan parentesis");}
+    ;
+
+comparacion
+    : exp comparador exp {print("comparacion");}
     ;
 
 comparador
@@ -220,17 +224,17 @@ parametro_real
 do
     : DO cuerpo_sentencia_ejecutable WHILE cuerpo_condicion punto_coma {print("sentencia do while");}
     | DO WHILE cuerpo_condicion punto_coma {print("sentencia do while");yyerror("falta cuerpo sentencias");}
-    | DO cuerpo_sentencia_ejecutable WHILE cuerpo_condicion {print("sentencia do while");yyerror("falta de ( ) en condicion");yyerror("falta de ;");}
-    | DO WHILE cuerpo_condicion {print("sentencia do while"); yyerror("falta de sentencias");yyerror("falta de ( ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");}
-    | DO cuerpo_sentencia_ejecutable WHILE cuerpo_condicion {print("sentencia do while");yyerror("falta de ) en condicion");yyerror("falta de ;");}
-    | DO WHILE cuerpo_condicion {print("sentencia do while");yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");}
+    | DO cuerpo_sentencia_ejecutable WHILE comparacion {print("sentencia do while");yyerror("falta de ( ) en condicion");yyerror("falta de ;");}
+    | DO WHILE comparacion {print("sentencia do while"); yyerror("falta de sentencias");yyerror("falta de ( ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");}
+    | DO cuerpo_sentencia_ejecutable WHILE '(' comparacion {print("sentencia do while");yyerror("falta de ) en condicion");yyerror("falta de ;");}
+    | DO WHILE '(' comparacion {print("sentencia do while");yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");}
 
     | DO cuerpo_sentencia_ejecutable cuerpo_condicion punto_coma {print("sentencia do while"); yyerror("falta while");}
     | DO cuerpo_condicion punto_coma {print("sentencia do while");yyerror("falta cuerpo sentencias"); yyerror("falta while");}
-    | DO cuerpo_sentencia_ejecutable cuerpo_condicion {print("sentencia do while");yyerror("falta de ;"); yyerror("falta while");}
-    | DO cuerpo_condicion {print("sentencia do while"); yyerror("falta de sentencias");yyerror("falta de ;");yyerror("falta cuerpo sentencias");yyerror("falta while");}
-    | DO cuerpo_sentencia_ejecutable cuerpo_condicion {print("sentencia do while");yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta while");}
-    | DO cuerpo_condicion {print("sentencia do while");yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");yyerror("falta while");}
+    | DO cuerpo_sentencia_ejecutable comparacion {print("sentencia do while");yyerror("falta de ( ) en condicion");yyerror("falta de ;"); yyerror("falta while");}
+    | DO comparacion {print("sentencia do while"); yyerror("falta de sentencias");yyerror("falta de ( ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");yyerror("falta while");}
+    | DO cuerpo_sentencia_ejecutable '(' comparacion {print("sentencia do while");yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta while");}
+    | DO '(' comparacion {print("sentencia do while");yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");yyerror("falta while");}
     ;
 
 cuerpo_sentencia_ejecutable
