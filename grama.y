@@ -12,11 +12,19 @@ import java.util.ArrayList;
 prog
     : ID '{' lista_sentencia '}'
     | '{' lista_sentencia '}' {yyerror("falta nombre de programa");}
-    | ID '{' lista_sentencia  {yyerror("falta cierre de programa");}
-    | ID lista_sentencia '}' {yyerror("falta inicio de programa");}
-    | '{' lista_sentencia  {yyerror("falta nombre del programa y cierre");}
-    | error lista_sentencia '}' {yyerror("falta nombre del programa e inicio");}
+    | ID '{' lista_sentencia  {yyerror("falta llave de cierre de programa");}
+    | ID lista_sentencia '}' {yyerror("falta llave de inicio de programa");}
+    | '{' lista_sentencia  {yyerror("falta nombre del programa");yyerror("falta llave de cierre de programa");}
+    | error lista_sentencia '}' {yyerror("falta nombre del programa");yyerror("falta llave de inicio de programa");}
     | ID lista_sentencia {yyerror("no hay llaves del programa");}
+
+    | ID '{' error '}' {yyerror("error en programa");}
+    | '{' error '}' {yyerror("falta nombre de programa");yyerror("error en programa");}
+    | ID '{' error  {yyerror("falta llave de cierre de programa");yyerror("error en programa");}
+    | ID error '}' {yyerror("falta llave de inicio de programa");yyerror("error en programa");}
+    | '{' error  {yyerror("falta nombre del programa");yyerror("falta llave de cierre de programa");yyerror("error en programa");}
+    | error '}' {yyerror("falta nombre del programa");yyerror("error en programa");}
+    | ID error {yyerror("no hay llaves del programa");yyerror("error en programa");}
     ;
 
 lista_sentencia
@@ -53,24 +61,26 @@ asig
     ;
 
 
-
 exp
     : exp '+' termino
     | exp '-' termino
-    | '+' termino {yyerror("falta operador a izquierda de +");}
-    | '-' termino {yyerror("falta operador a izquierda de -");}
-    | exp '+' error {yyerror("falta operador a derecha de +");}
-    | exp '-' error {yyerror("falta operador a derecha de -");}
+    | '+' termino {yyerror("falta operando a izquierda de +");}
+    | exp '+' error {yyerror("falta operando a derecha de +");}
+    | exp '-' error {yyerror("falta operando a derecha de -");}
     | termino
+    | TRUNC '(' exp ')' {print("trunc");}
+    | TRUNC  exp ')' {print("trunc");yyerror("falta abrir parentesis en trunc");}
+    | TRUNC '(' error {print("trunc");yyerror("falta cerrar parentesis en trunc");yyerrflag=0;}
+    | TRUNC  '(' ')' {print("trunc");yyerror("falta argumento en trunc");}
     ;
 
 termino
     : termino '*' factor
     | termino '/' factor
-    | termino '/' error {yyerror("falta operador a derecha de /");}
-    | termino '*' error {yyerror("falta operador a derecha de *");}
-    | '/' factor {yyerror("falta operador a izquierda de /");}
-    | '*' factor {yyerror("falta operador a izquierda de *");}
+    | termino '/' error {yyerror("falta operando a derecha de /");}
+    | termino '*' error {yyerror("falta operando a derecha de *");}
+    | '/' factor {yyerror("falta operando a izquierda de /");}
+    | '*' factor {yyerror("falta operando a izquierda de *");}
     | factor
     ;
 
@@ -79,12 +89,14 @@ factor
     | invocacion
     | CTE
     | exp_lambda
-    | TRUNC '(' exp ')' {print("trunc");}
-    | TRUNC  exp ')' {print("trunc");yyerror("falta ( en trunc");}
-    | TRUNC '(' error {print("trunc");yyerror("falta ) en trunc");}
-    | TRUNC  '(' ')' {print("trunc");yyerror("falta argumento en trunc");}
-    | factor CTE {yyerror("falta operador");}
-;
+    | punto_flotante
+    ;
+
+punto_flotante
+    : PF64
+    | '-' PF64 {TablaDeSimbolos.agregar("-"+$2.sval,new Token(PF64,nroLinea())); yylval = new ParserVal("-"+$2.sval);}
+    ;
+
 
 variable
     : ID '.' ID
@@ -154,6 +166,7 @@ comparador
     | MAYORIGUAL
     | '<'
     | '>'
+    | error {yyerror("falta comparador");}
     ;
 
 
