@@ -5,7 +5,7 @@ public class TablaDeSimbolos {
     public TablaDeSimbolos() {
     }
 
-    public void agregar(String val, Token token) {
+    public static void agregar(String val, Token token) {
         if(!TS.containsKey(val)){
             TS.put(val,token);
         }
