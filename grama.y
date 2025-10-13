@@ -248,7 +248,7 @@ cuerpo_sentencia_ejecutable
     : '{' lista_sentencia_ejecutable '}'
     | '{' '}' {yyerror("no hay sentencias dentro de las llaves");}
     | sentencia_ejecutable
-    | '{' error '}' {yyerror("Error en sentencia");}
+    | '{' error '}' {yyerror("Error en bloque de sentencias ejecutables");}
     ;
 
 /* -------------- EXPRESIONES LAMBDA -------------- */
