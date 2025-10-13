@@ -42,20 +42,20 @@ sentencia
     ;
 
 sentencia_declarativa
-    : declaracion {print("declaracion de variable");}
-    | funcion {print("declaracion de funcion");}
+    : declaracion {addEstructura("declaracion de variable");}
+    | funcion {addEstructura("declaracion de funcion");}
     ;
 
 sentencia_ejecutable
-    : asig {print("asignacion");}
-    | if {print("sentencia if");}
-    | salida_msj {print("print");}
-    | return {print("return");}
-    | asig_multiple {print("asignacion multilpe");}
+    : asig {addEstructura("asignacion");}
+    | if {addEstructura("sentencia if");}
+    | salida_msj {addEstructura("print");}
+    | return {addEstructura("return");}
+    | asig_multiple {addEstructura("asignacion multilpe");}
     ;
 
 sentencia_de_control
-    : do {print("sentencia do while");}
+    : do {addEstructura("sentencia do while");}
     ;
 
 asig
@@ -70,10 +70,10 @@ exp
     | exp '+' error {yyerror("falta operando a derecha de +");}
     | exp '-' error {yyerror("falta operando a derecha de -");}
     | termino
-    | TRUNC '(' exp ')' {print("trunc");}
-    | TRUNC  exp ')' {print("trunc");yyerror("falta abrir parentesis en trunc");}
-    | TRUNC '(' error {print("trunc");yyerror("falta cerrar parentesis en trunc");yyerrflag=0;}
-    | TRUNC  '(' ')' {print("trunc");yyerror("falta argumento en trunc");}
+    | TRUNC '(' exp ')' {addEstructura("trunc");}
+    | TRUNC  exp ')' {addEstructura("trunc");yyerror("falta abrir parentesis en trunc");}
+    | TRUNC '(' error {addEstructura("trunc");yyerror("falta cerrar parentesis en trunc");yyerrflag=0;}
+    | TRUNC  '(' ')' {addEstructura("trunc");yyerror("falta argumento en trunc");}
     ;
 
 termino
@@ -90,7 +90,7 @@ factor
     : variable
     | invocacion
     | CTE
-    | exp_lambda {print("lambda");}
+    | exp_lambda {addEstructura("lambda");}
     | punto_flotante
     ;
 
@@ -106,7 +106,7 @@ variable
     ;
 
 invocacion
-    : ID '(' parametros_de_invocacion ')' {print("invocacion a funcion");}
+    : ID '(' parametros_de_invocacion ')' {addEstructura("invocacion a funcion");}
     ;
 
 parametros_de_invocacion
@@ -220,7 +220,7 @@ sentencia_funcion
     ;
 
 return
-    : RETURN '(' exp ')' punto_coma {print("return");}
+    : RETURN '(' exp ')' punto_coma {addEstructura("return");}
     ;
 
 
@@ -285,7 +285,7 @@ lista_constantes
 
 %%
 private ArrayList<Token> tokens = new ArrayList<>();
-
+private ArrayList<String> estructurasDetectadas = new ArrayList<>();
 private int yylex(){
     try {
       Token t = AnalizadorLexico.leerCaracter();
@@ -302,18 +302,26 @@ private int yylex(){
 }
 
 private void yyerror(String err) {
-    // Ignorar el mensaje genérico "syntax error"
     if ("syntax error".equals(err))
         return;
 
-    String str = Colores.ROJO + "ERROR LINEA " + nroLinea() + ": " + err + Colores.RESET;
-    AnalizadorLexico.addError(str);
+    String str ="ERROR LINEA " + nroLinea() + ": " + err;
+    Compilador.addError(str);
 }
 
 
-private void print(String str){
-  Compilador.estructurasDetectadas.add(Colores.AZUL+str+Colores.RESET);
-}
 private int nroLinea(){
   return tokens.get(tokens.size() - 1).getNroLinea();
+}
+private void addEstructura(String str){
+  estructurasDetectadas.add(Colores.AZUL+str+Colores.RESET);
+}
+
+public void printEstructuras(){
+    if (!estructurasDetectadas.isEmpty()){
+    System.out.println(Colores.AZUL+"------------------ ESTRUCTURAS DETECTADAS ------------------"+Colores.RESET);
+    for(String str : estructurasDetectadas){
+        System.out.println(str);
+    }
+    }
 }

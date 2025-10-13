@@ -11,9 +11,12 @@ public class TablaDeSimbolos {
         }
     }
     public void imprimir(){
-        for (String clave : TS.keySet()) {
-            Token token = TS.get(clave);
-            System.out.println("Lexema: " + token.getLexema() + " | valor: " + clave);
+        if(!TS.isEmpty()) {
+            System.out.println("---------------- TABLA DE SIMBOLOS ----------------");
+            for (String clave : TS.keySet()) {
+                Token token = TS.get(clave);
+                System.out.println("Lexema: " + token.getLexema() + " | valor: " + clave);
+            }
         }
     }
 }

@@ -36,7 +36,7 @@ public class ASMatrix {
                 if (valor.length() > 20) {
                     valor_truncado = valor.substring(0, 20);
                     String war ="WARNING LINEA "+ analizadorLexico.getNroLinea() +": El identificador " +valor+ " fue truncado a "+valor_truncado;
-                    analizadorLexico.addWarning(war);
+                    Compilador.addWarning(war);
                     valor = valor_truncado;
                 }
                 if(!(t == null)){
@@ -60,7 +60,7 @@ public class ASMatrix {
                 Token t = analizadorLexico.reconocerToken(estadoAnterior);
                 if(t == null){
                     String err ="ERROR LINEA "+ analizadorLexico.getNroLinea() + ": La palabra reservada "+analizadorLexico.devolverCadena()+ " no existe";
-                    analizadorLexico.addError(err);
+                    Compilador.addError(err);
                 }
                 analizadorLexico.vaciarCadena();
                 return t;
@@ -76,7 +76,7 @@ public class ASMatrix {
                 int numero = Integer.parseInt(numeroStr);
                 if (numero < 0 || numero > 0xFFFF) {
                     String err ="ERROR LINEA "+ analizadorLexico.getNroLinea() + ": NO está en el rango de unsigned 16 bits";
-                    analizadorLexico.addError(err);
+                    Compilador.addError(err);
                 } else {
                     t = analizadorLexico.reconocerToken(estadoAnterior);
                     if(t != null){
@@ -114,7 +114,7 @@ public class ASMatrix {
                 } else {
                     String err = "ERROR LINEA " + analizadorLexico.getNroLinea() +
                             ": NO está en el rango de un float 64 bits";
-                    analizadorLexico.addError(err);
+                    Compilador.addError(err);
                 }
                 analizadorLexico.vaciarCadena();
                 return t;
@@ -142,7 +142,7 @@ public class ASMatrix {
             public Token ejecutar() throws IOException {
                 analizadorLexico.devolverCaracterAEntrada();
                 String err = "ERROR LINEA "+ analizadorLexico.getNroLinea()+ ": Caracter invalido, las asignaciones se escriben con :=";
-                analizadorLexico.addError(err);
+                Compilador.addError(err);
                 analizadorLexico.vaciarCadena();
                 return null;
             }
@@ -151,7 +151,7 @@ public class ASMatrix {
             public Token ejecutar() throws IOException {
                 analizadorLexico.devolverCaracterAEntrada();
                 String err ="ERROR LINEA "+ analizadorLexico.getNroLinea()+ ": Salto de linea dentro de cadena de 1 linea";
-                analizadorLexico.addError(err);
+                Compilador.addError(err);
                 analizadorLexico.vaciarCadena();
                 return null;
             }
@@ -160,7 +160,7 @@ public class ASMatrix {
             public Token ejecutar() throws IOException {
                 analizadorLexico.devolverCaracterAEntrada();
                 String err ="ERROR LINEA "+ analizadorLexico.getNroLinea()+ ": Caracter invalido abriendo o cerrando comentario multilinea";
-                analizadorLexico.addError(err);
+                Compilador.addError(err);
                 analizadorLexico.vaciarCadena();
                 return null;
             }
@@ -169,7 +169,7 @@ public class ASMatrix {
             public Token ejecutar() throws IOException {
                 analizadorLexico.devolverCaracterAEntrada();
                 String err ="ERROR LINEA "+ analizadorLexico.getNroLinea()+ ": Caracter invalido declarando un numero";
-                analizadorLexico.addError(err);
+                Compilador.addError(err);
                 analizadorLexico.vaciarCadena();
                 return null;
             }
@@ -178,7 +178,7 @@ public class ASMatrix {
             public Token ejecutar() throws IOException {
                 analizadorLexico.devolverCaracterAEntrada();
                 String err ="ERROR LINEA "+ analizadorLexico.getNroLinea()+ ": Caracter invalido declarando punto flotante";
-                analizadorLexico.addError(err);
+                Compilador.addError(err);
                 analizadorLexico.vaciarCadena();
                 return null;
             }
@@ -187,7 +187,7 @@ public class ASMatrix {
             public Token ejecutar() throws IOException {
                 analizadorLexico.devolverCaracterAEntrada();
                 String err ="ERROR LINEA "+ analizadorLexico.getNroLinea()+ ": Caracter invalido, debe ir I para declarar entero sin signo";
-                analizadorLexico.addError(err);
+                Compilador.addError(err);
                 analizadorLexico.vaciarCadena();
                 return null;
             }
@@ -196,7 +196,7 @@ public class ASMatrix {
             public Token ejecutar() throws IOException {
                 analizadorLexico.devolverCaracterAEntrada();
                 String err ="ERROR LINEA "+ analizadorLexico.getNroLinea()+ ": Operador no permitido";
-                analizadorLexico.addError(err);
+                Compilador.addError(err);
                 analizadorLexico.vaciarCadena();
                 return null;
             }
@@ -205,7 +205,7 @@ public class ASMatrix {
             public Token ejecutar() throws IOException {
                 analizadorLexico.devolverCaracterAEntrada();
                 String err ="ERROR LINEA "+ analizadorLexico.getNroLinea()+ ": El exponente debe tener al menos un digito";
-                analizadorLexico.addError(err);
+                Compilador.addError(err);
                 analizadorLexico.vaciarCadena();
                 return null;
             }
@@ -213,7 +213,7 @@ public class ASMatrix {
         mapa.put(-9, new AccionSemantica() {
             public Token ejecutar() {
                 String err ="ERROR LINEA "+ analizadorLexico.getNroLinea()+ ": Caracter invalido";
-                analizadorLexico.addError(err);
+                Compilador.addError(err);
                 analizadorLexico.vaciarCadena();
                 return null;
             }

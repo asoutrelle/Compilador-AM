@@ -13,8 +13,7 @@ public class AnalizadorLexico {
     private static List<Token> tokens = new ArrayList<>();
     private static HashMap <String, Integer> tablaTokens = new HashMap<>();
     static TablaDeSimbolos tablaDeSimbolos = new TablaDeSimbolos();
-    private static ArrayList<String> errores = new ArrayList<>();
-    private static ArrayList<String> warnings = new ArrayList<>();
+    private static ArrayList<String> tokensDetectados = new ArrayList<>();
     public static String valorTs ="-";
 
 
@@ -81,52 +80,52 @@ public class AnalizadorLexico {
         String aux = cadena.toString();
         switch (estadoAnterior){
             case 1:
-                System.out.println(Colores.VERDE+"Identificador "+aux+Colores.RESET);
+                tokensDetectados.add(Colores.VERDE+"Identificador "+aux+Colores.RESET);
                 token = new Token(Parser.ID,nroLinea);
                 tokens.add(token);
                 return token;
             case 6:
                 if(tablaTokens.containsKey(aux)){
-                    System.out.println(Colores.VERDE+"Palabra reservada "+aux+Colores.RESET);
+                     tokensDetectados.add(Colores.VERDE+"Palabra reservada "+aux+Colores.RESET);
                     int cod = tablaTokens.get(aux);
                     token = new Token(cod,nroLinea);
                     tokens.add(token);
                     return token;
                 } else return token;
             case 8:
-                System.out.println(Colores.VERDE+"Constante entera "+aux+Colores.RESET);
+                 tokensDetectados.add(Colores.VERDE+"Constante entera "+aux+Colores.RESET);
                 token = new Token(Parser.CTE,nroLinea);
                 tokens.add(token);
                 return token;
             case 11:
-                System.out.println(Colores.VERDE+"Punto flotante "+aux+Colores.RESET);
+                 tokensDetectados.add(Colores.VERDE+"Punto flotante "+aux+Colores.RESET);
                 token = new Token(Parser.PF64,nroLinea);
                 tokens.add(token);
                 return token;
             case 10:
-                System.out.println(Colores.VERDE+"Punto flotante "+aux+Colores.RESET);
+                 tokensDetectados.add(Colores.VERDE+"Punto flotante "+aux+Colores.RESET);
                 token = new Token(Parser.PF64,nroLinea);
                 tokens.add(token);
                 return token;
             case 12:
-                System.out.println(Colores.VERDE+"Punto flotante "+aux+Colores.RESET);
+                 tokensDetectados.add(Colores.VERDE+"Punto flotante "+aux+Colores.RESET);
                 token = new Token(Parser.PF64,nroLinea);
                 tokens.add(token);
                 return token;
             case 15:
-                System.out.println(Colores.VERDE+"Punto flotante "+aux+Colores.RESET);
+                 tokensDetectados.add(Colores.VERDE+"Punto flotante "+aux+Colores.RESET);
                 token = new Token(Parser.PF64,nroLinea);
                 tokens.add(token);
                 return token;
             case 16:
-                System.out.println(Colores.VERDE+"Cadena de una linea " + aux+Colores.RESET);
+                 tokensDetectados.add(Colores.VERDE+"Cadena de una linea " + aux+Colores.RESET);
                 token = new Token(Parser.CADENA,nroLinea);
                 tokens.add(token);
                 return token;
         }
         if(tablaTokens.containsKey(aux)){
             int cod = tablaTokens.get(aux);
-            System.out.println(Colores.VERDE+aux+Colores.RESET);
+             tokensDetectados.add(Colores.VERDE+aux+Colores.RESET);
             token = new Token(cod,nroLinea);
             tokens.add(token);
             return token;
@@ -135,8 +134,17 @@ public class AnalizadorLexico {
     }
 
 
-
-
+    public void printTablaSimbolos(){
+        tablaDeSimbolos.imprimir();
+    }
+    public void printTokensDetectados() {
+        if (!tokensDetectados.isEmpty()){
+            System.out.println(Colores.VERDE + "---------------- TOKENS DETECTADOS ----------------" + Colores.RESET);
+        for (String t : tokensDetectados) {
+            System.out.println(t);
+        }
+    }
+    }
 
 
     public void vaciarCadena(){
@@ -160,24 +168,5 @@ public class AnalizadorLexico {
     public void agregarTS(String valor, Token t){
         valorTs = valor;
         tablaDeSimbolos.agregar(valor, t);
-    }
-    public static void addError(String err){
-            errores.add(err);
-
-    }
-    public void addWarning(String war){
-        warnings.add(war);
-    }
-
-    public void print(){
-        System.out.println("-------------------Impresion de Tabla de Simbolos-----------------------");
-        tablaDeSimbolos.imprimir();
-        System.out.println("------------------------------------------------------------------------");
-        for(String err : errores){
-            System.out.println(Colores.ROJO+err+Colores.RESET);
-        }
-        for(String war : warnings){
-            System.out.println(Colores.AMARILLO+war+Colores.RESET);
-        }
     }
 }
