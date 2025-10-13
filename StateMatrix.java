@@ -42,7 +42,7 @@ public class StateMatrix {
         mapa.put('\n', 26);
         mapa.put('\r', 26);
         mapa.put(',', 28);
-        mapa.put('￿', 30);
+        mapa.put('\uFFFF', 30);
     }
 
     public static Token siguiente_estado(char caracter, int nroLinea) throws IOException {
