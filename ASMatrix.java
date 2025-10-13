@@ -96,7 +96,6 @@ public class ASMatrix {
                         .replace("D", "E")
                         .replace("+", "");
                 BigDecimal numero = new BigDecimal(valor_normalizado);
-                System.out.println("Numero: " + numero);
 
                 BigDecimal min = new BigDecimal("2.2250738585072014E-308");
                 BigDecimal max = new BigDecimal("1.7976931348623157E308");
