@@ -16,7 +16,7 @@ public class ASMatrix {
     public ASMatrix(int[][] matrix, AnalizadorLexico analizadorLexico){
         ASMatrix.matrix = matrix;
 
-        mapa.put(0, new AccionSemantica() {
+        mapa.put(1, new AccionSemantica() {
             public Token ejecutar() {
                 return null;
             }
