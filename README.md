@@ -2,8 +2,7 @@
 
 ## Requisitos previos
 Antes de ejecutar el compilador, asegurate de tener instaladas las siguientes herramientas:
-
-- **Yacc (Java)** – utilizado para generar el parser a partir de `grama.y`  
+ 
 - **Java JDK** – para compilar y ejecutar el código generado
 
 ## Instrucciones de ejecución
@@ -13,7 +12,7 @@ Antes de ejecutar el compilador, asegurate de tener instaladas las siguientes he
 3. Ejecuta el siguiente comando:
 
 ```powershell
-yacc -J grama.y; if ($?) { javac Compilador.java; if ($?) { java Compilador Codigo_Fuente.txt } }
+{ javac Compilador.java; if ($?) { java Compilador Codigo_Fuente.txt } }
 ```
 
 > 💡 **Nota:**  
@@ -31,13 +30,7 @@ java Compilador C:\Users\Axel\Documentos\mi_codigo.txt
 ## Requisitos previos
 Antes de ejecutar el compilador, asegurate de tener instaladas las siguientes herramientas:
 
-- **Yacc (Java)** – utilizado para generar el parser a partir de `grama.y`
 - **Java JDK** – para compilar y ejecutar el código generado
-
-Podés instalarlas (si no las tenés) con:
-```bash
-sudo apt install byacc default-jdk
-```
 
 ## Instrucciones de ejecución
 
