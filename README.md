@@ -50,7 +50,7 @@ sudo apt install byacc default-jdk
 2. Ejecutá el siguiente comando:
 
 ```bash
-yacc -J grama.y && javac Compilador.java && java Compilador Codigo_Fuente.txt
+javac Compilador.java && java Compilador Codigo_Fuente.txt
 ```
 
 > 💡 **Nota:**  
