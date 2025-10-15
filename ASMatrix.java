@@ -92,6 +92,7 @@ public class ASMatrix {
                 Token t = null;
                 analizadorLexico.devolverCaracterAEntrada();
                 String valor = analizadorLexico.devolverCadena();
+
                 String valor_normalizado = valor.replace(" ", "")
                         .replace("D", "E")
                         .replace("+", "");
@@ -108,15 +109,14 @@ public class ASMatrix {
 
                 if (enRango) {
                     t = analizadorLexico.reconocerToken(estadoAnterior);
-                    if (t != null) {
-                        analizadorLexico.agregarTS(valor, t);
-                    }
+                    AnalizadorLexico.valorTs = valor;
                 } else {
                     String err = "ERROR LINEA " + analizadorLexico.getNroLinea() +
                             ": NO está en el rango de un float 64 bits";
                     Compilador.addError(err);
                 }
                 analizadorLexico.vaciarCadena();
+
                 return t;
             }
         });

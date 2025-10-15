@@ -3,6 +3,7 @@ import java.lang.Math;
 import java.io.*;
 import java.util.StringTokenizer;
 import java.util.ArrayList;
+import java.math.BigDecimal;
 %}
 
 %token ID CTE PF64 ELSE ENDIF PRINT RETURN CADENA
@@ -95,8 +96,8 @@ factor
     ;
 
 punto_flotante
-    : PF64
-    | '-' PF64 {TablaDeSimbolos.agregar("-"+$2.sval,new Token(PF64,nroLinea())); yylval = new ParserVal("-"+$2.sval);}
+    : PF64 {check_rango($1.sval);}
+    | '-' PF64 {check_rango("-"+$2.sval);}
     ;
 
 
@@ -229,7 +230,6 @@ return
 
 parametro_real
     : exp
-   /* | exp_error */
     ;
 
 /*--------------------------------------------------------------------------------*/
@@ -329,3 +329,27 @@ public void printEstructuras(){
     }
     }
 }
+
+public void check_rango(String valor){
+    String valor_normalizado = valor.replace(" ", "")
+            .replace("D", "E")
+            .replace("+", "");
+    BigDecimal numero = new BigDecimal(valor_normalizado);
+
+    BigDecimal min = new BigDecimal("2.2250738585072014E-308");
+    BigDecimal max = new BigDecimal("1.7976931348623157E308");
+    BigDecimal cero = BigDecimal.ZERO;
+    // chequeo de rango
+    boolean enRango =
+            numero.compareTo(cero) == 0 ||
+                    (numero.compareTo(min) >= 0 && numero.compareTo(max) <= 0) ||
+                    (numero.compareTo(min.negate()) <= 0 && numero.compareTo(max.negate()) >= 0);
+
+    if (enRango) {
+      Token t = new Token(PF64,nroLinea());
+      TablaDeSimbolos.agregar(valor, t);
+      yylval = new ParserVal(valor);
+    } else {
+      yyerror("NO está en el rango de un float 64 bits");
+    }
+  }
