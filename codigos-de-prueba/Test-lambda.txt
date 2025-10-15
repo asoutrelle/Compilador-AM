@@ -1,0 +1,5 @@
+PROG
+{
+    A:=(uint B){if(A>1UI) print("hola");endif;}(3UI);
+    C:=(uint D) print(D+1UI); (3UI);
+}

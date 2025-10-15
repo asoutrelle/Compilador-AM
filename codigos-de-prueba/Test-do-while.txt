@@ -1,0 +1,9 @@
+PROG
+{
+do
+A:=A+1UI;
+while(A<B);
+do{
+}
+while(A B);
+}

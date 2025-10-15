@@ -1,0 +1,7 @@
+PROG
+{
+    ABCDEFGHIJKLMNOPQRSTUVW:=3UI;
+    ABC:=4UI;
+    A1%:=5UI;
+    A-A:=6UI;
+}

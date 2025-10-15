@@ -1,0 +1,9 @@
+PROG
+{
+    A:=B;
+    ##hola
+    mundo##
+    ##hola
+    como estas##
+    ##hola mundo#
+}

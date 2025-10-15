@@ -1,0 +1,6 @@
+PROG
+{
+    print("hola);
+    print("hola
+    como andas");
+}

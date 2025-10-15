@@ -1,0 +1,18 @@
+PROG
+{
+    if(A<B){
+        A:=B;
+    }else{
+        B:=A;
+    }endif;
+    if(A>B){
+        A:=B;
+    }else
+    endif;
+    if(A==B){
+        A:=B;
+    }
+    if(A=!B){
+
+    }endif;
+}

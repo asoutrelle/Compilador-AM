@@ -1,0 +1,6 @@
+PROG
+{
+A,B=3UI,4UI;
+A B= 5UI, 6UI;
+A,B=5UI 6UI;
+}

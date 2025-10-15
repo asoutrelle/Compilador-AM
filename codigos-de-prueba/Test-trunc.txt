@@ -1,0 +1,6 @@
+PROG
+{
+    A:=trunc(B+3UI);
+    B:=truncC);
+    D:=truncD;
+}

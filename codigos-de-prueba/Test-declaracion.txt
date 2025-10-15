@@ -1,0 +1,4 @@
+PROG{
+    uint A,B,C;
+    uint D,E F;
+}

@@ -1,0 +1,10 @@
+PROG
+{
+    uint FUNC1(cr uint A, uint B){
+        A:=2UI;
+        B:=3UI;
+    }
+    uint (C){
+            C:=1UI;
+        }
+}

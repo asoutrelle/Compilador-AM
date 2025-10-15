@@ -1,0 +1,7 @@
+PROG
+{
+    print("A");
+    PRINT("B");
+    return(3UI);
+    RETURN(4UI);
+}
