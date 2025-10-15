@@ -116,6 +116,7 @@ parametros_de_invocacion
     | parametros_de_invocacion ',' parametro_real FLECHA ID
     | parametros_de_invocacion ',' parametro_real FLECHA {yyerror("Falta parametro formal");}
     | parametros_de_invocacion ',' parametro_real {yyerror("Falta flecha y parametro formal");}
+    | error {yyerror("error en parametros de invocacion");}
     ;
 
 salida_msj
@@ -131,6 +132,7 @@ punto_coma
 argumento_print
     : exp
     | CADENA
+    | error {yyerror("argumento invalido en print");}
     ;
 /* -------------------------------------------------------- IF -------------------------------------------------------- */
 if
@@ -202,6 +204,7 @@ parametros_formales
     | tipo ID
     | parametros_formales ',' CR tipo ID
     | parametros_formales ',' tipo ID
+    | error {yyerror("error en parametro formal");}
     ;
 
 tipo
@@ -248,7 +251,7 @@ cuerpo_sentencia_ejecutable
     : '{' lista_sentencia_ejecutable '}'
     | '{' '}' {yyerror("no hay sentencias dentro de las llaves");}
     | sentencia_ejecutable
-    | '{' error '}' {yyerror("Error en bloque de sentencias ejecutables");}
+    | '{' error '}' {yyerror("Error en sentencia");}
     ;
 
 /* -------------- EXPRESIONES LAMBDA -------------- */
