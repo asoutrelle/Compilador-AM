@@ -1,7 +1,5 @@
 PROG
 {
     print("hola");
-    print(A+B);
-    print();
-    print(A:=B;);
+
 }

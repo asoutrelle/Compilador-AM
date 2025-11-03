@@ -97,27 +97,22 @@ public class AnalizadorLexico {
                 token = new Token(Parser.CTE,nroLinea);
                 tokens.add(token);
                 return token;
-            case 11:
-                 tokensDetectados.add(Colores.VERDE+"Punto flotante "+aux+Colores.RESET);
-                token = new Token(Parser.PF64,nroLinea);
-                tokens.add(token);
-                return token;
             case 10:
                  tokensDetectados.add(Colores.VERDE+"Punto flotante "+aux+Colores.RESET);
                 token = new Token(Parser.PF64,nroLinea);
                 tokens.add(token);
                 return token;
-            case 12:
+            case 11:
+                 tokensDetectados.add(Colores.VERDE+"Punto flotante "+aux+Colores.RESET);
+                token = new Token(Parser.PF64,nroLinea);
+                tokens.add(token);
+                return token;
+            case 14:
                  tokensDetectados.add(Colores.VERDE+"Punto flotante "+aux+Colores.RESET);
                 token = new Token(Parser.PF64,nroLinea);
                 tokens.add(token);
                 return token;
             case 15:
-                 tokensDetectados.add(Colores.VERDE+"Punto flotante "+aux+Colores.RESET);
-                token = new Token(Parser.PF64,nroLinea);
-                tokens.add(token);
-                return token;
-            case 16:
                  tokensDetectados.add(Colores.VERDE+"Cadena de una linea " + aux+Colores.RESET);
                 token = new Token(Parser.CADENA,nroLinea);
                 tokens.add(token);

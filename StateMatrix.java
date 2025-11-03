@@ -59,7 +59,7 @@ public class StateMatrix {
             } else if (estado_actual == 8 && caracter == 'I') {
                 tokenEncontrado = ASMatrix.ejecutarAccion(estado_actual, 14, caracter, nroLinea);
                 estado_actual = matrix[estado_actual][14];
-            } else if ((estado_actual == 11 || estado_actual == 12) && caracter == 'D') {
+            } else if ((estado_actual == 10 || estado_actual == 11) && caracter == 'D') {
                 tokenEncontrado = ASMatrix.ejecutarAccion(estado_actual, 15, caracter, nroLinea);
                 estado_actual = matrix[estado_actual][15];
             } else {
