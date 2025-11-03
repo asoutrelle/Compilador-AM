@@ -171,7 +171,7 @@ comparador
     | MAYORIGUAL
     | '<'
     | '>'
-    | error {yyerror("falta comparador");}
+    | error {yyerror("en condicion");}
     ;
 
 
