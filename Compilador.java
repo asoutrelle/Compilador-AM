@@ -4,6 +4,9 @@ import java.util.ArrayList;
 public class Compilador {
     public static ArrayList<String> erroresDetectados = new ArrayList<>();
     public static ArrayList<String> warningsDetectados = new ArrayList<>();
+    public static ArrayList<Terceto> tercetos = new ArrayList<>();
+
+
     public Compilador (){
 
     }
@@ -30,6 +33,15 @@ public class Compilador {
                 System.out.println(err);
             }
         }
+    }
+    public void printTercetos(){
+        System.out.println(Colores.MAGENTA + "---------------- TERCETOS DETECTADOS ----------------" + Colores.RESET);
+        if(!tercetos.isEmpty()) {
+            for(int i = 0; i < tercetos.size(); i++){
+                System.out.print(Colores.MAGENTA+i+"."+Colores.RESET);
+                tercetos.get(i).print();
+            }
+        } else System.out.println(Colores.MAGENTA +"NO HAY TERCETOS"+ Colores.RESET);
     }
 
     public static void main(String[] args) throws IOException {
@@ -59,6 +71,7 @@ public class Compilador {
         parser.printEstructuras();
         compilador.printWarnings();
         compilador.printErrores();
+        compilador.printTercetos();
     }
 
 }

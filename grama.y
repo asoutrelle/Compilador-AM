@@ -52,7 +52,7 @@ sentencia_ejecutable
     | if {addEstructura("sentencia if");}
     | salida_msj {addEstructura("print");}
     | return {addEstructura("return");}
-    | asig_multiple {addEstructura("asignacion multilpe");}
+    | asig_multiple {addEstructura("asignacion multiple");}
     ;
 
 sentencia_de_control
@@ -61,16 +61,28 @@ sentencia_de_control
 
 asig
     : variable ASIG exp punto_coma
+    {
+        int t = crearTerceto(":=", $1.sval, $3.sval);
+    }
     ;
 
 
 exp
     : exp '+' termino
+    {
+        int t = crearTerceto("+", $1.sval, $3.sval);
+
+        $$=new ParserVal("[" + t + "]");
+    }
     | exp '-' termino
+    {
+        int t = crearTerceto("-", $1.sval, $3.sval);
+        $$=new ParserVal("[" + t + "]");
+    }
     | '+' termino {yyerror("falta operando a izquierda de +");}
     | exp '+' error {yyerror("falta operando a derecha de +");}
     | exp '-' error {yyerror("falta operando a derecha de -");}
-    | termino
+    | termino {$$=$1;}
     | TRUNC '(' exp ')' {addEstructura("trunc");}
     | TRUNC  exp ')' {addEstructura("trunc");yyerror("falta abrir parentesis en trunc");}
     | TRUNC '(' error {addEstructura("trunc");yyerror("falta cerrar parentesis en trunc");yyerrflag=0;}
@@ -79,20 +91,28 @@ exp
 
 termino
     : termino '*' factor
+    {
+        int t = crearTerceto("*", $1.sval, $3.sval);
+        $$=new ParserVal("[" + t + "]");
+    }
     | termino '/' factor
+    {
+        int t = crearTerceto("/", $1.sval, $3.sval);
+        $$=new ParserVal("[" + t + "]");
+    }
     | termino '/' error {yyerror("falta operando a derecha de /");}
     | termino '*' error {yyerror("falta operando a derecha de *");}
     | '/' factor {yyerror("falta operando a izquierda de /");}
     | '*' factor {yyerror("falta operando a izquierda de *");}
-    | factor
+    | factor {$$=$1;}
     ;
 
 factor
-    : variable
-    | invocacion
-    | CTE
-    | exp_lambda {addEstructura("lambda");}
-    | punto_flotante
+    : variable {$$=$1;}
+    | invocacion {$$=$1;}
+    | CTE {$$=$1;}
+    | exp_lambda {addEstructura("lambda"); $$=$1;}
+    | punto_flotante {$$=$1;}
     ;
 
 punto_flotante
@@ -100,14 +120,13 @@ punto_flotante
     | '-' PF64 {check_rango("-"+$2.sval);}
     ;
 
-
 variable
-    : ID '.' ID
-    | ID
+    : ID '.' ID {$$= new ParserVal($1.sval + '.' + $3.sval);}
+    | ID {$$=$1;}
     ;
 
 invocacion
-    : ID '(' parametros_de_invocacion ')' {addEstructura("invocacion a funcion");}
+    : ID '(' parametros_de_invocacion ')' {addEstructura("invocacion a funcion"); $$=$1;}
     ;
 
 parametros_de_invocacion
@@ -122,6 +141,10 @@ parametros_de_invocacion
 
 salida_msj
     : PRINT '(' argumento_print ')' punto_coma
+    {
+        int t = crearTerceto("print", $3.sval, "-");
+        $$=new ParserVal("[" + t + "]");
+    }
     | PRINT '('  ')' punto_coma {yyerror("falta argumento en print");}
     ;
 
@@ -138,8 +161,16 @@ argumento_print
 /* -------------------------------------------------------- IF -------------------------------------------------------- */
 if
     : IF cuerpo_condicion cuerpo_sentencia_ejecutable ELSE cuerpo_sentencia_ejecutable ENDIF punto_coma
+    {
+        int t = crearTerceto("BF", $2.sval, "salto a ");
+        $$=new ParserVal("[" + t + "]");
+    }
     | IF cuerpo_condicion cuerpo_sentencia_ejecutable ELSE ENDIF punto_coma {yyerror("no hay sentencias en else");}
-    | IF cuerpo_condicion cuerpo_sentencia_ejecutable ENDIF punto_coma {}
+    | IF cuerpo_condicion cuerpo_sentencia_ejecutable ENDIF punto_coma
+    {
+        int t = crearTerceto("BF", $2.sval, "salto a ");
+        $$=new ParserVal("[" + t + "]");
+    }
     /*sin endif*/
     | IF cuerpo_condicion cuerpo_sentencia_ejecutable ELSE cuerpo_sentencia_ejecutable punto_coma { yyerror("falta endif");}
     | IF cuerpo_condicion cuerpo_sentencia_ejecutable ELSE  punto_coma { yyerror("falta endif");yyerror("no hay sentencias en else");}
@@ -158,6 +189,10 @@ if
 
 cuerpo_condicion
     : '(' exp comparador exp ')'
+    {
+        int t = crearTerceto($3.sval, $2.sval, $4.sval);
+        $$=new ParserVal("[" + t + "]");
+    }
     | '(' exp comparador exp {yyerror("falta cerrar parentesis");}
     |  exp comparador exp ')' {yyerror("falta abrir parentesis");}
     |  exp comparador exp {yyerror("faltan parentesis");}
@@ -165,12 +200,12 @@ cuerpo_condicion
 
 
 comparador
-    : IGUAL
-    | NOIGUAL
-    | MENORIGUAL
-    | MAYORIGUAL
-    | '<'
-    | '>'
+    : IGUAL {$$=new ParserVal("==");}
+    | NOIGUAL {$$=new ParserVal("=!");}
+    | MENORIGUAL {$$=new ParserVal("<=");}
+    | MAYORIGUAL {$$=new ParserVal(">=");}
+    | '<' {$$=new ParserVal("<");}
+    | '>' {$$=new ParserVal(">");}
     | error {yyerror("en condicion");}
     ;
 
@@ -224,7 +259,12 @@ sentencia_funcion
     ;
 
 return
-    : RETURN '(' exp ')' punto_coma {addEstructura("return");}
+    : RETURN '(' exp ')' punto_coma
+    {
+        addEstructura("return");
+        int t = crearTerceto("return", $3.sval, "-");
+        $$=new ParserVal("[" + t + "]");
+        }
     ;
 
 
@@ -237,7 +277,7 @@ parametro_real
 
 /* ------------------------------------------ DO WHILE ------------------------------------------ */
 do
-    : DO cuerpo_sentencia_ejecutable WHILE cuerpo_condicion punto_coma {}
+    : DO cuerpo_sentencia_ejecutable WHILE cuerpo_condicion punto_coma
     | DO WHILE cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias");}
     | DO cuerpo_sentencia_ejecutable WHILE cuerpo_condicion {yyerror("falta de ;");}
 
@@ -256,7 +296,7 @@ cuerpo_sentencia_ejecutable
 
 /* -------------- EXPRESIONES LAMBDA -------------- */
 exp_lambda
-    : '(' tipo ID ')' '{' lista_sentencia_ejecutable '}' argumento_lambda 
+    : '(' tipo ID ')' '{' lista_sentencia_ejecutable '}' argumento_lambda {$$= new ParserVal("soy un lamnda");}
     | '(' tipo ID ')'  lista_sentencia_ejecutable '}' argumento_lambda { yyerror("falta abrir llave en cuerpo de sentencia lambda");}
     | '(' tipo ID ')'  '{' lista_sentencia_ejecutable argumento_lambda {yyerror("falta cerra llave en cuerpo de sentencia lambda");}
     | '(' tipo ID ')'   lista_sentencia_ejecutable argumento_lambda { yyerror("faltan llaves en cuerpo de sentencia lambda");}
@@ -270,17 +310,21 @@ argumento_lambda
 /* -------------- ASIGNACION MULTIPLE -------------- */
 asig_multiple
     : lista_variables '=' lista_constantes punto_coma
+    {
+        int t = crearTerceto("=", $1.sval, $3.sval);
+        $$=new ParserVal("[" + t + "]");
+    }
     ;
 
 lista_variables
-    : variable
-    | lista_variables ',' variable
+    : variable {$$=$1;}
+    | lista_variables ',' variable {$$=new ParserVal("{"+$1.sval + ", " + $3.sval+"}");}
     | lista_variables variable {yyerror("falta , en lista de variables");}
     ;
 
 lista_constantes
-    : CTE
-    | lista_constantes ',' CTE
+    : CTE {$$=$1;}
+    | lista_constantes ',' CTE {$$=new ParserVal("{"+$1.sval + ", " + $3.sval+"}");}
     | lista_constantes CTE {yyerror("falta , en lista de constantes");}
     ;
 
@@ -290,6 +334,9 @@ lista_constantes
 %%
 private ArrayList<Token> tokens = new ArrayList<>();
 private ArrayList<String> estructurasDetectadas = new ArrayList<>();
+
+
+
 private int yylex(){
     try {
       Token t = AnalizadorLexico.leerCaracter();
@@ -352,4 +399,9 @@ public void check_rango(String valor){
     } else {
       yyerror("NO está en el rango de un float 64 bits");
     }
+  }
+
+  int crearTerceto(String operacion, String variable, String valor){
+    Compilador.tercetos.add(new Terceto(operacion, variable, valor));
+    return Compilador.tercetos.size() - 1;
   }
