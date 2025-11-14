@@ -12,7 +12,6 @@ public class AnalizadorLexico {
     private static char caracterLeido;
     private static List<Token> tokens = new ArrayList<>();
     private static HashMap <String, Integer> tablaTokens = new HashMap<>();
-    static TablaDeSimbolos tablaDeSimbolos = new TablaDeSimbolos();
     private static ArrayList<String> tokensDetectados = new ArrayList<>();
     public static String valorTs ="-";
 
@@ -128,10 +127,6 @@ public class AnalizadorLexico {
         return token;
     }
 
-
-    public void printTablaSimbolos(){
-        tablaDeSimbolos.imprimir();
-    }
     public void printTokensDetectados() {
         if (!tokensDetectados.isEmpty()){
             System.out.println(Colores.VERDE + "---------------- TOKENS DETECTADOS ----------------" + Colores.RESET);
@@ -162,6 +157,6 @@ public class AnalizadorLexico {
     }
     public void agregarTS(String valor, Token t){
         valorTs = valor;
-        tablaDeSimbolos.agregar(valor, t);
+        TablaDeSimbolos.agregar(valor, t);
     }
 }
