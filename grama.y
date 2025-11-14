@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 
 %%
 prog
-    : ID '{' lista_sentencia '}' {Compilador.salirAmbito();} {TablaDeSimbolos.addAmbito($1.sval, Compilador.getAmbito());System.out.println("el ambito es: "+Compilador.getAmbito());}
+    : ID '{' lista_sentencia '}' {Compilador.salirAmbito();} {TablaDeSimbolos.addAmbito($1.sval, Compilador.getAmbito());}
     | '{' lista_sentencia '}' {yyerror("falta nombre de programa");}
     | ID '{' lista_sentencia  {yyerror("falta llave de cierre de programa");}
     | ID lista_sentencia '}' {yyerror("falta llave de inicio de programa");}
@@ -159,45 +159,54 @@ argumento_print
     ;
 /* -------------------------------------------------------- IF -------------------------------------------------------- */
 if
-    : IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable ELSE nuevo_ambito cuerpo_sentencia_ejecutable ENDIF punto_coma
+    : IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable completar_bf_else ELSE nuevo_ambito crear_bi cuerpo_sentencia_ejecutable ENDIF punto_coma
     {
-        // 1) Completo el BF al entrar al ELSE
-            int bf = pilaSaltos.remove(pilaSaltos.size() - 1);
-            completarTerceto(bf, posInicioElse); // posInicioElse = donde empieza ELSE
-
-            // 2) Completo el BI al salir del ELSE
-            int bi = pilaSaltos.remove(pilaSaltos.size() - 1);
-            completarTerceto(bi, Compilador.tercetos.size());
-
+        int bi = Compilador.pilaSaltos.removeLast();
+        completarBI(bi, Compilador.tercetos.size());
     }
-    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable ELSE ENDIF punto_coma {yyerror("no hay sentencias en else");}
-    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable ENDIF punto_coma
-    {
-        int bf = pilaSaltos.remove(pilaSaltos.size() - 1);
-        completarTerceto(bf, Compilador.tercetos.size());
-    }
+    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable completar_bf_else ELSE ENDIF punto_coma {yyerror("no hay sentencias en else");}
+    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable completar_bf ENDIF punto_coma
+
     /*sin endif*/
-    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable ELSE nuevo_ambito cuerpo_sentencia_ejecutable punto_coma { yyerror("falta endif");}
-    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable ELSE  punto_coma { yyerror("falta endif");yyerror("no hay sentencias en else");}
-    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable punto_coma { yyerror("falta endif");}
+    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable completar_bf_else ELSE nuevo_ambito crear_bi cuerpo_sentencia_ejecutable punto_coma { yyerror("falta endif");}
+    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable completar_bf_else ELSE  punto_coma { yyerror("falta endif");yyerror("no hay sentencias en else");}
+    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable completar_bf punto_coma { yyerror("falta endif");}
 
     /*con endif, sin then*/
-    | IF cuerpo_condicion ELSE nuevo_ambito cuerpo_sentencia_ejecutable ENDIF punto_coma {yyerror("no hay sentencias en then");}
+    | IF cuerpo_condicion ELSE nuevo_ambito crear_bi cuerpo_sentencia_ejecutable completar_bf ENDIF punto_coma {yyerror("no hay sentencias en then");}
     | IF cuerpo_condicion ELSE  ENDIF punto_coma {yyerror("no hay sentencias en then");yyerror("no hay sentencias en else");}
     | IF cuerpo_condicion ENDIF punto_coma {yyerror("no hay sentencias en then");}
 
     /*sin endif, sin then*/
-    | IF cuerpo_condicion  ELSE nuevo_ambito cuerpo_sentencia_ejecutable punto_coma {yyerror("no hay sentencias en then");yyerror("falta endif");}
+    | IF cuerpo_condicion  ELSE nuevo_ambito crear_bi cuerpo_sentencia_ejecutable punto_coma {yyerror("no hay sentencias en then");yyerror("falta endif");}
     | IF cuerpo_condicion  ELSE punto_coma {yyerror("no hay sentencias en then");yyerror("no hay sentencias en else");yyerror("falta endif");}
     | IF cuerpo_condicion  punto_coma {yyerror("no hay sentencias en then");yyerror("falta endif");}
     ;
-
+completar_bf_else
+    :
+    {
+        int bf = Compilador.pilaSaltos.removeLast();
+        completarBF(bf, Compilador.tercetos.size()+1);
+    }
+    ;
+completar_bf
+    :
+    {
+        int bf = Compilador.pilaSaltos.removeLast();
+        completarBF(bf, Compilador.tercetos.size());
+    }
+    ;
+crear_bi
+    : {
+        int bi = crearTerceto("BI", "-", "-");
+        Compilador.pilaSaltos.add(bi);}
+    ;
 cuerpo_condicion
     : '(' exp comparador exp ')'
     {
         int t = crearTerceto($3.sval, $2.sval, $4.sval);
         int bf = crearTerceto("BF", "["+t+"]", "-");
-        pilaSaltos.add(bf);
+        Compilador.pilaSaltos.add(bf);
         $$ = new ParserVal("[" + t + "]");
     }
     | '(' exp comparador exp {yyerror("falta cerrar parentesis");}
@@ -284,14 +293,23 @@ parametro_real
 
 /* ------------------------------------------ DO WHILE ------------------------------------------ */
 do
-    : DO nuevo_ambito cuerpo_sentencia_ejecutable WHILE cuerpo_condicion punto_coma
-    | DO nuevo_ambito WHILE cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias");}
-    | DO nuevo_ambito cuerpo_sentencia_ejecutable WHILE cuerpo_condicion {yyerror("falta de ;");}
+    : DO nuevo_ambito inicio_while cuerpo_sentencia_ejecutable WHILE cuerpo_condicion completar_bf crear_bi_while punto_coma
+    | DO nuevo_ambito inicio_while WHILE cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias");}
+    | DO nuevo_ambito inicio_while cuerpo_sentencia_ejecutable WHILE cuerpo_condicion {yyerror("falta de ;");}
 
-    | DO nuevo_ambito cuerpo_sentencia_ejecutable cuerpo_condicion punto_coma { yyerror("falta while");}
-    | DO nuevo_ambito cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias"); yyerror("falta while");}
-    | DO nuevo_ambito cuerpo_sentencia_ejecutable cuerpo_condicion {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta while");}
-    | DO nuevo_ambito cuerpo_condicion {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");yyerror("falta while");}
+    | DO nuevo_ambito inicio_while cuerpo_sentencia_ejecutable cuerpo_condicion punto_coma { yyerror("falta while");}
+    | DO nuevo_ambito inicio_while cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias"); yyerror("falta while");}
+    | DO nuevo_ambito inicio_while cuerpo_sentencia_ejecutable cuerpo_condicion {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta while");}
+    | DO nuevo_ambito inicio_while  cuerpo_condicion {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");yyerror("falta while");}
+    ;
+inicio_while
+    : {Compilador.pilaSaltos.add(Compilador.tercetos.size());}
+    ;
+crear_bi_while
+    : {
+        int salto = Compilador.pilaSaltos.removeFirst();
+        int bi = crearTerceto("BI", "[" +salto+"]", "-");
+    }
     ;
 nuevo_ambito
     : {Compilador.entrarAmbito("ua"+cantUnidadesAnonimas); cantUnidadesAnonimas+= 1;}
@@ -380,7 +398,7 @@ private void addEstructura(String str){
 
 public void printEstructuras(){
     if (!estructurasDetectadas.isEmpty()){
-    System.out.println(Colores.AZUL+"------------------ ESTRUCTURAS DETECTADAS ------------------"+Colores.RESET);
+    System.out.println(Colores.AZUL+"------------- ESTRUCTURAS DETECTADAS --------------"+Colores.RESET);
     for(String str : estructurasDetectadas){
         System.out.println(str);
     }
@@ -416,9 +434,12 @@ public void check_rango(String valor){
     return Compilador.tercetos.size() - 1;
   }
 
-  private void completarTerceto(int index, int destino) {
-      Terceto t = Compilador.tercetos.get(index);
-      t.setValor2("[" + destino + "]");
+  private void completarBF(int index, int destino) {
+        Terceto t = Compilador.tercetos.get(index);
+        t.setValor3("[" + destino + "]");
+    }
+
+private void completarBI(int index, int destino) {
+    Terceto t = Compilador.tercetos.get(index);
+    t.setValor2("[" + destino + "]");
   }
-
-

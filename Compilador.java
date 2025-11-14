@@ -45,7 +45,7 @@ public class Compilador {
     }
     public void printWarnings(){
         if(!warningsDetectados.isEmpty()) {
-            System.out.println(Colores.AMARILLO + "---------------- WARNINGS DETECTADOS ----------------" + Colores.RESET);
+            System.out.println(Colores.AMARILLO + "--------------- WARNINGS DETECTADOS ---------------" + Colores.RESET);
             for (String warning : warningsDetectados) {
                 System.out.println(warning);
             }
@@ -60,7 +60,7 @@ public class Compilador {
         }
     }
     public void printTercetos(){
-        System.out.println(Colores.MAGENTA + "---------------- TERCETOS DETECTADOS ----------------" + Colores.RESET);
+        System.out.println(Colores.MAGENTA + "--------------- TERCETOS DETECTADOS ---------------" + Colores.RESET);
         if(!tercetos.isEmpty()) {
             for(int i = 0; i < tercetos.size(); i++){
                 System.out.print(Colores.MAGENTA+i+"."+Colores.RESET);
