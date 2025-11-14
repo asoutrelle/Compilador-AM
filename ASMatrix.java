@@ -79,9 +79,6 @@ public class ASMatrix {
                     Compilador.addError(err);
                 } else {
                     t = analizadorLexico.reconocerToken(estadoAnterior);
-                    if(t != null){
-                        TablaDeSimbolos.agregar(valor, t, "UINT");
-                    }
                 }
                     analizadorLexico.vaciarCadena();
                 return t;

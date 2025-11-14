@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 
 %%
 prog
-    : ID '{' lista_sentencia '}' {Compilador.salirAmbito();}
+    : ID '{' lista_sentencia '}' {Compilador.salirAmbito();} {TablaDeSimbolos.addAmbito($1.sval, Compilador.getAmbito());System.out.println("el ambito es: "+Compilador.getAmbito());}
     | '{' lista_sentencia '}' {yyerror("falta nombre de programa");}
     | ID '{' lista_sentencia  {yyerror("falta llave de cierre de programa");}
     | ID lista_sentencia '}' {yyerror("falta llave de inicio de programa");}
@@ -228,15 +228,15 @@ lista_variables_declaracion
 /* -------------- TRATADO DE FUNCIONES -------------- */
 
 funcion
-    : tipo ID '(' parametros_formales ')' {Compilador.entrarAmbito($2.sval);} '{' lista_sentencia_funcion '}' {Compilador.salirAmbito();}
+    : tipo ID '(' parametros_formales ')' {Compilador.entrarAmbito($2.sval);} '{' lista_sentencia_funcion '}' {Compilador.salirAmbito();TablaDeSimbolos.addAmbito($2.sval, Compilador.getAmbito());}
     | tipo '(' parametros_formales ')' '{' lista_sentencia_funcion '}' { yyerror("falta declarar nombre de funcion");}
     | tipo ID '(' ')' '{' lista_sentencia_funcion '}' {yyerror("faltan parametros formales");}
     | tipo '(' ')' '{' lista_sentencia_funcion '}' {yyerror("falta declarar nombre de funcion"); yyerror("faltan parametros formales");}
     ;
 
 parametros_formales
-    : CR tipo ID
-    | tipo ID
+    : CR tipo ID {TablaDeSimbolos.addAmbito($3.sval, Compilador.getAmbito());}
+    | tipo ID {TablaDeSimbolos.addAmbito($2.sval, Compilador.getAmbito());}
     | parametros_formales ',' CR tipo ID
     | parametros_formales ',' tipo ID
     | error {yyerror("error en parametro formal");}

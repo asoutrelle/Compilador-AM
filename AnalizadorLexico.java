@@ -165,6 +165,6 @@ public class AnalizadorLexico {
 
     public void agregarTS(String valor, Token t){
         valorTs = valor;
-        TablaDeSimbolos.agregar(valor, t);
+        TablaDeSimbolos.agregar(valor, t, "indefinido");
     }
 }

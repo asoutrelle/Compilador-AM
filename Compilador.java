@@ -8,7 +8,7 @@ public class Compilador {
     public static ArrayList<String> erroresDetectados = new ArrayList<>();
     public static ArrayList<String> warningsDetectados = new ArrayList<>();
     public static ArrayList<Terceto> tercetos = new ArrayList<>();
-    public static String ambitoActual;
+    public static String ambitoActual = "global";
     public static ArrayList<String> pilaAmbitos = new ArrayList<>();
 
     public static void entrarAmbito(String nombre) {
@@ -26,6 +26,9 @@ public class Compilador {
     }
 
     public static String getAmbito(){
+        if (pilaAmbitos.isEmpty()) {
+            return "global";
+        }
         return String.join(":", pilaAmbitos);
     }
 
