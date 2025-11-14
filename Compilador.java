@@ -1,13 +1,11 @@
 import java.io.IOException;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
-import java.util.Queue;
 
 public class Compilador {
     public static ArrayList<String> erroresDetectados = new ArrayList<>();
     public static ArrayList<String> warningsDetectados = new ArrayList<>();
     public static ArrayList<Terceto> tercetos = new ArrayList<>();
+    public static ArrayList<Integer> pilaSaltos = new ArrayList<>();
     public static String ambitoActual = "global";
     public static ArrayList<String> pilaAmbitos = new ArrayList<>();
 
@@ -18,11 +16,12 @@ public class Compilador {
 
     public static void salirAmbito() {
         if (!pilaAmbitos.isEmpty()) {
-            pilaAmbitos.removeLast();
+            pilaAmbitos.remove(pilaAmbitos.size() - 1); // elimina el último
         }
         if (!pilaAmbitos.isEmpty()) {
-            ambitoActual = pilaAmbitos.getLast();
-        } else ambitoActual = "global";
+            ambitoActual = pilaAmbitos.get(pilaAmbitos.size() - 1); // obtiene el último
+        } else {
+            ambitoActual = "global";
     }
 
     public static String getAmbito(){

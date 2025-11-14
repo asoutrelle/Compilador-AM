@@ -14,4 +14,8 @@ public class Terceto {
     public void print(){
         System.out.println(Colores.MAGENTA+"(" + operacion + ", " + variable + ", " + valor + ")"+Colores.RESET);
     }
+
+    public void setValor2(String valor){
+        variable=valor;
+    }
 }

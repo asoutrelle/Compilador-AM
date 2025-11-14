@@ -161,14 +161,20 @@ argumento_print
 if
     : IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable ELSE nuevo_ambito cuerpo_sentencia_ejecutable ENDIF punto_coma
     {
-        int t = crearTerceto("BF", $2.sval, "salto a ");
-        $$=new ParserVal("[" + t + "]");
+        // 1) Completo el BF al entrar al ELSE
+            int bf = pilaSaltos.remove(pilaSaltos.size() - 1);
+            completarTerceto(bf, posInicioElse); // posInicioElse = donde empieza ELSE
+
+            // 2) Completo el BI al salir del ELSE
+            int bi = pilaSaltos.remove(pilaSaltos.size() - 1);
+            completarTerceto(bi, Compilador.tercetos.size());
+
     }
     | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable ELSE ENDIF punto_coma {yyerror("no hay sentencias en else");}
     | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable ENDIF punto_coma
     {
-        int t = crearTerceto("BF", $2.sval, "salto a ");
-        $$=new ParserVal("[" + t + "]");
+        int bf = pilaSaltos.remove(pilaSaltos.size() - 1);
+        completarTerceto(bf, Compilador.tercetos.size());
     }
     /*sin endif*/
     | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable ELSE nuevo_ambito cuerpo_sentencia_ejecutable punto_coma { yyerror("falta endif");}
@@ -190,7 +196,9 @@ cuerpo_condicion
     : '(' exp comparador exp ')'
     {
         int t = crearTerceto($3.sval, $2.sval, $4.sval);
-        $$=new ParserVal("[" + t + "]");
+        int bf = crearTerceto("BF", "["+t+"]", "-");
+        pilaSaltos.add(bf);
+        $$ = new ParserVal("[" + t + "]");
     }
     | '(' exp comparador exp {yyerror("falta cerrar parentesis");}
     |  exp comparador exp ')' {yyerror("falta abrir parentesis");}
@@ -407,4 +415,10 @@ public void check_rango(String valor){
     Compilador.tercetos.add(new Terceto(operacion, variable, valor));
     return Compilador.tercetos.size() - 1;
   }
+
+  private void completarTerceto(int index, int destino) {
+      Terceto t = Compilador.tercetos.get(index);
+      t.setValor2("[" + destino + "]");
+  }
+
 
