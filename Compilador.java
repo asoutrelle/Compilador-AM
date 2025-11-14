@@ -22,6 +22,7 @@ public class Compilador {
             ambitoActual = pilaAmbitos.get(pilaAmbitos.size() - 1); // obtiene el último
         } else {
             ambitoActual = "global";
+        }
     }
 
     public static String getAmbito(){
