@@ -80,7 +80,7 @@ public class ASMatrix {
                 } else {
                     t = analizadorLexico.reconocerToken(estadoAnterior);
                     if(t != null){
-                        analizadorLexico.agregarTS(valor, t);
+                        TablaDeSimbolos.agregar(valor, t, "UINT");
                     }
                 }
                     analizadorLexico.vaciarCadena();

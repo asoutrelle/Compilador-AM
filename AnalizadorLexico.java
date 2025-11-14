@@ -82,6 +82,9 @@ public class AnalizadorLexico {
                 tokensDetectados.add(Colores.VERDE+"Identificador "+aux+Colores.RESET);
                 token = new Token(Parser.ID,nroLinea);
                 tokens.add(token);
+                if (tokens.size() == 1){
+                    Compilador.pilaAmbitos.addFirst(aux);
+                }
                 return token;
             case 6:
                 if(tablaTokens.containsKey(aux)){
@@ -155,6 +158,11 @@ public class AnalizadorLexico {
     public String devolverCadena(){
         return cadena.toString();
     }
+
+
+
+
+
     public void agregarTS(String valor, Token t){
         valorTs = valor;
         TablaDeSimbolos.agregar(valor, t);

@@ -1,11 +1,33 @@
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.Queue;
 
 public class Compilador {
     public static ArrayList<String> erroresDetectados = new ArrayList<>();
     public static ArrayList<String> warningsDetectados = new ArrayList<>();
     public static ArrayList<Terceto> tercetos = new ArrayList<>();
+    public static String ambitoActual;
+    public static ArrayList<String> pilaAmbitos = new ArrayList<>();
 
+    public static void entrarAmbito(String nombre) {
+        pilaAmbitos.add(nombre);
+        ambitoActual = nombre;
+    }
+
+    public static void salirAmbito() {
+        if (!pilaAmbitos.isEmpty()) {
+            pilaAmbitos.removeLast();
+        }
+        if (!pilaAmbitos.isEmpty()) {
+            ambitoActual = pilaAmbitos.getLast();
+        } else ambitoActual = "global";
+    }
+
+    public static String getAmbito(){
+        return String.join(":", pilaAmbitos);
+    }
 
     public Compilador (){
 
@@ -67,7 +89,7 @@ public class Compilador {
             System.out.println(Colores.AMARILLO+"PARSER TERMINO MAL "+Colores.RESET);
         }
         analizadorLexico.printTokensDetectados();
-        analizadorLexico.printTablaSimbolos();
+        TablaDeSimbolos.imprimir();
         parser.printEstructuras();
         compilador.printWarnings();
         compilador.printErrores();

@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 
 %%
 prog
-    : ID '{' lista_sentencia '}'
+    : ID '{' lista_sentencia '}' {Compilador.salirAmbito();}
     | '{' lista_sentencia '}' {yyerror("falta nombre de programa");}
     | ID '{' lista_sentencia  {yyerror("falta llave de cierre de programa");}
     | ID lista_sentencia '}' {yyerror("falta llave de inicio de programa");}
@@ -29,7 +29,6 @@ prog
     | error '}' {yyerror("falta nombre del programa");yyerror("error en programa");}
     | ID error {yyerror("no hay llaves del programa");yyerror("error en programa");}
     ;
-
 lista_sentencia
     : sentencia
     | lista_sentencia sentencia
@@ -160,31 +159,31 @@ argumento_print
     ;
 /* -------------------------------------------------------- IF -------------------------------------------------------- */
 if
-    : IF cuerpo_condicion cuerpo_sentencia_ejecutable ELSE cuerpo_sentencia_ejecutable ENDIF punto_coma
+    : IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable ELSE nuevo_ambito cuerpo_sentencia_ejecutable ENDIF punto_coma
     {
         int t = crearTerceto("BF", $2.sval, "salto a ");
         $$=new ParserVal("[" + t + "]");
     }
-    | IF cuerpo_condicion cuerpo_sentencia_ejecutable ELSE ENDIF punto_coma {yyerror("no hay sentencias en else");}
-    | IF cuerpo_condicion cuerpo_sentencia_ejecutable ENDIF punto_coma
+    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable ELSE ENDIF punto_coma {yyerror("no hay sentencias en else");}
+    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable ENDIF punto_coma
     {
         int t = crearTerceto("BF", $2.sval, "salto a ");
         $$=new ParserVal("[" + t + "]");
     }
     /*sin endif*/
-    | IF cuerpo_condicion cuerpo_sentencia_ejecutable ELSE cuerpo_sentencia_ejecutable punto_coma { yyerror("falta endif");}
-    | IF cuerpo_condicion cuerpo_sentencia_ejecutable ELSE  punto_coma { yyerror("falta endif");yyerror("no hay sentencias en else");}
-    | IF cuerpo_condicion cuerpo_sentencia_ejecutable punto_coma { yyerror("falta endif");}
+    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable ELSE nuevo_ambito cuerpo_sentencia_ejecutable punto_coma { yyerror("falta endif");}
+    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable ELSE  punto_coma { yyerror("falta endif");yyerror("no hay sentencias en else");}
+    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable punto_coma { yyerror("falta endif");}
 
     /*con endif, sin then*/
-    | IF cuerpo_condicion ELSE cuerpo_sentencia_ejecutable ENDIF punto_coma {yyerror("no hay sentencias en then");}
+    | IF cuerpo_condicion ELSE nuevo_ambito cuerpo_sentencia_ejecutable ENDIF punto_coma {yyerror("no hay sentencias en then");}
     | IF cuerpo_condicion ELSE  ENDIF punto_coma {yyerror("no hay sentencias en then");yyerror("no hay sentencias en else");}
     | IF cuerpo_condicion ENDIF punto_coma {yyerror("no hay sentencias en then");}
 
     /*sin endif, sin then*/
-    | IF cuerpo_condicion ELSE cuerpo_sentencia_ejecutable punto_coma {yyerror("no hay sentencias en then");yyerror("falta endif");}
-    | IF cuerpo_condicion ELSE punto_coma {yyerror("no hay sentencias en then");yyerror("no hay sentencias en else");yyerror("falta endif");}
-    | IF cuerpo_condicion punto_coma {yyerror("no hay sentencias en then");yyerror("falta endif");}
+    | IF cuerpo_condicion  ELSE nuevo_ambito cuerpo_sentencia_ejecutable punto_coma {yyerror("no hay sentencias en then");yyerror("falta endif");}
+    | IF cuerpo_condicion  ELSE punto_coma {yyerror("no hay sentencias en then");yyerror("no hay sentencias en else");yyerror("falta endif");}
+    | IF cuerpo_condicion  punto_coma {yyerror("no hay sentencias en then");yyerror("falta endif");}
     ;
 
 cuerpo_condicion
@@ -221,7 +220,7 @@ declaracion
     ;
 
 lista_variables_declaracion
-    : ID
+    : ID {TablaDeSimbolos.addAmbito($1.sval, Compilador.getAmbito());}
     | lista_variables_declaracion ',' ID
     | lista_variables_declaracion ID {yyerror("falta , en lista de variables");}
     ;
@@ -229,7 +228,7 @@ lista_variables_declaracion
 /* -------------- TRATADO DE FUNCIONES -------------- */
 
 funcion
-    : tipo ID '(' parametros_formales ')' '{' lista_sentencia_funcion '}'
+    : tipo ID '(' parametros_formales ')' {Compilador.entrarAmbito($2.sval);} '{' lista_sentencia_funcion '}' {Compilador.salirAmbito();}
     | tipo '(' parametros_formales ')' '{' lista_sentencia_funcion '}' { yyerror("falta declarar nombre de funcion");}
     | tipo ID '(' ')' '{' lista_sentencia_funcion '}' {yyerror("faltan parametros formales");}
     | tipo '(' ')' '{' lista_sentencia_funcion '}' {yyerror("falta declarar nombre de funcion"); yyerror("faltan parametros formales");}
@@ -277,20 +276,22 @@ parametro_real
 
 /* ------------------------------------------ DO WHILE ------------------------------------------ */
 do
-    : DO cuerpo_sentencia_ejecutable WHILE cuerpo_condicion punto_coma
-    | DO WHILE cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias");}
-    | DO cuerpo_sentencia_ejecutable WHILE cuerpo_condicion {yyerror("falta de ;");}
+    : DO nuevo_ambito cuerpo_sentencia_ejecutable WHILE cuerpo_condicion punto_coma
+    | DO nuevo_ambito WHILE cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias");}
+    | DO nuevo_ambito cuerpo_sentencia_ejecutable WHILE cuerpo_condicion {yyerror("falta de ;");}
 
-    | DO cuerpo_sentencia_ejecutable cuerpo_condicion punto_coma { yyerror("falta while");}
-    | DO cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias"); yyerror("falta while");}
-    | DO cuerpo_sentencia_ejecutable cuerpo_condicion {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta while");}
-    | DO cuerpo_condicion {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");yyerror("falta while");}
+    | DO nuevo_ambito cuerpo_sentencia_ejecutable cuerpo_condicion punto_coma { yyerror("falta while");}
+    | DO nuevo_ambito cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias"); yyerror("falta while");}
+    | DO nuevo_ambito cuerpo_sentencia_ejecutable cuerpo_condicion {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta while");}
+    | DO nuevo_ambito cuerpo_condicion {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");yyerror("falta while");}
     ;
-
+nuevo_ambito
+    : {Compilador.entrarAmbito("ua"+cantUnidadesAnonimas); cantUnidadesAnonimas+= 1;}
+    ;
 cuerpo_sentencia_ejecutable
-    : '{' lista_sentencia_ejecutable '}'
+    : '{' lista_sentencia_ejecutable '}' {Compilador.salirAmbito();}
     | '{' '}' {yyerror("no hay sentencias dentro de las llaves");}
-    | sentencia_ejecutable
+    | sentencia_ejecutable {Compilador.salirAmbito();}
     | '{' error '}' {yyerror("Error en sentencia");}
     ;
 
@@ -334,6 +335,7 @@ lista_constantes
 %%
 private ArrayList<Token> tokens = new ArrayList<>();
 private ArrayList<String> estructurasDetectadas = new ArrayList<>();
+private int cantUnidadesAnonimas = 1;
 
 
 
@@ -405,3 +407,4 @@ public void check_rango(String valor){
     Compilador.tercetos.add(new Terceto(operacion, variable, valor));
     return Compilador.tercetos.size() - 1;
   }
+

@@ -1,13 +1,20 @@
 public class Simbolo {
     private Token token;
-    private String tipo;
-    private String ambito;
+    private String tipo = "";
+    private StringBuilder ambito;
+    private String valor;
 
-    public Simbolo(Token token, String ambito) {
+    public Simbolo(String valor, Token token, String tipo) {
+
+        ambito = new StringBuilder();
+        this.valor = valor + ambito;
         this.token = token;
-        this.ambito = ambito;
+        this.tipo = tipo;
     }
-    public Simbolo(Token token) {
+
+    public Simbolo(String valor, Token token) {
+        ambito = new StringBuilder();
+        this.valor = valor + ambito;
         this.token = token;
     }
 
@@ -19,15 +26,10 @@ public class Simbolo {
         return tipo;
     }
 
-    public String getAmbito() {
-        return ambito;
+    public String getValor() {
+        return valor;
     }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
-
-    public void setAmbito(String ambito) {
-        this.ambito = ambito;
+    public String getAmbito(){
+        return ambito.toString();
     }
 }
