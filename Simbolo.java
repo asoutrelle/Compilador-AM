@@ -18,6 +18,10 @@ public class Simbolo {
         this.token = token;
     }
 
+    public void setAmbito(String ambito) {
+        this.ambito = new StringBuilder(ambito);
+    }
+
     public Token getToken() {
         return token;
     }
