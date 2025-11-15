@@ -61,6 +61,10 @@ sentencia_de_control
 asig
     : variable ASIG exp punto_coma
     {
+        String ambito = Compilador.getAmbito();
+        if (!TablaDeSimbolos.estaDeclarado($1.sval, ambito)){
+            yyerror("la variable "+$1.sval+" no fue delarada");
+        }
         int t = crearTerceto(":=", $1.sval, $3.sval);
     }
     ;
@@ -120,7 +124,11 @@ punto_flotante
     ;
 
 variable
-    : ID '.' ID {$$= new ParserVal($1.sval + '.' + $3.sval);}
+    : ID '.' ID
+    {
+        $$ = new ParserVal($1.sval + '.' + $3.sval);
+        /*checkDeclaracion($$.sval);*/
+    }
     | ID {$$=$1;}
     ;
 
@@ -235,32 +243,69 @@ lista_sentencia_ejecutable
 declaracion
     : tipo lista_variables_declaracion punto_coma
     ;
-
 lista_variables_declaracion
-    : ID {TablaDeSimbolos.addAmbito($1.sval, Compilador.getAmbito());}
-    | lista_variables_declaracion ',' ID
+    : ID
+    {
+        String ambito = Compilador.getAmbito();
+        if (!TablaDeSimbolos.estaDeclarado($1.sval, ambito)){
+            TablaDeSimbolos.addAmbito($1.sval, ambito);
+            TablaDeSimbolos.addTipo($1.sval+":"+ambito, tipo);
+        } else{
+            yyerror("la variable "+$1.sval+" ya fue declarada");
+        }
+    }
+    | lista_variables_declaracion ',' ID {$$ = new ParserVal($1.sval+","+$3.sval);}
     | lista_variables_declaracion ID {yyerror("falta , en lista de variables");}
     ;
 
 /* -------------- TRATADO DE FUNCIONES -------------- */
 
 funcion
-    : tipo ID '(' parametros_formales ')' {Compilador.entrarAmbito($2.sval);} '{' lista_sentencia_funcion '}' {Compilador.salirAmbito();TablaDeSimbolos.addAmbito($2.sval, Compilador.getAmbito());}
+    : tipo ID '(' parametros_formales ')' {Compilador.entrarAmbito($2.sval);} '{' lista_sentencia_funcion '}'
+    {
+        String ID = $2.sval;
+        Compilador.salirAmbito();
+        String ambito = Compilador.getAmbito();
+        if (!TablaDeSimbolos.estaDeclarado(ID, ambito)){
+            TablaDeSimbolos.addAmbito(ID, ambito);
+            TablaDeSimbolos.addTipo(ID+":"+ambito, tipo);
+        } else{
+            yyerror("la variable "+ID+" ya fue declarada");
+        }
+    }
     | tipo '(' parametros_formales ')' '{' lista_sentencia_funcion '}' { yyerror("falta declarar nombre de funcion");}
     | tipo ID '(' ')' '{' lista_sentencia_funcion '}' {yyerror("faltan parametros formales");}
     | tipo '(' ')' '{' lista_sentencia_funcion '}' {yyerror("falta declarar nombre de funcion"); yyerror("faltan parametros formales");}
     ;
 
 parametros_formales
-    : CR tipo ID {TablaDeSimbolos.addAmbito($3.sval, Compilador.getAmbito());}
-    | tipo ID {TablaDeSimbolos.addAmbito($2.sval, Compilador.getAmbito());}
+    : CR tipo ID
+    {
+        String ambito = Compilador.getAmbito();
+        if (!TablaDeSimbolos.estaDeclarado($3.sval, ambito)){
+            TablaDeSimbolos.addAmbito($3.sval, ambito);
+            TablaDeSimbolos.addTipo($3.sval+":"+ambito, tipo);
+        } else{
+            yyerror("la variable "+$3.sval+" ya fue declarada");
+        }
+    }
+    | tipo ID
+    {
+        String ambito = Compilador.getAmbito();
+        if (!TablaDeSimbolos.estaDeclarado($2.sval, ambito)){
+            TablaDeSimbolos.addAmbito($2.sval, ambito);
+            TablaDeSimbolos.addTipo($2.sval+":"+ambito, tipo);
+        } else{
+            yyerror("la variable "+$2.sval+" ya fue declarada");
+        }
+    }
     | parametros_formales ',' CR tipo ID
     | parametros_formales ',' tipo ID
     | error {yyerror("error en parametro formal");}
     ;
 
 tipo
-    : UINT
+    : UINT {tipo = "uint";}
     ;
 
 
@@ -293,7 +338,7 @@ parametro_real
 
 /* ------------------------------------------ DO WHILE ------------------------------------------ */
 do
-    : DO nuevo_ambito inicio_while cuerpo_sentencia_ejecutable WHILE cuerpo_condicion completar_bf crear_bi_while punto_coma
+    : DO nuevo_ambito inicio_while cuerpo_sentencia_ejecutable WHILE cuerpo_condicion crear_bi_while completar_bf punto_coma
     | DO nuevo_ambito inicio_while WHILE cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias");}
     | DO nuevo_ambito inicio_while cuerpo_sentencia_ejecutable WHILE cuerpo_condicion {yyerror("falta de ;");}
 
@@ -362,7 +407,7 @@ lista_constantes
 private ArrayList<Token> tokens = new ArrayList<>();
 private ArrayList<String> estructurasDetectadas = new ArrayList<>();
 private int cantUnidadesAnonimas = 1;
-
+private String tipo = "";
 
 
 private int yylex(){

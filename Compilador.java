@@ -10,16 +10,16 @@ public class Compilador {
     public static ArrayList<String> pilaAmbitos = new ArrayList<>();
 
     public static void entrarAmbito(String nombre) {
-        pilaAmbitos.add(nombre);
+        pilaAmbitos.addLast(nombre);
         ambitoActual = nombre;
     }
 
     public static void salirAmbito() {
         if (!pilaAmbitos.isEmpty()) {
-            pilaAmbitos.remove(pilaAmbitos.size() - 1); // elimina el último
+            pilaAmbitos.removeLast(); // elimina el último
         }
         if (!pilaAmbitos.isEmpty()) {
-            ambitoActual = pilaAmbitos.get(pilaAmbitos.size() - 1); // obtiene el último
+            ambitoActual = pilaAmbitos.getLast(); // obtiene el último
         } else {
             ambitoActual = "global";
         }

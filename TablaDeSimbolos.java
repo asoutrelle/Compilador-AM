@@ -21,8 +21,21 @@ public class TablaDeSimbolos {
     }
 
     public static void addAmbito(String valor, String ambito){
-        TS.get(valor).setAmbito(ambito);
+        Simbolo s = TS.get(valor);
+        TS.put(valor+":"+ambito,s);
+        TS.remove(valor);
     }
+    public static void addTipo(String valor, String tipo){
+        TS.get(valor).setTipo(tipo);
+    }
+
+    public static boolean estaDeclarado(String val, String ambito){
+        System.out.println("la key es:"+val+":"+ambito);
+        return TS.containsKey(val+":"+ambito);
+    }
+
+
+
 
 
     public static void imprimir() {
@@ -30,7 +43,7 @@ public class TablaDeSimbolos {
 
             // Encabezado
             System.out.println("---------------- TABLA DE SIMBOLOS ----------------");
-            System.out.printf("%-10s | %-10s | %-10s | %-30s%n" , "Lexema", "Valor", "Tipo", "Ambito");
+            System.out.printf("%-7s | %-30s | %-10s%n" , "Lexema", "Valor", "Tipo");
             System.out.println("---------------------------------------------------");
 
             // Filas
@@ -39,14 +52,12 @@ public class TablaDeSimbolos {
 
                 int lexema = s.getToken().getLexema();
                 String tipo = (s.getTipo() == null) ? "" : s.getTipo();
-                String ambito = s.getAmbito();
 
                 System.out.printf(
-                        "%-10s | %-10s | %-10s | %-30s%n",
+                        "%-7s | %-30s | %-10s%n",
                         lexema,
                         clave,
-                        tipo,
-                        ambito
+                        tipo
                 );
             }
         }
