@@ -83,7 +83,7 @@ public class AnalizadorLexico {
                 token = new Token(Parser.ID,nroLinea);
                 tokens.add(token);
                 if (tokens.size() == 1){
-                    Compilador.pilaAmbitos.addFirst(aux);
+                    Compilador.pilaAmbitos.add(0,aux);
                 }
                 return token;
             case 6:
