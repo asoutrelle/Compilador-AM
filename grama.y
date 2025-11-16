@@ -169,7 +169,7 @@ argumento_print
 if
     : IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable completar_bf_else ELSE nuevo_ambito crear_bi cuerpo_sentencia_ejecutable ENDIF punto_coma
     {
-        int bi = Compilador.pilaSaltos.removeLast();
+        int bi = Compilador.pilaSaltos.remove(Compilador.pilaSaltos.size()-1);
         completarBI(bi, Compilador.tercetos.size());
     }
     | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable completar_bf_else ELSE ENDIF punto_coma {yyerror("no hay sentencias en else");}
@@ -193,14 +193,14 @@ if
 completar_bf_else
     :
     {
-        int bf = Compilador.pilaSaltos.removeLast();
+        int bf = Compilador.pilaSaltos.remove(Compilador.pilaSaltos.size()-1);
         completarBF(bf, Compilador.tercetos.size()+1);
     }
     ;
 completar_bf
     :
     {
-        int bf = Compilador.pilaSaltos.removeLast();
+        int bf = Compilador.pilaSaltos.remove(Compilador.pilaSaltos.size()-1);
         completarBF(bf, Compilador.tercetos.size());
     }
     ;
@@ -261,7 +261,7 @@ lista_variables_declaracion
 /* -------------- TRATADO DE FUNCIONES -------------- */
 
 funcion
-    : tipo ID '(' parametros_formales ')' {Compilador.entrarAmbito($2.sval);} '{' lista_sentencia_funcion '}'
+    : tipo ID '(' parametros_formales ')' {Compilador.entrarAmbito($2.sval);int t = crearTerceto("inicio de funcion", "-", "-");} '{' lista_sentencia_funcion '}'
     {
         String ID = $2.sval;
         Compilador.salirAmbito();
@@ -272,6 +272,7 @@ funcion
         } else{
             yyerror("la variable "+ID+" ya fue declarada");
         }
+        int t = crearTerceto("fin de funcion", "-", "-");
     }
     | tipo '(' parametros_formales ')' '{' lista_sentencia_funcion '}' { yyerror("falta declarar nombre de funcion");}
     | tipo ID '(' ')' '{' lista_sentencia_funcion '}' {yyerror("faltan parametros formales");}
@@ -352,7 +353,7 @@ inicio_while
     ;
 crear_bi_while
     : {
-        int salto = Compilador.pilaSaltos.removeFirst();
+        int salto = Compilador.pilaSaltos.remove(0);
         int bi = crearTerceto("BI", "[" +salto+"]", "-");
     }
     ;
