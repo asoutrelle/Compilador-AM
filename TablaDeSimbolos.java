@@ -38,6 +38,21 @@ public class TablaDeSimbolos {
         TS.get(aux).setUso(uso);
         return true;
     }
+
+    public static boolean checkVar(String valor, String ambito, String tipo, String uso, String semantica){
+        String aux = valor+ambito;
+        if(TS.containsKey(aux)){
+            return false;
+        }
+        Simbolo s = TS.get(valor);
+        TS.put(aux,s);
+        TS.remove(valor);
+        TS.get(aux).setTipo(tipo);
+        TS.get(aux).setUso(uso);
+        TS.get(aux).setSemantica(semantica);
+        return true;
+    }
+
     public static boolean esCompatible(String val1, String val2, String ambito){
         val1 = val1+ambito;
         val2 = val2+ambito;
@@ -110,9 +125,9 @@ public class TablaDeSimbolos {
         if (!TS.isEmpty()) {
 
             // Encabezado
-            System.out.println("--------------------------- TABLA DE SIMBOLOS ---------------------------");
-            System.out.printf("%-7s | %-25s | %-10s | %-20s%n" , "Lexema", "Valor", "Tipo", "Uso");
-            System.out.println("-------------------------------------------------------------------------");
+            System.out.println("---------------------------------- TABLA DE SIMBOLOS ------------------------------------");
+            System.out.printf("%-7s | %-25s | %-10s | %-20s | %-10s%n" , "Lexema", "Valor", "Tipo", "Uso","Semantica");
+            System.out.println("-----------------------------------------------------------------------------------------");
 
             // Filas
             for (String clave : TS.keySet()) {
@@ -121,17 +136,18 @@ public class TablaDeSimbolos {
                 int lexema = s.getToken().getLexema();
                 String tipo = (s.getTipo() == null) ? "" : s.getTipo();
                 String uso = (s.getUso() == null) ? "" : s.getUso();
-
+                String semantica = (s.getSemantica() == null) ? "" : s.getSemantica();
 
                 System.out.printf(
-                        "%-7s | %-25s | %-10s | %-20s%n",
+                        "%-7s | %-25s | %-10s | %-20s | %-10s%n",
                         lexema,
                         clave,
                         tipo,
-                        uso
+                        uso,
+                        semantica
                 );
             }
-            System.out.println("-------------------------------------------------------------------------");
+            System.out.println("-----------------------------------------------------------------------------------------");
         }
     }
 

@@ -67,10 +67,11 @@ sentencia_de_control
 asig
     : variable ASIG exp punto_coma
     {
-        if(TablaDeSimbolos.esCompatible($1.sval,$3.sval, Compilador.getAmbito())){
-            System.out.println("val1:"+$1.sval+" val2:"+$3.sval);
-            crearTerceto(":=", $1.sval, $3.sval);
-        } else yyerror("Los tipos de las variables no coinciden");
+        //if(TablaDeSimbolos.esCompatible($1.sval,$3.sval, Compilador.getAmbito())){
+          //  System.out.println("val1:"+$1.sval+" val2:"+$3.sval);
+          //  crearTerceto(":=", $1.sval, $3.sval);
+        //} else yyerror("Los tipos de las variables no coinciden");
+        crearTerceto(":=", $1.sval, $3.sval);
     }
     ;
 
@@ -92,10 +93,6 @@ exp
     | exp '+' error {yyerror("falta operando a derecha de +");}
     | exp '-' error {yyerror("falta operando a derecha de -");}
     | termino {$$=$1;}
-    | TRUNC '(' exp ')' {addEstructura("trunc");}
-    | TRUNC  exp ')' {addEstructura("trunc");yyerror("falta abrir parentesis en trunc");}
-    | TRUNC '(' error {addEstructura("trunc");yyerror("falta cerrar parentesis en trunc");yyerrflag=0;}
-    | TRUNC  '(' ')' {addEstructura("trunc");yyerror("falta argumento en trunc");}
     ;
 
 termino
@@ -123,7 +120,10 @@ factor
     | invocacion {$$=$1;}
     | CTE {$$=new ParserVal($1.sval);}
     | exp_lambda {addEstructura("lambda"); $$=$1;}
-    | punto_flotante {$$=$1;}
+    | TRUNC '(' punto_flotante ')' {addEstructura("trunc");}
+    | TRUNC  punto_flotante ')' {addEstructura("trunc");yyerror("falta abrir parentesis en trunc");}
+    | TRUNC '(' error {addEstructura("trunc");yyerror("falta cerrar parentesis en trunc");yyerrflag=0;}
+    | TRUNC  '(' ')' {addEstructura("trunc");yyerror("falta argumento en trunc");}
     ;
 
 punto_flotante
@@ -326,19 +326,29 @@ parametros_formales
     : CR tipo ID
     {
         String ambito = Compilador.getAmbito();
-                if(!TablaDeSimbolos.checkVar($3.sval, ambito, tipo, "nombre de parametro")){
+                if(!TablaDeSimbolos.checkVar($3.sval, ambito, tipo, "nombre de parametro", "copia-resultado")){
                    yyerror("La variable "+$3.sval+" ya fue declarada");
                 }
     }
     | tipo ID
     {
         String ambito = Compilador.getAmbito();
-                if(!TablaDeSimbolos.checkVar($2.sval, ambito, tipo, "nombre de parametro")){
+                if(!TablaDeSimbolos.checkVar($2.sval, ambito, tipo, "nombre de parametro", "copia-valor")){
                    yyerror("La variable "+$2.sval+" ya fue declarada");
                 }
     }
-    | parametros_formales ',' CR tipo ID
-    | parametros_formales ',' tipo ID
+    | parametros_formales ',' CR tipo ID{
+        String ambito = Compilador.getAmbito();
+        if(!TablaDeSimbolos.checkVar($5.sval, ambito, tipo, "nombre de parametro", "copia-resultado")){
+            yyerror("La variable "+$5.sval+" ya fue declarada");
+        }
+    }
+    | parametros_formales ',' tipo ID{
+        String ambito = Compilador.getAmbito();
+        if(!TablaDeSimbolos.checkVar($4.sval, ambito, tipo, "nombre de parametro", "copia-valor")){
+            yyerror("La variable "+$4.sval+" ya fue declarada");
+        }
+    }
     | error {yyerror("error en parametro formal");}
     ;
 

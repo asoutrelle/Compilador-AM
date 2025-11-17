@@ -3,12 +3,21 @@ public class Simbolo {
     private String tipo = "";
     private String valor;
     private String uso;
+    String semantica;
 
     public Simbolo(String valor, Token token, String tipo, String uso) {
         this.valor = valor;
         this.token = token;
         this.tipo = tipo;
         this.uso = uso;
+    }
+
+    public Simbolo(String valor, Token token, String tipo, String uso, String semantica) {
+        this.valor = valor;
+        this.token = token;
+        this.tipo = tipo;
+        this.uso = uso;
+        this.semantica=semantica;
     }
 
     public Simbolo(String valor, Token token, String tipo) {
@@ -41,4 +50,6 @@ public class Simbolo {
     public String getUso() {
         return uso;
     }
+    public void setSemantica(String semantica){this.semantica = semantica;}
+    public String getSemantica(){return semantica;}
 }
