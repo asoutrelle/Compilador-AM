@@ -148,6 +148,10 @@ variable
 invocacion
     : ID '(' parametros_de_invocacion ')'
     {
+        if(!TablaDeSimbolos.funcionDeclarada($1.sval,Compilador.getAmbito())){
+            yyerror("La funcion " + $1.sval + " no esta declarada");
+        }
+        TablaDeSimbolos.eliminar($1.sval);
         addEstructura("invocacion a funcion");
         $$=new ParserVal($1.sval+"("+$3.sval+")");
     }
@@ -157,6 +161,7 @@ parametros_de_invocacion
     : parametro_real FLECHA ID
     {
         $$=new ParserVal( $1.sval );
+        TablaDeSimbolos.eliminar($3.sval);
     }
     | parametro_real FLECHA {yyerror("Falta parametro formal");}
     | parametro_real {yyerror("Falta flecha y parametro formal");}
@@ -294,11 +299,13 @@ lista_variables_declaracion
 
 /* -------------- TRATADO DE FUNCIONES -------------- */
 funcion
-    : tipo ID '(' {Compilador.entrarAmbito($2.sval);} parametros_formales ')' {
+    : tipo ID '(' {
         String ambito = Compilador.getAmbito();
         if(!TablaDeSimbolos.checkVar($2.sval, ambito, tipo, "nombre de funcion")){
             yyerror("La funcion "+$2.sval+" ya fue declarada");
         }
+        Compilador.entrarAmbito($2.sval);}
+    parametros_formales ')' {
         crearTerceto("inicio de funcion", $2.sval, "-");
     }
     '{' lista_sentencia_funcion '}' {

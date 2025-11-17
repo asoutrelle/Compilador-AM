@@ -54,6 +54,26 @@ public class TablaDeSimbolos {
         }
         return false;
     }
+
+    public static boolean funcionDeclarada(String val, String ambito){
+        String aux = val + ambito;
+        while (aux.lastIndexOf(":")!=-1) {
+            if (TS.containsKey(aux)) {
+                Simbolo s = TS.get(aux);
+                if (s.getUso().equals("nombre de funcion")){
+                    return true;
+                }
+            }
+            int idx = aux.lastIndexOf(":");
+            if (idx == -1) {
+                return false; // no hay más ámbitos para quitar
+            } else {
+                aux = aux.substring(0, idx); // quitar la última parte
+            }
+        }
+        return false;
+    }
+
     public static void eliminar(String val){
         TS.remove(val);
     }
