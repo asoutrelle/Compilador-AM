@@ -67,7 +67,10 @@ sentencia_de_control
 asig
     : variable ASIG exp punto_coma
     {
-        crearTerceto(":=", $1.sval, $3.sval);
+        if(TablaDeSimbolos.esCompatible($1.sval,$3.sval, Compilador.getAmbito())){
+            System.out.println("val1:"+$1.sval+" val2:"+$3.sval);
+            crearTerceto(":=", $1.sval, $3.sval);
+        } else yyerror("Los tipos de las variables no coinciden");
     }
     ;
 

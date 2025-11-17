@@ -38,7 +38,25 @@ public class TablaDeSimbolos {
         TS.get(aux).setUso(uso);
         return true;
     }
-
+    public static boolean esCompatible(String val1, String val2, String ambito){
+        val1 = val1+ambito;
+        val2 = val2+ambito;
+        while(!TS.containsKey(val1)){
+            int idx = val1.lastIndexOf(":");
+            val1 = val1.substring(0, idx);
+            if (idx == -1) {
+                return false;
+            }
+        }
+        while(!TS.containsKey(val2)){
+            int idx = val2.lastIndexOf(":");
+            val2 = val2.substring(0, idx);
+            if (idx == -1) {
+                return false;
+            }
+        }
+        return TS.get(val1).getTipo().equals(TS.get(val2).getTipo());
+    }
     public static boolean varDeclarada(String val, String ambito){
         String aux = val + ambito;
         while (aux.lastIndexOf(":")!=-1) {
