@@ -27,9 +27,9 @@ public class Compilador {
 
     public static String getAmbito(){
         if (pilaAmbitos.isEmpty()) {
-            return "global";
+            return ":global";
         }
-        return String.join(":", pilaAmbitos);
+        return ":"+String.join(":", pilaAmbitos);
     }
 
     public Compilador (){
@@ -41,7 +41,7 @@ public class Compilador {
     }
     public static void addWarning(String war){
         String str = Colores.AMARILLO + war + Colores.RESET;
-        erroresDetectados.add(str);
+        warningsDetectados.add(str);
     }
     public void printWarnings(){
         if(!warningsDetectados.isEmpty()) {
@@ -49,6 +49,8 @@ public class Compilador {
             for (String warning : warningsDetectados) {
                 System.out.println(warning);
             }
+            System.out.println(Colores.AMARILLO + "-------------------------------------------------------------------------" + Colores.RESET);
+
         }
     }
     public void printErrores(){
@@ -57,16 +59,22 @@ public class Compilador {
             for (String err : erroresDetectados) {
                 System.out.println(err);
             }
+            System.out.println(Colores.ROJO + "-------------------------------------------------------------------------" + Colores.RESET);
         }
+
     }
     public void printTercetos(){
-        System.out.println(Colores.MAGENTA + "-------------------------- TERCETOS DETECTADOS --------------------------" + Colores.RESET);
+
         if(!tercetos.isEmpty()) {
+            System.out.println(Colores.MAGENTA + "-------------------------- TERCETOS DETECTADOS --------------------------" + Colores.RESET);
             for(int i = 0; i < tercetos.size(); i++){
                 System.out.print(Colores.MAGENTA+i+"."+Colores.RESET);
                 tercetos.get(i).print();
             }
-        } else System.out.println(Colores.MAGENTA +"NO HAY TERCETOS"+ Colores.RESET);
+            System.out.println(Colores.MAGENTA + "-------------------------------------------------------------------------" + Colores.RESET);
+
+        }
+
     }
 
     public static void main(String[] args) throws IOException {

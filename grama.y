@@ -16,8 +16,8 @@ prog
     : ID '{' lista_sentencia '}'
     {
         Compilador.salirAmbito();
-        if(!TablaDeSimbolos.checkVar($1.sval, "", tipo, "nombre de programa")){
-           yyerror("La variable "+$2.sval+" ya fue declarada");
+        if(!TablaDeSimbolos.checkVar($1.sval, Compilador.getAmbito(), "", "nombre de programa")){
+           yyerror("La variable "+$1.sval+" ya fue declarada");
         }
     }
     | '{' lista_sentencia '}' {yyerror("falta nombre de programa");}
@@ -67,7 +67,7 @@ sentencia_de_control
 asig
     : variable ASIG exp punto_coma
     {
-        int t = crearTerceto(":=", $1.sval, $3.sval);
+        crearTerceto(":=", $1.sval, $3.sval);
     }
     ;
 
@@ -75,13 +75,14 @@ asig
 exp
     : exp '+' termino
     {
-        int t = crearTerceto("+", $1.sval, $3.sval);
-
+        crearTerceto("+", $1.sval, $3.sval);
+        int t = Compilador.tercetos.size() - 1;
         $$=new ParserVal("[" + t + "]");
     }
     | exp '-' termino
     {
-        int t = crearTerceto("-", $1.sval, $3.sval);
+        crearTerceto("-", $1.sval, $3.sval);
+        int t = Compilador.tercetos.size() - 1;
         $$=new ParserVal("[" + t + "]");
     }
     | '+' termino {yyerror("falta operando a izquierda de +");}
@@ -97,12 +98,14 @@ exp
 termino
     : termino '*' factor
     {
-        int t = crearTerceto("*", $1.sval, $3.sval);
+        crearTerceto("*", $1.sval, $3.sval);
+         int t = Compilador.tercetos.size() - 1;
         $$=new ParserVal("[" + t + "]");
     }
     | termino '/' factor
     {
-        int t = crearTerceto("/", $1.sval, $3.sval);
+        crearTerceto("/", $1.sval, $3.sval);
+         int t = Compilador.tercetos.size() - 1;
         $$=new ParserVal("[" + t + "]");
     }
     | termino '/' error {yyerror("falta operando a derecha de /");}
@@ -143,14 +146,24 @@ variable
     ;
 
 invocacion
-    : ID '(' parametros_de_invocacion ')' {addEstructura("invocacion a funcion"); $$=$1;}
+    : ID '(' parametros_de_invocacion ')'
+    {
+        addEstructura("invocacion a funcion");
+        $$=new ParserVal($1.sval+"("+$3.sval+")");
+    }
     ;
 
 parametros_de_invocacion
     : parametro_real FLECHA ID
+    {
+        $$=new ParserVal( $1.sval );
+    }
     | parametro_real FLECHA {yyerror("Falta parametro formal");}
     | parametro_real {yyerror("Falta flecha y parametro formal");}
     | parametros_de_invocacion ',' parametro_real FLECHA ID
+    {
+        $$ = new ParserVal($1.sval+","+$3.sval);
+    }
     | parametros_de_invocacion ',' parametro_real FLECHA {yyerror("Falta parametro formal");}
     | parametros_de_invocacion ',' parametro_real {yyerror("Falta flecha y parametro formal");}
     | error {yyerror("error en parametros de invocacion");}
@@ -159,7 +172,8 @@ parametros_de_invocacion
 salida_msj
     : PRINT '(' argumento_print ')' punto_coma
     {
-        int t = crearTerceto("print", $3.sval, "-");
+        crearTerceto("print", $3.sval, "-");
+         int t = Compilador.tercetos.size() - 1;
         $$=new ParserVal("[" + t + "]");
     }
     | PRINT '('  ')' punto_coma {yyerror("falta argumento en print");}
@@ -216,14 +230,17 @@ completar_bf
     ;
 crear_bi
     : {
-        int bi = crearTerceto("BI", "-", "-");
+        crearTerceto("BI", "-", "-");
+         int bi = Compilador.tercetos.size() - 1;
         Compilador.pilaSaltos.add(bi);}
     ;
 cuerpo_condicion
     : '(' exp comparador exp ')'
     {
-        int t = crearTerceto($3.sval, $2.sval, $4.sval);
-        int bf = crearTerceto("BF", "["+t+"]", "-");
+        crearTerceto($3.sval, $2.sval, $4.sval);
+         int t = Compilador.tercetos.size() - 1;
+        crearTerceto("BF", "["+t+"]", "-");
+         int bf = Compilador.tercetos.size() - 1;
         Compilador.pilaSaltos.add(bf);
         $$ = new ParserVal("[" + t + "]");
     }
@@ -264,23 +281,28 @@ lista_variables_declaracion
         }
 
     }
-    | lista_variables_declaracion ',' ID {$$ = new ParserVal($1.sval+","+$3.sval);}
+    | lista_variables_declaracion ',' ID
+    {
+        $$ = new ParserVal($1.sval+","+$3.sval);
+        String ambito = Compilador.getAmbito();
+        if(!TablaDeSimbolos.checkVar($3.sval, ambito, tipo, "nombre de variable")){
+           yyerror("La variable "+$3.sval+" ya fue declarada");
+        }
+    }
     | lista_variables_declaracion ID {yyerror("falta , en lista de variables");}
     ;
 
 /* -------------- TRATADO DE FUNCIONES -------------- */
-
 funcion
-    : tipo ID '(' parametros_formales ')' {
+    : tipo ID '(' {Compilador.entrarAmbito($2.sval);} parametros_formales ')' {
         String ambito = Compilador.getAmbito();
         if(!TablaDeSimbolos.checkVar($2.sval, ambito, tipo, "nombre de funcion")){
-            yyerror("La variable "+$2.sval+" ya fue declarada");
+            yyerror("La funcion "+$2.sval+" ya fue declarada");
         }
-        Compilador.entrarAmbito($2.sval);
-        int t = crearTerceto("inicio de funcion", $2.sval, "-");
+        crearTerceto("inicio de funcion", $2.sval, "-");
     }
     '{' lista_sentencia_funcion '}' {
-        int t = crearTerceto("fin de funcion", $2.sval, "-");
+        crearTerceto("fin de funcion", $2.sval, "-");
         Compilador.salirAmbito();
     }
     | tipo '(' parametros_formales ')' '{' lista_sentencia_funcion '}' { yyerror("falta declarar nombre de funcion");}
@@ -327,7 +349,8 @@ return
     : RETURN '(' exp ')' punto_coma
     {
         addEstructura("return");
-        int t = crearTerceto("return", $3.sval, "-");
+        crearTerceto("return", $3.sval, "-");
+         int t = Compilador.tercetos.size() - 1;
         $$=new ParserVal("[" + t + "]");
         }
     ;
@@ -357,7 +380,7 @@ inicio_while
 crear_bi_while
     : {
         int salto = Compilador.pilaSaltos.remove(0);
-        int bi = crearTerceto("BI", "[" +salto+"]", "-");
+        crearTerceto("BI", "[" +salto+"]", "-");
     }
     ;
 nuevo_ambito
@@ -387,20 +410,19 @@ argumento_lambda
 asig_multiple
     : lista_variables '=' lista_constantes punto_coma
     {
-        int t = crearTerceto("=", $1.sval, $3.sval);
-        $$=new ParserVal("[" + t + "]");
+        asigMultiple($1.sval,$3.sval);
     }
     ;
 
 lista_variables
-    : variable {$$=$1;}
-    | lista_variables ',' variable {$$=new ParserVal("{"+$1.sval + ", " + $3.sval+"}");}
+    : variable
+    | lista_variables ',' variable {$$=new ParserVal($1.sval + "," + $3.sval);}
     | lista_variables variable {yyerror("falta , en lista de variables");}
     ;
 
 lista_constantes
     : CTE {$$=$1;}
-    | lista_constantes ',' CTE {$$=new ParserVal("{"+$1.sval + ", " + $3.sval+"}");}
+    | lista_constantes ',' CTE {$$=new ParserVal($1.sval + "," + $3.sval);}
     | lista_constantes CTE {yyerror("falta , en lista de constantes");}
     ;
 
@@ -478,10 +500,41 @@ public void check_rango(String valor){
     }
   }
 
-  int crearTerceto(String operacion, String variable, String valor){
+ private void crearTerceto(String operacion, String variable, String valor){
     Compilador.tercetos.add(new Terceto(operacion, variable, valor));
-    return Compilador.tercetos.size() - 1;
   }
+
+private void asigMultiple(String var, String cte) {
+
+    ArrayList<String> vars = new ArrayList<>();
+    ArrayList<String> ctes = new ArrayList<>();
+
+    for (String v : var.split(",")) {
+        vars.add(v);
+    }
+
+    for (String c : cte.split(",")) {
+        ctes.add(c);
+    }
+
+    while (!(vars.isEmpty() && ctes.isEmpty())){
+    crearTerceto(":=", vars.remove(0), ctes.remove(0));
+        if(vars.isEmpty()){
+          if(!ctes.isEmpty()){
+            yyWarning("Hay mas constantes que variables");
+            break;
+          }
+        }
+        if(!vars.isEmpty()){
+          if(ctes.isEmpty()){
+            yyerror("Hay mas variables que constantes");
+            break;
+          }
+        }
+
+    }
+}
+
 
   private void completarBF(int index, int destino) {
         Terceto t = Compilador.tercetos.get(index);
@@ -491,4 +544,8 @@ public void check_rango(String valor){
 private void completarBI(int index, int destino) {
     Terceto t = Compilador.tercetos.get(index);
     t.setValor2("[" + destino + "]");
+  }
+  private void yyWarning(String war){
+      String str ="WARNING LINEA " + nroLinea() + ": " + war;
+  Compilador.addWarning(str);
   }

@@ -10,7 +10,7 @@ public class Terceto {
     }
 
     public void print(){
-        System.out.println(Colores.MAGENTA+"(" + operacion + ", " + val2 + ", " + val3 + ")"+Colores.RESET);
+        System.out.println(Colores.MAGENTA+"(" + operacion + ", " + val2 + ", " + val3 + " )"+Colores.RESET);
     }
 
     public void setValor2(String variable){

@@ -27,7 +27,7 @@ public class TablaDeSimbolos {
     }
 
     public static boolean checkVar(String valor, String ambito, String tipo, String uso){
-        String aux = valor+":"+ambito;
+        String aux = valor+ambito;
         if(TS.containsKey(aux)){
             return false;
         }
@@ -40,9 +40,8 @@ public class TablaDeSimbolos {
     }
 
     public static boolean estaDeclarado(String val, String ambito){
-        String aux = val + ":" + ambito;
+        String aux = val + ambito;
         while (aux.lastIndexOf(":")!=-1) {
-            System.out.println("aux es:" +aux);
             if (TS.containsKey(aux)) {
                 return true;
             }
@@ -89,6 +88,7 @@ public class TablaDeSimbolos {
                         uso
                 );
             }
+            System.out.println("-------------------------------------------------------------------------");
         }
     }
 
