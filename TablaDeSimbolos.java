@@ -55,6 +55,11 @@ public class TablaDeSimbolos {
         return false;
     }
 
+    public static boolean varPrefijadaDeclarada(String val, String ambito){
+        String aux = val + ":" + ambito;
+        return TS.containsKey(aux);
+    }
+
     public static boolean funcionDeclarada(String val, String ambito){
         String aux = val + ambito;
         while (aux.lastIndexOf(":")!=-1) {

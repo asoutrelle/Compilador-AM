@@ -132,16 +132,18 @@ variable
     : ID '.' ID
     {
         $$ = new ParserVal($1.sval + '.' + $3.sval);
-
+        if(!TablaDeSimbolos.varPrefijadaDeclarada($3.sval, $1.sval)){
+            yyerror("La variable "+$3.sval+" no fue declarada en el ambito " + $1.sval);
+        }
+        TablaDeSimbolos.eliminar($3.sval);
     }
     | ID
     {
         if(!TablaDeSimbolos.varDeclarada($1.sval, Compilador.getAmbito())){
                     yyerror("La variable "+$1.sval+" no fue declarada");
-                    TablaDeSimbolos.eliminar($1.sval);
-                } else TablaDeSimbolos.eliminar($1.sval);
+        }
+        TablaDeSimbolos.eliminar($1.sval);
         $$=$1;
-
     }
     ;
 
