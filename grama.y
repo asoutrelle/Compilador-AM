@@ -120,7 +120,7 @@ factor
     | invocacion {$$=$1;}
     | CTE {$$=new ParserVal($1.sval);}
     | exp_lambda {addEstructura("lambda"); $$=$1;}
-    | TRUNC '(' punto_flotante ')' {addEstructura("trunc");}
+    | TRUNC '(' punto_flotante ')' {addEstructura("trunc"); $$=new ParserVal(truncar($3.sval));}
     | TRUNC  punto_flotante ')' {addEstructura("trunc");yyerror("falta abrir parentesis en trunc");}
     | TRUNC '(' error {addEstructura("trunc");yyerror("falta cerrar parentesis en trunc");yyerrflag=0;}
     | TRUNC  '(' ')' {addEstructura("trunc");yyerror("falta argumento en trunc");}
@@ -417,17 +417,31 @@ cuerpo_sentencia_ejecutable
 
 /* -------------- EXPRESIONES LAMBDA -------------- */
 exp_lambda
-    : '(' tipo ID ')' '{' lista_sentencia_ejecutable '}' argumento_lambda {$$= new ParserVal("soy un lamnda");}
-    | '(' tipo ID ')'  lista_sentencia_ejecutable '}' argumento_lambda { yyerror("falta abrir llave en cuerpo de sentencia lambda");}
-    | '(' tipo ID ')'  '{' lista_sentencia_ejecutable argumento_lambda {yyerror("falta cerra llave en cuerpo de sentencia lambda");}
-    | '(' tipo ID ')'   lista_sentencia_ejecutable argumento_lambda { yyerror("faltan llaves en cuerpo de sentencia lambda");}
+    : '('  tipo nuevo_ambito  validar_id ')' '{' lista_sentencia_ejecutable '}' argumento_lambda
+    {
+        $$= new ParserVal("lambda");
+        Compilador.salirAmbito();
+    }
+    |  '(' tipo nuevo_ambito  validar_id ')'  lista_sentencia_ejecutable '}' argumento_lambda { yyerror("falta abrir llave en cuerpo de sentencia lambda");}
+    |  '(' tipo nuevo_ambito  validar_id ')'  '{' lista_sentencia_ejecutable argumento_lambda {yyerror("falta cerra llave en cuerpo de sentencia lambda");}
+    |  '(' tipo nuevo_ambito  validar_id ')'   lista_sentencia_ejecutable argumento_lambda { yyerror("faltan llaves en cuerpo de sentencia lambda");}
     ;
-
 
 argumento_lambda
     : '(' ID ')'
     | '(' CTE ')'
     ;
+
+validar_id
+    : ID
+    {
+        String ambito = Compilador.getAmbito();
+        if(!TablaDeSimbolos.checkVar($1.sval, ambito, tipo, "nombre de variable")){
+           yyerror("La variable "+$1.sval+" ya fue declarada");
+        }
+    }
+    ;
+
 /* -------------- ASIGNACION MULTIPLE -------------- */
 asig_multiple
     : lista_variables '=' lista_constantes punto_coma
@@ -570,4 +584,20 @@ private void completarBI(int index, int destino) {
   private void yyWarning(String war){
       String str ="WARNING LINEA " + nroLinea() + ": " + war;
   Compilador.addWarning(str);
+  }
+
+  private String truncar(String pf){
+        String normalized = pf.replace('D', 'E').replace('d', 'E');
+        double val;
+        try {
+            val = Double.parseDouble(normalized);
+        } catch (NumberFormatException e) {
+            yyerror("Literal punto flotante inválido en trunc(): " + pf);
+            return null;
+        }
+        long truncadoLong = (long) val;
+        String valorStr = Long.toString(truncadoLong)+"UI";
+        Token t = new Token(258,nroLinea());
+        TablaDeSimbolos.agregar(valorStr,t, "uint", "variable auxiliar");
+        return valorStr;
   }
