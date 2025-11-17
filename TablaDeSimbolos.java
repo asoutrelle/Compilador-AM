@@ -4,7 +4,12 @@ public class TablaDeSimbolos {
     private static HashMap<String, Simbolo> TS = new HashMap<>();
     public TablaDeSimbolos() {
     }
-
+    public static void agregar(String val, Token token, String tipo, String uso){
+        Simbolo s = new Simbolo(val, token, tipo, uso);
+        if(!TS.containsKey(s.getValor())){
+            TS.put(s.getValor(),s);
+        }
+    }
 
     public static void agregar(String val, Token token, String tipo){
         Simbolo s = new Simbolo(val, token, tipo);
@@ -13,6 +18,7 @@ public class TablaDeSimbolos {
         }
     }
 
+
     public static void agregar(String val, Token token){
         Simbolo s = new Simbolo(val, token);
         if(!TS.containsKey(s.getValor())){
@@ -20,19 +26,39 @@ public class TablaDeSimbolos {
         }
     }
 
-    public static void addAmbito(String valor, String ambito){
+    public static boolean checkVar(String valor, String ambito, String tipo, String uso){
+        String aux = valor+":"+ambito;
+        if(TS.containsKey(aux)){
+            return false;
+        }
         Simbolo s = TS.get(valor);
-        TS.put(valor+":"+ambito,s);
+        TS.put(aux,s);
         TS.remove(valor);
-    }
-    public static void addTipo(String valor, String tipo){
-        TS.get(valor).setTipo(tipo);
+        TS.get(aux).setTipo(tipo);
+        TS.get(aux).setUso(uso);
+        return true;
     }
 
     public static boolean estaDeclarado(String val, String ambito){
-        System.out.println("la key es:"+val+":"+ambito);
-        return TS.containsKey(val+":"+ambito);
+        String aux = val + ":" + ambito;
+        while (aux.lastIndexOf(":")!=-1) {
+            System.out.println("aux es:" +aux);
+            if (TS.containsKey(aux)) {
+                return true;
+            }
+            int idx = aux.lastIndexOf(":");
+            if (idx == -1) {
+                return false; // no hay más ámbitos para quitar
+            } else {
+                aux = aux.substring(0, idx); // quitar la última parte
+            }
+        }
+        return false;
     }
+    public static void eliminar(String val){
+        TS.remove(val);
+    }
+
 
 
 
@@ -42,9 +68,9 @@ public class TablaDeSimbolos {
         if (!TS.isEmpty()) {
 
             // Encabezado
-            System.out.println("---------------- TABLA DE SIMBOLOS ----------------");
-            System.out.printf("%-7s | %-30s | %-10s%n" , "Lexema", "Valor", "Tipo");
-            System.out.println("---------------------------------------------------");
+            System.out.println("--------------------------- TABLA DE SIMBOLOS ---------------------------");
+            System.out.printf("%-7s | %-25s | %-10s | %-20s%n" , "Lexema", "Valor", "Tipo", "Uso");
+            System.out.println("-------------------------------------------------------------------------");
 
             // Filas
             for (String clave : TS.keySet()) {
@@ -52,12 +78,15 @@ public class TablaDeSimbolos {
 
                 int lexema = s.getToken().getLexema();
                 String tipo = (s.getTipo() == null) ? "" : s.getTipo();
+                String uso = (s.getUso() == null) ? "" : s.getUso();
+
 
                 System.out.printf(
-                        "%-7s | %-30s | %-10s%n",
+                        "%-7s | %-25s | %-10s | %-20s%n",
                         lexema,
                         clave,
-                        tipo
+                        tipo,
+                        uso
                 );
             }
         }

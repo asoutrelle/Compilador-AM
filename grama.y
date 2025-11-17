@@ -13,7 +13,13 @@ import java.math.BigDecimal;
 
 %%
 prog
-    : ID '{' lista_sentencia '}' {Compilador.salirAmbito();} {TablaDeSimbolos.addAmbito($1.sval, Compilador.getAmbito());}
+    : ID '{' lista_sentencia '}'
+    {
+        Compilador.salirAmbito();
+        if(!TablaDeSimbolos.checkVar($1.sval, "", tipo, "nombre de programa")){
+           yyerror("La variable "+$2.sval+" ya fue declarada");
+        }
+    }
     | '{' lista_sentencia '}' {yyerror("falta nombre de programa");}
     | ID '{' lista_sentencia  {yyerror("falta llave de cierre de programa");}
     | ID lista_sentencia '}' {yyerror("falta llave de inicio de programa");}
@@ -61,10 +67,6 @@ sentencia_de_control
 asig
     : variable ASIG exp punto_coma
     {
-        String ambito = Compilador.getAmbito();
-        if (!TablaDeSimbolos.estaDeclarado($1.sval, ambito)){
-            yyerror("la variable "+$1.sval+" no fue delarada");
-        }
         int t = crearTerceto(":=", $1.sval, $3.sval);
     }
     ;
@@ -113,23 +115,31 @@ termino
 factor
     : variable {$$=$1;}
     | invocacion {$$=$1;}
-    | CTE {$$=$1;}
+    | CTE {$$=new ParserVal($1.sval);}
     | exp_lambda {addEstructura("lambda"); $$=$1;}
     | punto_flotante {$$=$1;}
     ;
 
 punto_flotante
-    : PF64 {check_rango($1.sval);}
-    | '-' PF64 {check_rango("-"+$2.sval);}
+    : PF64 {check_rango($1.sval); $$=new ParserVal($1.sval);}
+    | '-' PF64 {check_rango("-"+$2.sval); $$=new ParserVal("-"+$1.sval);}
     ;
 
 variable
     : ID '.' ID
     {
         $$ = new ParserVal($1.sval + '.' + $3.sval);
-        /*checkDeclaracion($$.sval);*/
+
     }
-    | ID {$$=$1;}
+    | ID
+    {
+        if(!TablaDeSimbolos.estaDeclarado($1.sval, Compilador.getAmbito())){
+                    yyerror("La variable "+$1.sval+" no fue declarada");
+                    TablaDeSimbolos.eliminar($1.sval);
+                } else TablaDeSimbolos.eliminar($1.sval);
+        $$=$1;
+
+    }
     ;
 
 invocacion
@@ -243,16 +253,16 @@ lista_sentencia_ejecutable
 declaracion
     : tipo lista_variables_declaracion punto_coma
     ;
+
+
 lista_variables_declaracion
     : ID
     {
         String ambito = Compilador.getAmbito();
-        if (!TablaDeSimbolos.estaDeclarado($1.sval, ambito)){
-            TablaDeSimbolos.addAmbito($1.sval, ambito);
-            TablaDeSimbolos.addTipo($1.sval+":"+ambito, tipo);
-        } else{
-            yyerror("la variable "+$1.sval+" ya fue declarada");
+        if(!TablaDeSimbolos.checkVar($1.sval, ambito, tipo, "nombre de variable")){
+           yyerror("La variable "+$1.sval+" ya fue declarada");
         }
+
     }
     | lista_variables_declaracion ',' ID {$$ = new ParserVal($1.sval+","+$3.sval);}
     | lista_variables_declaracion ID {yyerror("falta , en lista de variables");}
@@ -261,18 +271,17 @@ lista_variables_declaracion
 /* -------------- TRATADO DE FUNCIONES -------------- */
 
 funcion
-    : tipo ID '(' parametros_formales ')' {Compilador.entrarAmbito($2.sval);int t = crearTerceto("inicio de funcion", "-", "-");} '{' lista_sentencia_funcion '}'
-    {
-        String ID = $2.sval;
-        Compilador.salirAmbito();
+    : tipo ID '(' parametros_formales ')' {
         String ambito = Compilador.getAmbito();
-        if (!TablaDeSimbolos.estaDeclarado(ID, ambito)){
-            TablaDeSimbolos.addAmbito(ID, ambito);
-            TablaDeSimbolos.addTipo(ID+":"+ambito, tipo);
-        } else{
-            yyerror("la variable "+ID+" ya fue declarada");
+        if(!TablaDeSimbolos.checkVar($2.sval, ambito, tipo, "nombre de funcion")){
+            yyerror("La variable "+$2.sval+" ya fue declarada");
         }
-        int t = crearTerceto("fin de funcion", "-", "-");
+        Compilador.entrarAmbito($2.sval);
+        int t = crearTerceto("inicio de funcion", $2.sval, "-");
+    }
+    '{' lista_sentencia_funcion '}' {
+        int t = crearTerceto("fin de funcion", $2.sval, "-");
+        Compilador.salirAmbito();
     }
     | tipo '(' parametros_formales ')' '{' lista_sentencia_funcion '}' { yyerror("falta declarar nombre de funcion");}
     | tipo ID '(' ')' '{' lista_sentencia_funcion '}' {yyerror("faltan parametros formales");}
@@ -283,22 +292,16 @@ parametros_formales
     : CR tipo ID
     {
         String ambito = Compilador.getAmbito();
-        if (!TablaDeSimbolos.estaDeclarado($3.sval, ambito)){
-            TablaDeSimbolos.addAmbito($3.sval, ambito);
-            TablaDeSimbolos.addTipo($3.sval+":"+ambito, tipo);
-        } else{
-            yyerror("la variable "+$3.sval+" ya fue declarada");
-        }
+                if(!TablaDeSimbolos.checkVar($3.sval, ambito, tipo, "nombre de parametro")){
+                   yyerror("La variable "+$3.sval+" ya fue declarada");
+                }
     }
     | tipo ID
     {
         String ambito = Compilador.getAmbito();
-        if (!TablaDeSimbolos.estaDeclarado($2.sval, ambito)){
-            TablaDeSimbolos.addAmbito($2.sval, ambito);
-            TablaDeSimbolos.addTipo($2.sval+":"+ambito, tipo);
-        } else{
-            yyerror("la variable "+$2.sval+" ya fue declarada");
-        }
+                if(!TablaDeSimbolos.checkVar($2.sval, ambito, tipo, "nombre de parametro")){
+                   yyerror("La variable "+$2.sval+" ya fue declarada");
+                }
     }
     | parametros_formales ',' CR tipo ID
     | parametros_formales ',' tipo ID

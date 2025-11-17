@@ -2,6 +2,14 @@ public class Simbolo {
     private Token token;
     private String tipo = "";
     private String valor;
+    private String uso;
+
+    public Simbolo(String valor, Token token, String tipo, String uso) {
+        this.valor = valor;
+        this.token = token;
+        this.tipo = tipo;
+        this.uso = uso;
+    }
 
     public Simbolo(String valor, Token token, String tipo) {
         this.valor = valor;
@@ -26,5 +34,11 @@ public class Simbolo {
     }
     public void setTipo(String tipo) {
         this.tipo = tipo;
+    }
+    public void setUso(String uso) {
+        this.uso = uso;
+    }
+    public String getUso() {
+        return uso;
     }
 }

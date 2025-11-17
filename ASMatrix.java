@@ -79,6 +79,8 @@ public class ASMatrix {
                     Compilador.addError(err);
                 } else {
                     t = analizadorLexico.reconocerToken(estadoAnterior);
+                    TablaDeSimbolos.agregar(valor, t,"uint", "constante");
+                    AnalizadorLexico.valorTs = valor;
                 }
                     analizadorLexico.vaciarCadena();
                 return t;
@@ -106,6 +108,7 @@ public class ASMatrix {
 
                 if (enRango) {
                     t = analizadorLexico.reconocerToken(estadoAnterior);
+                    TablaDeSimbolos.agregar(valor,t,"pf", "constante");
                     AnalizadorLexico.valorTs = valor;
                 } else {
                     String err = "ERROR LINEA " + analizadorLexico.getNroLinea() +
