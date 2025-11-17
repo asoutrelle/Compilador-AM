@@ -39,7 +39,7 @@ public class TablaDeSimbolos {
         return true;
     }
 
-    public static boolean estaDeclarado(String val, String ambito){
+    public static boolean varDeclarada(String val, String ambito){
         String aux = val + ambito;
         while (aux.lastIndexOf(":")!=-1) {
             if (TS.containsKey(aux)) {

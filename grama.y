@@ -136,7 +136,7 @@ variable
     }
     | ID
     {
-        if(!TablaDeSimbolos.estaDeclarado($1.sval, Compilador.getAmbito())){
+        if(!TablaDeSimbolos.varDeclarada($1.sval, Compilador.getAmbito())){
                     yyerror("La variable "+$1.sval+" no fue declarada");
                     TablaDeSimbolos.eliminar($1.sval);
                 } else TablaDeSimbolos.eliminar($1.sval);
