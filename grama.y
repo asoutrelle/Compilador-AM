@@ -79,7 +79,6 @@ lista_variables_declaracion
         if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable")){
            $$ = new ParserVal(var+ambito);
         } else yyerror("La variable "+var+" ya fue declarada");
-
     }
     | lista_variables_declaracion ',' ID
     {
@@ -149,11 +148,14 @@ termino
     ;
 
 factor
-    : variable {$$=$1;}
-    | invocacion {$$=$1;}
+    : variable
+    | invocacion
     | CTE {$$=new ParserVal($1.sval);}
-    | exp_lambda {addEstructura("lambda"); $$=$1;}
-    | TRUNC '(' punto_flotante ')' {addEstructura("trunc"); $$=new ParserVal(truncar($3.sval));}
+    | exp_lambda {addEstructura("lambda");}
+    | TRUNC '(' punto_flotante ')'
+    {
+        addEstructura("trunc"); $$=new ParserVal(truncar($3.sval));
+    }
     | TRUNC  punto_flotante ')' {addEstructura("trunc");yyerror("falta abrir parentesis en trunc");}
     | TRUNC '(' error {addEstructura("trunc");yyerror("falta cerrar parentesis en trunc");yyerrflag=0;}
     | TRUNC  '(' ')' {addEstructura("trunc");yyerror("falta argumento en trunc");}
@@ -191,7 +193,7 @@ invocacion
     {
         String ambito = Compilador.getAmbito();
         String var = $1.sval;
-        $$=new ParserVal(var+ambito+"("+$3.sval+")");
+        $$ = new ParserVal(var+ambito+"("+$3.sval+")");
         if(!TablaDeSimbolos.funcionDeclarada(var,ambito)){
             yyerror("La funcion " + var + " no esta declarada");
         } else{
@@ -204,8 +206,13 @@ invocacion
 parametros_de_invocacion
     : parametro_real FLECHA ID
     {
-        $$=new ParserVal( $1.sval );
-        TablaDeSimbolos.eliminar($3.sval);
+        $$=$1;
+        String ambito = Compilador.getAmbito();
+        String var = $3.sval;
+        if (!TablaDeSimbolos.varDeclarada(var, ambito )){
+            yyerror("El parametro " + var + " no esta declarado");
+        }
+        TablaDeSimbolos.eliminar(var);
     }
     | parametro_real FLECHA {yyerror("Falta parametro formal");}
     | parametro_real {yyerror("Falta flecha y parametro formal");}
@@ -216,6 +223,10 @@ parametros_de_invocacion
     | parametros_de_invocacion ',' parametro_real FLECHA {yyerror("Falta parametro formal");}
     | parametros_de_invocacion ',' parametro_real {yyerror("Falta flecha y parametro formal");}
     | error {yyerror("error en parametros de invocacion");}
+    ;
+
+parametro_real
+    : exp
     ;
 
 salida_msj
@@ -332,7 +343,7 @@ funcion
     : tipo ID '(' {
         String ambito = Compilador.getAmbito();
         String var = $2.sval;
-        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable")){
+        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de funcion")){
            $$ = new ParserVal(var+ambito);
         } else yyerror("La funcion "+var+" ya fue declarada");
 
@@ -410,10 +421,6 @@ return
     ;
 
 
-parametro_real
-    : exp
-    ;
-
 /*--------------------------------------------------------------------------------*/
 
 
@@ -442,7 +449,7 @@ nuevo_ambito_ua
     :
     {
         Compilador.entrarAmbito("ua"+cantUnidadesAnonimas);
-        cantUnidadesAnonimas+= 1;
+        cantUnidadesAnonimas+=1;
     }
     ;
 cuerpo_sentencia_ejecutable
@@ -508,7 +515,6 @@ private ArrayList<Token> tokens = new ArrayList<>();
 private ArrayList<String> estructurasDetectadas = new ArrayList<>();
 private int cantUnidadesAnonimas = 1;
 private String tipo = "";
-
 
 private int yylex(){
     try {
