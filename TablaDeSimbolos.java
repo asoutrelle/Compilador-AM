@@ -26,7 +26,7 @@ public class TablaDeSimbolos {
         }
     }
 
-    public static boolean checkVar(String valor, String ambito, String tipo, String uso){
+    public static boolean agregarVar(String valor, String ambito, String tipo, String uso){
         String aux = valor+ambito;
         if(TS.containsKey(aux)){
             return false;
@@ -39,7 +39,7 @@ public class TablaDeSimbolos {
         return true;
     }
 
-    public static boolean checkVar(String valor, String ambito, String tipo, String uso, String semantica){
+    public static boolean agregarVar(String valor, String ambito, String tipo, String uso, String semantica){
         String aux = valor+ambito;
         if(TS.containsKey(aux)){
             return false;

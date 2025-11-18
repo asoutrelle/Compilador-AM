@@ -16,9 +16,11 @@ prog
     : ID '{' lista_sentencia '}'
     {
         Compilador.salirAmbito();
-        if(!TablaDeSimbolos.checkVar($1.sval, Compilador.getAmbito(), "", "nombre de programa")){
-           yyerror("La variable "+$1.sval+" ya fue declarada");
-        }
+        String ambito = Compilador.getAmbito();
+        String var = $1.sval;
+        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable")){
+           $$ = new ParserVal(var+ambito);
+        } else yyerror("La variable "+var+" ya fue declarada");
     }
     | '{' lista_sentencia '}' {yyerror("falta nombre de programa");}
     | ID '{' lista_sentencia  {yyerror("falta llave de cierre de programa");}
@@ -64,6 +66,32 @@ sentencia_de_control
     : do {addEstructura("sentencia do while");}
     ;
 
+declaracion
+    : tipo lista_variables_declaracion punto_coma
+    ;
+
+
+lista_variables_declaracion
+    : ID
+    {
+        String ambito = Compilador.getAmbito();
+        String var = $1.sval;
+        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable")){
+           $$ = new ParserVal(var+ambito);
+        } else yyerror("La variable "+var+" ya fue declarada");
+
+    }
+    | lista_variables_declaracion ',' ID
+    {
+        String ambito = Compilador.getAmbito();
+        String var = $3.sval;
+        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable")){
+           $$ = new ParserVal($1.sval+","+var);
+        } else yyerror("La variable "+var+" ya fue declarada");
+    }
+    | lista_variables_declaracion ID {yyerror("falta , en lista de variables");}
+    ;
+
 asig
     : variable ASIG exp punto_coma
     {
@@ -71,7 +99,12 @@ asig
           //  System.out.println("val1:"+$1.sval+" val2:"+$3.sval);
           //  crearTerceto(":=", $1.sval, $3.sval);
         //} else yyerror("Los tipos de las variables no coinciden");
-        crearTerceto(":=", $1.sval, $3.sval);
+
+        String ambito = Compilador.getAmbito();
+        String var = $1.sval;
+        if(TablaDeSimbolos.varDeclarada(var, ambito)){
+            crearTerceto(":=", var, $3.sval);
+        }
     }
     ;
 
@@ -99,13 +132,13 @@ termino
     : termino '*' factor
     {
         crearTerceto("*", $1.sval, $3.sval);
-         int t = Compilador.tercetos.size() - 1;
+        int t = Compilador.tercetos.size() - 1;
         $$=new ParserVal("[" + t + "]");
     }
     | termino '/' factor
     {
         crearTerceto("/", $1.sval, $3.sval);
-         int t = Compilador.tercetos.size() - 1;
+        int t = Compilador.tercetos.size() - 1;
         $$=new ParserVal("[" + t + "]");
     }
     | termino '/' error {yyerror("falta operando a derecha de /");}
@@ -142,23 +175,29 @@ variable
     }
     | ID
     {
-        if(!TablaDeSimbolos.varDeclarada($1.sval, Compilador.getAmbito())){
-                    yyerror("La variable "+$1.sval+" no fue declarada");
+        String ambito = Compilador.getAmbito();
+        String var = $1.sval;
+        if(!TablaDeSimbolos.varDeclarada(var, ambito)){
+                    yyerror("La variable "+var+" no fue declarada");
+        } else{
+            TablaDeSimbolos.eliminar(var);
+            $$=new ParserVal (var+ambito);
         }
-        TablaDeSimbolos.eliminar($1.sval);
-        $$=$1;
     }
     ;
 
 invocacion
     : ID '(' parametros_de_invocacion ')'
     {
-        if(!TablaDeSimbolos.funcionDeclarada($1.sval,Compilador.getAmbito())){
-            yyerror("La funcion " + $1.sval + " no esta declarada");
+        String ambito = Compilador.getAmbito();
+        String var = $1.sval;
+        $$=new ParserVal(var+ambito+"("+$3.sval+")");
+        if(!TablaDeSimbolos.funcionDeclarada(var,ambito)){
+            yyerror("La funcion " + var + " no esta declarada");
+        } else{
+            TablaDeSimbolos.eliminar(var);
+            addEstructura("invocacion a funcion");
         }
-        TablaDeSimbolos.eliminar($1.sval);
-        addEstructura("invocacion a funcion");
-        $$=new ParserVal($1.sval+"("+$3.sval+")");
     }
     ;
 
@@ -201,26 +240,35 @@ argumento_print
     ;
 /* -------------------------------------------------------- IF -------------------------------------------------------- */
 if
-    : IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable completar_bf_else ELSE nuevo_ambito crear_bi cuerpo_sentencia_ejecutable ENDIF punto_coma
+    : IF cuerpo_condicion nuevo_ambito_ua cuerpo_sentencia_ejecutable completar_bf_else ELSE nuevo_ambito_ua crear_bi cuerpo_sentencia_ejecutable ENDIF punto_coma
     {
         int bi = Compilador.pilaSaltos.remove(Compilador.pilaSaltos.size()-1);
         completarBI(bi, Compilador.tercetos.size());
     }
-    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable completar_bf_else ELSE ENDIF punto_coma {yyerror("no hay sentencias en else");}
-    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable completar_bf ENDIF punto_coma
+    | IF cuerpo_condicion nuevo_ambito_ua cuerpo_sentencia_ejecutable completar_bf_else ELSE ENDIF punto_coma {yyerror("no hay sentencias en else");}
+    | IF cuerpo_condicion nuevo_ambito_ua cuerpo_sentencia_ejecutable completar_bf ENDIF punto_coma
 
     /*sin endif*/
-    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable completar_bf_else ELSE nuevo_ambito crear_bi cuerpo_sentencia_ejecutable punto_coma { yyerror("falta endif");}
-    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable completar_bf_else ELSE  punto_coma { yyerror("falta endif");yyerror("no hay sentencias en else");}
-    | IF cuerpo_condicion nuevo_ambito cuerpo_sentencia_ejecutable completar_bf punto_coma { yyerror("falta endif");}
+    | IF cuerpo_condicion nuevo_ambito_ua cuerpo_sentencia_ejecutable completar_bf_else ELSE nuevo_ambito_ua crear_bi cuerpo_sentencia_ejecutable punto_coma
+    {
+        yyerror("falta endif");
+    }
+    | IF cuerpo_condicion nuevo_ambito_ua cuerpo_sentencia_ejecutable completar_bf_else ELSE  punto_coma
+    {
+        yyerror("falta endif");yyerror("no hay sentencias en else");
+    }
+    | IF cuerpo_condicion nuevo_ambito_ua cuerpo_sentencia_ejecutable completar_bf punto_coma
+    {
+        yyerror("falta endif");
+    }
 
     /*con endif, sin then*/
-    | IF cuerpo_condicion ELSE nuevo_ambito crear_bi cuerpo_sentencia_ejecutable completar_bf ENDIF punto_coma {yyerror("no hay sentencias en then");}
+    | IF cuerpo_condicion ELSE nuevo_ambito_ua crear_bi cuerpo_sentencia_ejecutable completar_bf ENDIF punto_coma {yyerror("no hay sentencias en then");}
     | IF cuerpo_condicion ELSE  ENDIF punto_coma {yyerror("no hay sentencias en then");yyerror("no hay sentencias en else");}
     | IF cuerpo_condicion ENDIF punto_coma {yyerror("no hay sentencias en then");}
 
     /*sin endif, sin then*/
-    | IF cuerpo_condicion  ELSE nuevo_ambito crear_bi cuerpo_sentencia_ejecutable punto_coma {yyerror("no hay sentencias en then");yyerror("falta endif");}
+    | IF cuerpo_condicion  ELSE nuevo_ambito_ua crear_bi cuerpo_sentencia_ejecutable punto_coma {yyerror("no hay sentencias en then");yyerror("falta endif");}
     | IF cuerpo_condicion  ELSE punto_coma {yyerror("no hay sentencias en then");yyerror("no hay sentencias en else");yyerror("falta endif");}
     | IF cuerpo_condicion  punto_coma {yyerror("no hay sentencias en then");yyerror("falta endif");}
     ;
@@ -277,39 +325,19 @@ lista_sentencia_ejecutable
     ;
 
 /* -------------- FIN IF -------------- */
-declaracion
-    : tipo lista_variables_declaracion punto_coma
-    ;
 
-
-lista_variables_declaracion
-    : ID
-    {
-        String ambito = Compilador.getAmbito();
-        if(!TablaDeSimbolos.checkVar($1.sval, ambito, tipo, "nombre de variable")){
-           yyerror("La variable "+$1.sval+" ya fue declarada");
-        }
-
-    }
-    | lista_variables_declaracion ',' ID
-    {
-        $$ = new ParserVal($1.sval+","+$3.sval);
-        String ambito = Compilador.getAmbito();
-        if(!TablaDeSimbolos.checkVar($3.sval, ambito, tipo, "nombre de variable")){
-           yyerror("La variable "+$3.sval+" ya fue declarada");
-        }
-    }
-    | lista_variables_declaracion ID {yyerror("falta , en lista de variables");}
-    ;
 
 /* -------------- TRATADO DE FUNCIONES -------------- */
 funcion
     : tipo ID '(' {
         String ambito = Compilador.getAmbito();
-        if(!TablaDeSimbolos.checkVar($2.sval, ambito, tipo, "nombre de funcion")){
-            yyerror("La funcion "+$2.sval+" ya fue declarada");
-        }
-        Compilador.entrarAmbito($2.sval);}
+        String var = $2.sval;
+        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable")){
+           $$ = new ParserVal(var+ambito);
+        } else yyerror("La funcion "+var+" ya fue declarada");
+
+        Compilador.entrarAmbito($2.sval);
+    }
     parametros_formales ')' {
         crearTerceto("inicio de funcion", $2.sval, "-");
     }
@@ -326,28 +354,32 @@ parametros_formales
     : CR tipo ID
     {
         String ambito = Compilador.getAmbito();
-                if(!TablaDeSimbolos.checkVar($3.sval, ambito, tipo, "nombre de parametro", "copia-resultado")){
-                   yyerror("La variable "+$3.sval+" ya fue declarada");
-                }
+        String var = $3.sval;
+        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable")){
+           $$ = new ParserVal(var+ambito);
+        } else yyerror("La variable "+var+" ya fue declarada");
     }
     | tipo ID
     {
         String ambito = Compilador.getAmbito();
-                if(!TablaDeSimbolos.checkVar($2.sval, ambito, tipo, "nombre de parametro", "copia-valor")){
-                   yyerror("La variable "+$2.sval+" ya fue declarada");
-                }
+        String var = $2.sval;
+        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable")){
+           $$ = new ParserVal(var+ambito);
+        } else yyerror("La variable "+var+" ya fue declarada");
     }
     | parametros_formales ',' CR tipo ID{
         String ambito = Compilador.getAmbito();
-        if(!TablaDeSimbolos.checkVar($5.sval, ambito, tipo, "nombre de parametro", "copia-resultado")){
-            yyerror("La variable "+$5.sval+" ya fue declarada");
-        }
+        String var = $5.sval;
+        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable")){
+           $$ = new ParserVal(var+ambito);
+        } else yyerror("La variable "+var+" ya fue declarada");
     }
     | parametros_formales ',' tipo ID{
         String ambito = Compilador.getAmbito();
-        if(!TablaDeSimbolos.checkVar($4.sval, ambito, tipo, "nombre de parametro", "copia-valor")){
-            yyerror("La variable "+$4.sval+" ya fue declarada");
-        }
+        String var = $4.sval;
+        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable")){
+           $$ = new ParserVal(var+ambito);
+        } else yyerror("La variable "+var+" ya fue declarada");
     }
     | error {yyerror("error en parametro formal");}
     ;
@@ -387,14 +419,14 @@ parametro_real
 
 /* ------------------------------------------ DO WHILE ------------------------------------------ */
 do
-    : DO nuevo_ambito inicio_while cuerpo_sentencia_ejecutable WHILE cuerpo_condicion crear_bi_while completar_bf punto_coma
-    | DO nuevo_ambito inicio_while WHILE cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias");}
-    | DO nuevo_ambito inicio_while cuerpo_sentencia_ejecutable WHILE cuerpo_condicion {yyerror("falta de ;");}
+    : DO nuevo_ambito_ua inicio_while cuerpo_sentencia_ejecutable WHILE cuerpo_condicion crear_bi_while completar_bf punto_coma
+    | DO nuevo_ambito_ua inicio_while WHILE cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias");}
+    | DO nuevo_ambito_ua inicio_while cuerpo_sentencia_ejecutable WHILE cuerpo_condicion {yyerror("falta de ;");}
 
-    | DO nuevo_ambito inicio_while cuerpo_sentencia_ejecutable cuerpo_condicion punto_coma { yyerror("falta while");}
-    | DO nuevo_ambito inicio_while cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias"); yyerror("falta while");}
-    | DO nuevo_ambito inicio_while cuerpo_sentencia_ejecutable cuerpo_condicion {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta while");}
-    | DO nuevo_ambito inicio_while  cuerpo_condicion {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");yyerror("falta while");}
+    | DO nuevo_ambito_ua inicio_while cuerpo_sentencia_ejecutable cuerpo_condicion punto_coma { yyerror("falta while");}
+    | DO nuevo_ambito_ua inicio_while cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias"); yyerror("falta while");}
+    | DO nuevo_ambito_ua inicio_while cuerpo_sentencia_ejecutable cuerpo_condicion {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta while");}
+    | DO nuevo_ambito_ua inicio_while  cuerpo_condicion {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");yyerror("falta while");}
     ;
 inicio_while
     : {Compilador.pilaSaltos.add(Compilador.tercetos.size());}
@@ -405,8 +437,13 @@ crear_bi_while
         crearTerceto("BI", "[" +salto+"]", "-");
     }
     ;
-nuevo_ambito
-    : {Compilador.entrarAmbito("ua"+cantUnidadesAnonimas); cantUnidadesAnonimas+= 1;}
+    
+nuevo_ambito_ua
+    :
+    {
+        Compilador.entrarAmbito("ua"+cantUnidadesAnonimas);
+        cantUnidadesAnonimas+= 1;
+    }
     ;
 cuerpo_sentencia_ejecutable
     : '{' lista_sentencia_ejecutable '}' {Compilador.salirAmbito();}
@@ -417,14 +454,14 @@ cuerpo_sentencia_ejecutable
 
 /* -------------- EXPRESIONES LAMBDA -------------- */
 exp_lambda
-    : '('  tipo nuevo_ambito  validar_id ')' '{' lista_sentencia_ejecutable '}' argumento_lambda
+    : '('  tipo nuevo_ambito_ua  validar_id ')' '{' lista_sentencia_ejecutable '}' argumento_lambda
     {
         $$= new ParserVal("lambda");
         Compilador.salirAmbito();
     }
-    |  '(' tipo nuevo_ambito  validar_id ')'  lista_sentencia_ejecutable '}' argumento_lambda { yyerror("falta abrir llave en cuerpo de sentencia lambda");}
-    |  '(' tipo nuevo_ambito  validar_id ')'  '{' lista_sentencia_ejecutable argumento_lambda {yyerror("falta cerra llave en cuerpo de sentencia lambda");}
-    |  '(' tipo nuevo_ambito  validar_id ')'   lista_sentencia_ejecutable argumento_lambda { yyerror("faltan llaves en cuerpo de sentencia lambda");}
+    |  '(' tipo nuevo_ambito_ua  validar_id ')'  lista_sentencia_ejecutable '}' argumento_lambda { yyerror("falta abrir llave en cuerpo de sentencia lambda");}
+    |  '(' tipo nuevo_ambito_ua  validar_id ')'  '{' lista_sentencia_ejecutable argumento_lambda {yyerror("falta cerra llave en cuerpo de sentencia lambda");}
+    |  '(' tipo nuevo_ambito_ua  validar_id ')'   lista_sentencia_ejecutable argumento_lambda { yyerror("faltan llaves en cuerpo de sentencia lambda");}
     ;
 
 argumento_lambda
@@ -436,9 +473,10 @@ validar_id
     : ID
     {
         String ambito = Compilador.getAmbito();
-        if(!TablaDeSimbolos.checkVar($1.sval, ambito, tipo, "nombre de variable")){
-           yyerror("La variable "+$1.sval+" ya fue declarada");
-        }
+        String var = $1.sval;
+        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable")){
+           $$ = new ParserVal(var+ambito);
+        } else yyerror("La variable "+var+" ya fue declarada");
     }
     ;
 

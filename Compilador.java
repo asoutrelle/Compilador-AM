@@ -6,7 +6,7 @@ public class Compilador {
     public static ArrayList<String> warningsDetectados = new ArrayList<>();
     public static ArrayList<Terceto> tercetos = new ArrayList<>();
     public static ArrayList<Integer> pilaSaltos = new ArrayList<>();
-    public static String ambitoActual = "global";
+    public static String ambitoActual = "";
     public static ArrayList<String> pilaAmbitos = new ArrayList<>();
 
     public static void entrarAmbito(String nombre) {
@@ -45,33 +45,39 @@ public class Compilador {
     }
     public void printWarnings(){
         if(!warningsDetectados.isEmpty()) {
-            System.out.println(Colores.AMARILLO + "-------------------------- WARNINGS DETECTADOS --------------------------" + Colores.RESET);
+            System.out.println(Colores.AMARILLO +
+                    "---------------------------------- WARNINGS DETECTADOS ----------------------------------" + Colores.RESET);
             for (String warning : warningsDetectados) {
                 System.out.println(warning);
             }
-            System.out.println(Colores.AMARILLO + "-------------------------------------------------------------------------" + Colores.RESET);
+            System.out.println(Colores.AMARILLO +
+                    "-----------------------------------------------------------------------------------------" + Colores.RESET);
 
         }
     }
     public void printErrores(){
         if(erroresDetectados.size() > 0) {
-            System.out.println(Colores.ROJO + "--------------------------- ERRORES DETECTADOS --------------------------" + Colores.RESET);
+            System.out.println(Colores.ROJO +
+                    "----------------------------------- ERRORES DETECTADOS ----------------------------------" + Colores.RESET);
             for (String err : erroresDetectados) {
                 System.out.println(err);
             }
-            System.out.println(Colores.ROJO + "-------------------------------------------------------------------------" + Colores.RESET);
+            System.out.println(Colores.ROJO +
+                    "-----------------------------------------------------------------------------------------" + Colores.RESET);
         }
 
     }
     public void printTercetos(){
 
         if(!tercetos.isEmpty()) {
-            System.out.println(Colores.MAGENTA + "-------------------------- TERCETOS DETECTADOS --------------------------" + Colores.RESET);
+            System.out.println(Colores.MAGENTA +
+                    "---------------------------------- TERCETOS DETECTADOS ----------------------------------" + Colores.RESET);
             for(int i = 0; i < tercetos.size(); i++){
                 System.out.print(Colores.MAGENTA+i+"."+Colores.RESET);
                 tercetos.get(i).print();
             }
-            System.out.println(Colores.MAGENTA + "-------------------------------------------------------------------------" + Colores.RESET);
+            System.out.println(Colores.MAGENTA +
+                    "-----------------------------------------------------------------------------------------" + Colores.RESET);
 
         }
 
