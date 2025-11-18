@@ -18,7 +18,7 @@ prog
         Compilador.salirAmbito();
         String ambito = Compilador.getAmbito();
         String var = $1.sval;
-        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable")){
+        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de programa")){
            $$ = new ParserVal(var+ambito);
         } else yyerror("La variable "+var+" ya fue declarada");
     }
@@ -107,7 +107,6 @@ asig
     }
     ;
 
-
 exp
     : exp '+' termino
     {
@@ -124,7 +123,7 @@ exp
     | '+' termino {yyerror("falta operando a izquierda de +");}
     | exp '+' error {yyerror("falta operando a derecha de +");}
     | exp '-' error {yyerror("falta operando a derecha de -");}
-    | termino {$$=$1;}
+    | termino
     ;
 
 termino
@@ -151,7 +150,6 @@ factor
     : variable
     | invocacion
     | CTE {$$=new ParserVal($1.sval);}
-    | exp_lambda {addEstructura("lambda");}
     | TRUNC '(' punto_flotante ')'
     {
         addEstructura("trunc"); $$=new ParserVal(truncar($3.sval));
@@ -159,6 +157,7 @@ factor
     | TRUNC  punto_flotante ')' {addEstructura("trunc");yyerror("falta abrir parentesis en trunc");}
     | TRUNC '(' error {addEstructura("trunc");yyerror("falta cerrar parentesis en trunc");yyerrflag=0;}
     | TRUNC  '(' ')' {addEstructura("trunc");yyerror("falta argumento en trunc");}
+    | exp_lambda {addEstructura("lambda");}
     ;
 
 punto_flotante
@@ -189,7 +188,7 @@ variable
     ;
 
 invocacion
-    : ID '(' parametros_de_invocacion ')'
+    : ID {nombreFuncion = $1.sval;} '(' parametros_de_invocacion ')'
     {
         String ambito = Compilador.getAmbito();
         String var = $1.sval;
@@ -207,12 +206,15 @@ parametros_de_invocacion
     : parametro_real FLECHA ID
     {
         $$=$1;
-        String ambito = Compilador.getAmbito();
+        String ambito = Compilador.getAmbito()+":"+nombreFuncion;
         String var = $3.sval;
-        if (!TablaDeSimbolos.varDeclarada(var, ambito )){
-            yyerror("El parametro " + var + " no esta declarado");
+        if (!TablaDeSimbolos.varDeclarada(var, ambito)){
+            yyerror("El parametro " + var + " no esta declarado en la funcion "+nombreFuncion);
         }
         TablaDeSimbolos.eliminar(var);
+        if(!TablaDeSimbolos.esCompatible(var,$1.sval,ambito)){
+
+        }
     }
     | parametro_real FLECHA {yyerror("Falta parametro formal");}
     | parametro_real {yyerror("Falta flecha y parametro formal");}
@@ -420,7 +422,6 @@ return
         }
     ;
 
-
 /*--------------------------------------------------------------------------------*/
 
 
@@ -515,7 +516,7 @@ private ArrayList<Token> tokens = new ArrayList<>();
 private ArrayList<String> estructurasDetectadas = new ArrayList<>();
 private int cantUnidadesAnonimas = 1;
 private String tipo = "";
-
+private String nombreFuncion;
 private int yylex(){
     try {
       Token t = AnalizadorLexico.leerCaracter();
