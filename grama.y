@@ -481,6 +481,7 @@ exp_lambda
     : '('  tipo nuevo_ambito_ua  validar_id ')' '{' lista_sentencia_ejecutable '}' argumento_lambda
     {
         $$= new ParserVal("lambda");
+        crearTerceto("fin de lambda", "-", "-");
         Compilador.salirAmbito();
     }
     |  '(' tipo nuevo_ambito_ua  validar_id ')'  lista_sentencia_ejecutable '}' argumento_lambda { yyerror("falta abrir llave en cuerpo de sentencia lambda");}
@@ -501,6 +502,7 @@ validar_id
         if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable")){
            $$ = new ParserVal(var+ambito);
         } else yyerror("La variable "+var+" ya fue declarada");
+        crearTerceto("inicio de lambda", "-", "-");
     }
     ;
 
