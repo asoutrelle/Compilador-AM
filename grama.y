@@ -368,7 +368,7 @@ parametros_formales
     {
         String ambito = Compilador.getAmbito();
         String var = $3.sval;
-        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable")){
+        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable", "copia resultado")){
            $$ = new ParserVal(var+ambito);
         } else yyerror("La variable "+var+" ya fue declarada");
     }
@@ -376,21 +376,21 @@ parametros_formales
     {
         String ambito = Compilador.getAmbito();
         String var = $2.sval;
-        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable")){
+        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable","copia valor")){
            $$ = new ParserVal(var+ambito);
         } else yyerror("La variable "+var+" ya fue declarada");
     }
     | parametros_formales ',' CR tipo ID{
         String ambito = Compilador.getAmbito();
         String var = $5.sval;
-        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable")){
+        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable", "copia resultado")){
            $$ = new ParserVal(var+ambito);
         } else yyerror("La variable "+var+" ya fue declarada");
     }
     | parametros_formales ',' tipo ID{
         String ambito = Compilador.getAmbito();
         String var = $4.sval;
-        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable")){
+        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de variable", "copia valor")){
            $$ = new ParserVal(var+ambito);
         } else yyerror("La variable "+var+" ya fue declarada");
     }
