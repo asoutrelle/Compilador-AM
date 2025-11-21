@@ -4,6 +4,8 @@ import java.io.*;
 import java.util.StringTokenizer;
 import java.util.ArrayList;
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 %}
 
 %token ID CTE PF64 ELSE ENDIF PRINT RETURN CADENA
@@ -192,35 +194,49 @@ invocacion
     {
         String ambito = Compilador.getAmbito();
         String var = $1.sval;
-        $$ = new ParserVal(var+ambito+"("+$3.sval+")");
         if(!TablaDeSimbolos.funcionDeclarada(var,ambito)){
             yyerror("La funcion " + var + " no esta declarada");
         } else{
             TablaDeSimbolos.eliminar(var);
             addEstructura("invocacion a funcion");
         }
+        String[] param = $4.sval.split(",");
+        Set<String> set = new HashSet<>();
+        for (String p : param) {
+            if (!set.add(p)) {
+                yyerror("Parametro duplicado");
+            }
+        }
+        int cantParam = param.length;
+        if(TablaDeSimbolos.cantParametrosFormales($1.sval)!=cantParam){
+            yyerror("cantidad de parametros reales distinta a parametros formales");
+        }
+        $$ = new ParserVal(var+ambito+"("+$3.sval+")");
     }
     ;
 
 parametros_de_invocacion
     : parametro_real FLECHA ID
     {
-        $$=$1;
         String ambito = Compilador.getAmbito()+":"+nombreFuncion;
         String var = $3.sval;
-        if (!TablaDeSimbolos.varDeclarada(var, ambito)){
+        if (!TablaDeSimbolos.parametroDeclarado(var, ambito)){
             yyerror("El parametro " + var + " no esta declarado en la funcion "+nombreFuncion);
         }
         TablaDeSimbolos.eliminar(var);
-        if(!TablaDeSimbolos.esCompatible(var,$1.sval,ambito)){
-
-        }
+        $$=new ParserVal(var);
     }
     | parametro_real FLECHA {yyerror("Falta parametro formal");}
     | parametro_real {yyerror("Falta flecha y parametro formal");}
     | parametros_de_invocacion ',' parametro_real FLECHA ID
     {
-        $$ = new ParserVal($1.sval+","+$3.sval);
+        String ambito = Compilador.getAmbito()+":"+nombreFuncion;
+        String var = $5.sval;
+        if (!TablaDeSimbolos.parametroDeclarado(var, ambito)){
+            yyerror("El parametro " + var + " no esta declarado en la funcion "+nombreFuncion);
+        }
+        TablaDeSimbolos.eliminar(var);
+        $$=new ParserVal($1.sval + "," + var);
     }
     | parametros_de_invocacion ',' parametro_real FLECHA {yyerror("Falta parametro formal");}
     | parametros_de_invocacion ',' parametro_real {yyerror("Falta flecha y parametro formal");}

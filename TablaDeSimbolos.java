@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class TablaDeSimbolos {
@@ -88,6 +89,17 @@ public class TablaDeSimbolos {
         return false;
     }
 
+    public static boolean parametroDeclarado(String val, String ambito){
+        String aux = val + ambito;
+            if (TS.containsKey(aux)) {
+                if(TS.get(aux).getSemantica()!=null) {
+                    return true;
+                }
+            }
+        return false;
+    }
+
+
     public static boolean varPrefijadaDeclarada(String val, String ambito){
         String aux = val + ":" + ambito;
         return TS.containsKey(aux);
@@ -110,6 +122,20 @@ public class TablaDeSimbolos {
             }
         }
         return false;
+    }
+
+    public static int cantParametrosFormales(String nombreFuncion){
+        int cant =0;
+        for (HashMap.Entry<String, Simbolo> entry : TS.entrySet()) {
+            String clave = entry.getKey();
+            String[] partes = clave.split(":");
+            String ultimo = partes[partes.length - 1];
+            Simbolo s = entry.getValue();
+            if (ultimo.equals(nombreFuncion) && s.getSemantica() != null) {
+                cant++;
+            }
+        }
+        return cant;
     }
 
     public static void eliminar(String val){
