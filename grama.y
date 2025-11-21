@@ -211,7 +211,7 @@ invocacion
         if(TablaDeSimbolos.cantParametrosFormales($1.sval)!=cantParam){
             yyerror("cantidad de parametros reales distinta a parametros formales");
         }
-        $$ = new ParserVal(var+ambito+"("+$3.sval+")");
+        $$ = new ParserVal(var+ambito+"("+$4.sval+")");
     }
     ;
 
@@ -224,7 +224,7 @@ parametros_de_invocacion
             yyerror("El parametro " + var + " no esta declarado en la funcion "+nombreFuncion);
         }
         TablaDeSimbolos.eliminar(var);
-        $$=new ParserVal(var);
+        $$=$1;
     }
     | parametro_real FLECHA {yyerror("Falta parametro formal");}
     | parametro_real {yyerror("Falta flecha y parametro formal");}
@@ -236,7 +236,7 @@ parametros_de_invocacion
             yyerror("El parametro " + var + " no esta declarado en la funcion "+nombreFuncion);
         }
         TablaDeSimbolos.eliminar(var);
-        $$=new ParserVal($1.sval + "," + var);
+        $$=new ParserVal($1.sval + "," + $3.sval);
     }
     | parametros_de_invocacion ',' parametro_real FLECHA {yyerror("Falta parametro formal");}
     | parametros_de_invocacion ',' parametro_real {yyerror("Falta flecha y parametro formal");}
@@ -485,7 +485,7 @@ exp_lambda
         Compilador.salirAmbito();
     }
     |  '(' tipo nuevo_ambito_ua  validar_id ')'  lista_sentencia_ejecutable '}' argumento_lambda { yyerror("falta abrir llave en cuerpo de sentencia lambda");}
-    |  '(' tipo nuevo_ambito_ua  validar_id ')'  '{' lista_sentencia_ejecutable argumento_lambda {yyerror("falta cerra llave en cuerpo de sentencia lambda");}
+    |  '(' tipo nuevo_ambito_ua  validar_id ')'  '{' lista_sentencia_ejecutable argumento_lambda {yyerror("falta cerrar llave en cuerpo de sentencia lambda");}
     |  '(' tipo nuevo_ambito_ua  validar_id ')'   lista_sentencia_ejecutable argumento_lambda { yyerror("faltan llaves en cuerpo de sentencia lambda");}
     ;
 
