@@ -73,9 +73,9 @@ public class TablaDeSimbolos {
         }
         return TS.get(val1).getTipo().equals(TS.get(val2).getTipo());
     }
-    public static boolean varDeclarada(String val, String ambito){
+    public static boolean varDeclarada(String val, String ambito) {
         String aux = val + ambito;
-        while (aux.lastIndexOf(":")!=-1) {
+        while (aux.lastIndexOf(":") != -1) {
             if (TS.containsKey(aux)) {
                 return true;
             }
@@ -83,10 +83,30 @@ public class TablaDeSimbolos {
             if (idx == -1) {
                 return false; // no hay más ámbitos para quitar
             } else {
-                aux = aux.substring(0, idx); // quitar la última parte
+
+                aux = aux.substring(0, idx);
+            }
+            if (TS.containsKey(aux)) {
+                return true;
             }
         }
         return false;
+    }
+
+
+    public static String varPrefijadaDeclarada(String val, String ambitoVar, String ambito){
+        while (ambito.lastIndexOf(":")!=-1) {
+            if(TS.containsKey(val+ambito)){
+                int idx = ambito.lastIndexOf(":");
+                String aux = ambito.substring(idx+1);
+                if(aux.equals(ambitoVar)){
+                    return val+ambito;
+                }
+            }
+            int idx = ambito.lastIndexOf(":");
+            ambito = ambito.substring(0,idx);
+        }
+        return "";
     }
 
     public static boolean parametroDeclarado(String val, String ambito){
@@ -101,11 +121,6 @@ public class TablaDeSimbolos {
     public static String getAmbito(String val){
 //        String s = TS.get(val).getTipo();
         return TS.get(val).getTipo();
-    }
-
-    public static boolean varPrefijadaDeclarada(String val, String ambito){
-        String aux = val + ":" + ambito;
-        return TS.containsKey(aux);
     }
 
     public static boolean funcionDeclarada(String val, String ambito){

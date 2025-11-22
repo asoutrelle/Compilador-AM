@@ -171,20 +171,24 @@ punto_flotante
 variable
     : ID '.' ID
     {
-        if(!TablaDeSimbolos.varPrefijadaDeclarada($3.sval, $1.sval)){
+        String aux = TablaDeSimbolos.varPrefijadaDeclarada($3.sval, $1.sval, Compilador.getAmbito());
+        if(aux.equals("")){
             yyerror("La variable "+$3.sval+" no fue declarada en el ambito " + $1.sval);
+            TablaDeSimbolos.eliminar($1.sval);
+            TablaDeSimbolos.eliminar($3.sval);
         }
-        $$ = new ParserVal($3.sval + ":" + $1.sval);
+        TablaDeSimbolos.eliminar($3.sval);
+        $$ = new ParserVal(aux);
     }
     | ID
     {
         String ambito = Compilador.getAmbito();
         String var = $1.sval;
         if(!TablaDeSimbolos.varDeclarada(var, ambito)){
-             yyerror("La variable "+var+" no fue declarada");
-        } else{
+            yyerror("La variable "+ var +" no fue declarada");
+        } else {
             TablaDeSimbolos.eliminar(var);
-            $$=new ParserVal (var+ambito);
+            $$=new ParserVal (var + ambito);
         }
     }
     ;
