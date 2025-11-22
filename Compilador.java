@@ -74,7 +74,7 @@ public class Compilador {
                     "---------------------------------- TERCETOS DETECTADOS ----------------------------------" + Colores.RESET);
             for(int i = 0; i < tercetos.size(); i++){
                 System.out.print(Colores.MAGENTA+i+"."+Colores.RESET);
-                tercetos.get(i).print();
+                tercetos.get(i).print2();
             }
             System.out.println(Colores.MAGENTA +
                     "-----------------------------------------------------------------------------------------" + Colores.RESET);

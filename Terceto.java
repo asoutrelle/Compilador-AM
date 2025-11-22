@@ -9,8 +9,13 @@ public class Terceto {
         this.val3 = valor;
     }
 
-    public void print(){
+    public void print1(){
         System.out.println(Colores.MAGENTA+"(" + operacion + ", " + val2 + ", " + val3 + " )"+Colores.RESET);
+    }
+    public void print2(){
+        String valor2 = val2.split(":")[0];
+        String valor3 = val3.split(":")[0];
+        System.out.println(Colores.MAGENTA+"(" + operacion + ", " + valor2 + ", " + valor3 + " )"+Colores.RESET);
     }
 
     public void setValor2(String variable){

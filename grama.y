@@ -211,7 +211,7 @@ invocacion
         if(TablaDeSimbolos.cantParametrosFormales($1.sval)!=cantParam){
             yyerror("cantidad de parametros reales distinta a parametros formales");
         }
-        $$ = new ParserVal(var+ambito+"("+$4.sval+")");
+        $$ = new ParserVal(var+ambito);
     }
     ;
 

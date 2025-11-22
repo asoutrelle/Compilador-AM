@@ -1246,7 +1246,7 @@ case 60:
         if(TablaDeSimbolos.cantParametrosFormales(val_peek(4).sval)!=cantParam){
             yyerror("cantidad de parametros reales distinta a parametros formales");
         }
-        yyval = new ParserVal(var+ambito+"("+val_peek(1).sval+")");
+        yyval = new ParserVal(var+ambito);
     }
 break;
 case 61:
@@ -1604,7 +1604,7 @@ case 136:
 break;
 case 137:
 //#line 488 "grama.y"
-{yyerror("falta cerra llave en cuerpo de sentencia lambda");}
+{yyerror("falta cerrar llave en cuerpo de sentencia lambda");}
 break;
 case 138:
 //#line 489 "grama.y"
