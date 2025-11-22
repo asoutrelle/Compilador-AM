@@ -98,7 +98,10 @@ public class TablaDeSimbolos {
             }
         return false;
     }
-
+    public static String getAmbito(String val){
+//        String s = TS.get(val).getTipo();
+        return TS.get(val).getTipo();
+    }
 
     public static boolean varPrefijadaDeclarada(String val, String ambito){
         String aux = val + ":" + ambito;

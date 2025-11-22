@@ -20,7 +20,7 @@ prog
         Compilador.salirAmbito();
         String ambito = Compilador.getAmbito();
         String var = $1.sval;
-        if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de programa")){
+        if(TablaDeSimbolos.agregarVar(var, ambito, "", "nombre de programa")){
            $$ = new ParserVal(var+ambito);
         } else yyerror("La variable "+var+" ya fue declarada");
     }
@@ -101,6 +101,7 @@ asig
           //  crearTerceto(":=", $1.sval, $3.sval);
         //} else yyerror("Los tipos de las variables no coinciden");
 
+
         String ambito = Compilador.getAmbito();
         String var = $1.sval;
         if(TablaDeSimbolos.varDeclarada(var, ambito)){
@@ -170,18 +171,17 @@ punto_flotante
 variable
     : ID '.' ID
     {
-        $$ = new ParserVal($1.sval + '.' + $3.sval);
         if(!TablaDeSimbolos.varPrefijadaDeclarada($3.sval, $1.sval)){
             yyerror("La variable "+$3.sval+" no fue declarada en el ambito " + $1.sval);
         }
-        TablaDeSimbolos.eliminar($3.sval);
+        $$ = new ParserVal($3.sval + ":" + $1.sval);
     }
     | ID
     {
         String ambito = Compilador.getAmbito();
         String var = $1.sval;
         if(!TablaDeSimbolos.varDeclarada(var, ambito)){
-                    yyerror("La variable "+var+" no fue declarada");
+             yyerror("La variable "+var+" no fue declarada");
         } else{
             TablaDeSimbolos.eliminar(var);
             $$=new ParserVal (var+ambito);
@@ -223,6 +223,7 @@ parametros_de_invocacion
         if (!TablaDeSimbolos.parametroDeclarado(var, ambito)){
             yyerror("El parametro " + var + " no esta declarado en la funcion "+nombreFuncion);
         }
+        crearTerceto(":=", var+ambito,$1.sval);
         TablaDeSimbolos.eliminar(var);
         $$=$1;
     }
@@ -235,6 +236,7 @@ parametros_de_invocacion
         if (!TablaDeSimbolos.parametroDeclarado(var, ambito)){
             yyerror("El parametro " + var + " no esta declarado en la funcion "+nombreFuncion);
         }
+        crearTerceto(":=", var+ambito,$3.sval);
         TablaDeSimbolos.eliminar(var);
         $$=new ParserVal($1.sval + "," + $3.sval);
     }
