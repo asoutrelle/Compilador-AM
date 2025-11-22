@@ -146,7 +146,7 @@ termino
     | termino '*' error {yyerror("falta operando a derecha de *");}
     | '/' factor {yyerror("falta operando a izquierda de /");}
     | '*' factor {yyerror("falta operando a izquierda de *");}
-    | factor {$$=$1;}
+    | factor
     ;
 
 factor
@@ -375,8 +375,13 @@ funcion
     }
     parametros_formales ')' {
         crearTerceto("inicio de funcion", $2.sval, "-");
+        hayReturn = false;
     }
     '{' lista_sentencia_funcion '}' {
+        if (!hayReturn){
+            yyerror("falta return en la funcion "+ $2.sval);
+            hayReturn = true;
+        }
         crearTerceto("fin de funcion", $2.sval, "-");
         Compilador.salirAmbito();
     }
@@ -437,10 +442,15 @@ sentencia_funcion
 return
     : RETURN '(' exp ')' punto_coma
     {
+        if (hayReturn){
+            yyerror("no se permiten este return");
+        } else{
+            hayReturn = true;
+        }
         addEstructura("return");
         crearTerceto("return", $3.sval, "-");
-         int t = Compilador.tercetos.size() - 1;
-        $$=new ParserVal("[" + t + "]");
+        int t = Compilador.tercetos.size() - 1;
+        $$=$3;
         }
     ;
 
@@ -541,6 +551,9 @@ private ArrayList<String> estructurasDetectadas = new ArrayList<>();
 private int cantUnidadesAnonimas = 1;
 private String tipo = "";
 private String nombreFuncion;
+private boolean hayReturn = true;
+
+
 private int yylex(){
     try {
       Token t = AnalizadorLexico.leerCaracter();
