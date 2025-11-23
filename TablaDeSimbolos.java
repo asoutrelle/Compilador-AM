@@ -75,7 +75,6 @@ public class TablaDeSimbolos {
     }
     public static boolean varDeclarada(String val, String ambito) {
         String aux = val + ambito;
-        System.out.println("checkeando variable:"+val+" con ambito: " +ambito);
         while (aux.lastIndexOf(":") != -1) {
             if (TS.containsKey(aux)) {
                 return true;

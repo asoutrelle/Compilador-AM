@@ -365,6 +365,7 @@ lista_sentencia_ejecutable
 /* -------------- TRATADO DE FUNCIONES -------------- */
 funcion
     : tipo ID '(' {
+        hayReturn = false;
         String ambito = Compilador.getAmbito();
         String var = $2.sval;
         if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de funcion")){
@@ -375,13 +376,12 @@ funcion
     }
     parametros_formales ')' {
         crearTerceto("inicio de funcion", $2.sval, "-");
-        hayReturn = false;
     }
     '{' lista_sentencia_funcion '}' {
         if (!hayReturn){
             yyerror("falta return en la funcion "+ $2.sval);
-            hayReturn = true;
         }
+        hayReturn = true;
         crearTerceto("fin de funcion", $2.sval, "-");
         Compilador.salirAmbito();
     }
@@ -443,8 +443,11 @@ return
     : RETURN '(' exp ')' punto_coma
     {
         if (hayReturn){
-            yyerror("no se permiten este return");
-        } else{
+            yyerror("no se permite este return");
+        }else{
+            if (Compilador.getAmbito().lastIndexOf(":") == 0){ //pregunto si estoy en main
+                yyerror("no se permite este return");
+            }
             hayReturn = true;
         }
         addEstructura("return");
@@ -486,7 +489,7 @@ nuevo_ambito_ua
     }
     ;
 cuerpo_sentencia_ejecutable
-    : '{' lista_sentencia_ejecutable '}' {Compilador.salirAmbito();}
+    : '{' lista_sentencia_ejecutable '}' {Compilador.salirAmbito();hayReturn = false;}
     | '{' '}' {yyerror("no hay sentencias dentro de las llaves");}
     | sentencia_ejecutable {Compilador.salirAmbito();}
     | '{' error '}' {yyerror("Error en sentencia");}
