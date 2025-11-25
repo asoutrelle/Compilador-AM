@@ -30,6 +30,11 @@ public class Simbolo {
         this.valor = valor;
         this.token = token;
     }
+    public Simbolo(String valor, String tipo, String uso) {
+        this.valor = valor;
+        this.tipo = tipo;
+        this.uso = uso;
+    }
     public Token getToken() {
         return token;
     }

@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class TablaDeSimbolos {
-    private static HashMap<String, Simbolo> TS = new HashMap<>();
+    public static HashMap<String, Simbolo> TS = new HashMap<>();
     public TablaDeSimbolos() {
     }
     public static void agregar(String val, Token token, String tipo, String uso){
@@ -16,6 +16,13 @@ public class TablaDeSimbolos {
         Simbolo s = new Simbolo(val, token, tipo);
         if(!TS.containsKey(s.getValor())){
             TS.put(s.getValor(),s);
+        }
+    }
+    public static void agregarVarAux(int nroVarAux){
+        String varAux = "@aux"+nroVarAux;
+        Simbolo s = new Simbolo(varAux,"int","variable auxiliar");
+        if(!TS.containsKey(varAux)){
+            TS.put(varAux,s);
         }
     }
 
@@ -174,20 +181,25 @@ public class TablaDeSimbolos {
             for (String clave : TS.keySet()) {
                 Simbolo s = TS.get(clave);
 
-                int lexema = s.getToken().getLexema();
+                Token tok = s.getToken();
+                String lexemaStr = (tok == null)
+                        ? ""
+                        : String.valueOf(tok.getLexema());
+
                 String tipo = (s.getTipo() == null) ? "" : s.getTipo();
                 String uso = (s.getUso() == null) ? "" : s.getUso();
                 String semantica = (s.getSemantica() == null) ? "" : s.getSemantica();
 
                 System.out.printf(
                         "%-7s | %-25s | %-10s | %-20s | %-10s%n",
-                        lexema,
+                        lexemaStr,
                         clave,
                         tipo,
                         uso,
                         semantica
                 );
             }
+
             System.out.println("-----------------------------------------------------------------------------------------");
         }
     }

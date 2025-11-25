@@ -116,12 +116,14 @@ exp
         crearTerceto("+", $1.sval, $3.sval);
         int t = Compilador.tercetos.size() - 1;
         $$=new ParserVal("[" + t + "]");
+        TablaDeSimbolos.agregarVarAux(t);
     }
     | exp '-' termino
     {
         crearTerceto("-", $1.sval, $3.sval);
         int t = Compilador.tercetos.size() - 1;
         $$=new ParserVal("[" + t + "]");
+        TablaDeSimbolos.agregarVarAux(t);
     }
     | '+' termino {yyerror("falta operando a izquierda de +");}
     | exp '+' error {yyerror("falta operando a derecha de +");}
@@ -135,12 +137,14 @@ termino
         crearTerceto("*", $1.sval, $3.sval);
         int t = Compilador.tercetos.size() - 1;
         $$=new ParserVal("[" + t + "]");
+        TablaDeSimbolos.agregarVarAux(t);
     }
     | termino '/' factor
     {
         crearTerceto("/", $1.sval, $3.sval);
         int t = Compilador.tercetos.size() - 1;
         $$=new ParserVal("[" + t + "]");
+        TablaDeSimbolos.agregarVarAux(t);
     }
     | termino '/' error {yyerror("falta operando a derecha de /");}
     | termino '*' error {yyerror("falta operando a derecha de *");}
@@ -622,7 +626,7 @@ public void check_rango(String valor){
   }
 
  private void crearTerceto(String operacion, String variable, String valor){
-    Compilador.tercetos.add(new Terceto(operacion, variable, valor));
+    Compilador.tercetos.add(new Terceto(operacion, variable, valor, Compilador.tercetos.size()));
   }
 
 private void asigMultiple(String var, String cte) {
@@ -660,11 +664,14 @@ private void asigMultiple(String var, String cte) {
   private void completarBF(int index, int destino) {
         Terceto t = Compilador.tercetos.get(index);
         t.setValor3("[" + destino + "]");
+        t.setMarcado(true);
+        t.setMarcado(true);
     }
 
 private void completarBI(int index, int destino) {
     Terceto t = Compilador.tercetos.get(index);
     t.setValor2("[" + destino + "]");
+    t.setMarcado(true);
   }
   private void yyWarning(String war){
       String str ="WARNING LINEA " + nroLinea() + ": " + war;
