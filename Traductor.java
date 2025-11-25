@@ -96,13 +96,16 @@ public class Traductor {
     private void generarAssemblerDeFuncion(Map.Entry<String, List<Terceto>> funcion) {
         String nombreFunc = funcion.getKey();
         List<Terceto> tercetos = funcion.getValue();
-
+        boolean val1EsCopiaResultado = false;
+        boolean val2EsCopiaResultado = false;
         funciones.append("_" + nombreFunc.replace(":", "_") + ":\n");
 
         for (Terceto terceto : tercetos) {
             String op = terceto.getOperacion();
             String val1 = terceto.getVal1();
             String val2 = terceto.getVal2();
+
+
             val1 = getString(val1);
             val2 = getString(val2);
 
@@ -139,11 +142,16 @@ public class Traductor {
                     break;
                 case "return":
                     funciones.append("mov ax, " + val1+"\n");
-                    funciones.append("mov " + val2 + ", ax\nret\n");
+                    funciones.append("mov " + val2 + ", ax\n");
+                    funciones.append("ret\n");
                     break;
-                case "call":
+                case "invocacion":
                     funciones.append("call " + val1 + "\n");
                     break;
+                case "trunc":
+                    funciones.append(" \n");
+                    break;
+
             }
         }
     }
@@ -151,12 +159,15 @@ public class Traductor {
     private String getString(String val) {
         if (TablaDeSimbolos.TS.containsKey(val)){
             if (TablaDeSimbolos.TS.get(val).getUso().equals("constante")) {
-                val = val.substring(0, val.length() - 2); // quitar "UI"
+                val = val.substring(0, val.length() - 2);
+                return val;// quitar "UI"
             } else {
                 val = "_" + val.replace(":","_");
+                return val;
             }
         } else if (val.contains("[")){
             val = "@aux"+val.replace("[","").replace("]","");
+            return val;
         }
         return val;
     }

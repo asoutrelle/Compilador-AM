@@ -3,7 +3,7 @@ public class Simbolo {
     private String tipo = "";
     private String valor;
     private String uso;
-    String semantica;
+    private String semantica;
 
     public Simbolo(String valor, Token token, String tipo, String uso) {
         this.valor = valor;

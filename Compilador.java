@@ -1,5 +1,9 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 public class Compilador {
     public static ArrayList<String> erroresDetectados = new ArrayList<>();
@@ -8,6 +12,11 @@ public class Compilador {
     public static ArrayList<Integer> pilaSaltos = new ArrayList<>();
     public static String ambitoActual = "";
     public static ArrayList<String> pilaAmbitos = new ArrayList<>();
+    public static ArrayList<Terceto> tercetosCR = new ArrayList<>();
+
+
+
+
 
     public static void entrarAmbito(String nombre) {
         pilaAmbitos.add(nombre);
@@ -34,7 +43,9 @@ public class Compilador {
     public static String getAmbitoVolteado(){
         String s = String.join(":", pilaAmbitos);;
         String[] partes = s.split(":");
-        return partes[1] + ":" + partes[0];
+        Collections.reverse(Arrays.asList(partes));
+
+        return String.join(":", partes);
     }
 
     public Compilador (){
@@ -117,7 +128,11 @@ public class Compilador {
         compilador.printWarnings();
         compilador.printErrores();
         compilador.printTercetos();
-        traductor.generarAssembler();
+        if (erroresDetectados.isEmpty()) {
+            traductor.generarAssembler();
+        } else {
+            System.exit(1);
+        }
     }
 
 }

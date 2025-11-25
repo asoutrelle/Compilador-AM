@@ -1,8 +1,9 @@
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 public class TablaDeSimbolos {
     public static HashMap<String, Simbolo> TS = new HashMap<>();
+
+
     public TablaDeSimbolos() {
     }
     public static void agregar(String val, Token token, String tipo, String uso){
@@ -20,7 +21,7 @@ public class TablaDeSimbolos {
     }
     public static void agregarVarAux(int nroVarAux){
         String varAux = "@aux"+nroVarAux;
-        Simbolo s = new Simbolo(varAux,"int","variable auxiliar");
+        Simbolo s = new Simbolo(varAux,"uint","variable auxiliar");
         if(!TS.containsKey(varAux)){
             TS.put(varAux,s);
         }
@@ -82,32 +83,30 @@ public class TablaDeSimbolos {
     }
 
     public static String varDeclarada(String val, String ambito) {
+        int idx;
         String aux = val + ambito;
         while (aux.lastIndexOf(":") != -1) {
             if (TS.containsKey(aux)) {
                 return aux;
             }
-            int idx = aux.lastIndexOf(":");
-            if (idx == -1) {
-                return null; // no hay mas ambitos
-            } else {
-                aux = aux.substring(0, idx);
-            }
+            idx = aux.lastIndexOf(":");
+            aux = aux.substring(0, idx);
         }
         return null;
     }
 
 
     public static String varPrefijadaDeclarada(String val, String ambitoVar, String ambito){
+        int idx;
         while (ambito.lastIndexOf(":")!=-1) {
             if(TS.containsKey(val+ambito)){
-                int idx = ambito.lastIndexOf(":");
+                idx = ambito.lastIndexOf(":");
                 String aux = ambito.substring(idx+1);
                 if(aux.equals(ambitoVar)){
                     return val+ambito;
                 }
             }
-            int idx = ambito.lastIndexOf(":");
+            idx = ambito.lastIndexOf(":");
             ambito = ambito.substring(0,idx);
         }
         return "";
@@ -128,6 +127,7 @@ public class TablaDeSimbolos {
     }
 
     public static String funcionDeclarada(String val, String ambito){
+        int idx;
         String aux = val + ambito;
         while (aux.lastIndexOf(":")!=-1) {
             if (TS.containsKey(aux)) {
@@ -136,18 +136,13 @@ public class TablaDeSimbolos {
                     return aux;
                 }
             }
-            int idx = aux.lastIndexOf(":");
-            if (idx == -1) {
-                return null; // no hay más ámbitos para quitar
-            } else {
-                aux = aux.substring(0, idx); // quitar la última parte
-            }
+            idx = aux.lastIndexOf(":");
+            aux = aux.substring(0, idx); // quitar la última parte
         }
         return null;
     }
 
     public static int cantParametrosFormales(String nombreFuncion){
-        System.out.println(nombreFuncion);
         int cant =0;
         for (HashMap.Entry<String, Simbolo> entry : TS.entrySet()) {
             String clave = entry.getKey();
@@ -158,16 +153,67 @@ public class TablaDeSimbolos {
                 cant++;
             }
         }
-        System.out.println(cant);
         return cant;
+    }
+
+    public static boolean esParametroValido(String paramReal, String paramFormal, String ambito, String nombreFuncion){
+        int idx;
+        String aux = paramFormal + ambito;
+        if(TS.get(paramReal).getUso().equals("constante")){
+            while (aux.lastIndexOf(":")!=-1) {
+                String var = aux + ":" + nombreFuncion;
+                if(TS.containsKey(var)){
+                    Simbolo s = TS.get(var);
+                    if(s.getSemantica().equals("copia resultado")){
+                        return false;
+                    }
+                }
+                idx = aux.lastIndexOf(":");
+                aux = aux.substring(0, idx);
+            }
+        }
+        return true;
+    }
+
+    public static boolean esCopiaResultado(String parametro){
+        System.out.println("parametro: " + parametro);
+        if (TS.containsKey(parametro)) {
+            return TS.get(parametro).getSemantica().equals("copia resultado");
+        }
+        return false;
     }
 
     public static void eliminar(String val){
         TS.remove(val);
     }
 
+    public static int buscarReturn(String nombreFuncion){
+        System.out.println("nombreFuncion: " + nombreFuncion );
+        Deque<String> pila = new LinkedList<>();
 
+        for (Terceto t : Compilador.tercetos) {
+            String op = t.getOperacion();
+            // Inicio de función (ajustá si el nombre está en otro campo)
+            if (op.equals("inicio de funcion")) {
+                String nombre = t.getVal1();
+                pila.push(nombre);
+                continue;
+            }
+            // Fin de función
+            if (op.equals("fin de funcion")) {
+                if (!pila.isEmpty()) pila.pop();
+                continue;
+            }
 
+            // Return: pertenece a la función del tope de la pila
+            if (op.equals("return")) {
+                if (!pila.isEmpty() && nombreFuncion.equals(pila.peek())) {
+                    return t.getIndice();
+                }
+            }
+        }
+        return -1; // no se encontró return para la función pedida
+    }
 
     public static void imprimir() {
         if (!TS.isEmpty()) {

@@ -97,8 +97,6 @@ asig
     : variable ASIG exp punto_coma
     {
         //if(TablaDeSimbolos.esCompatible($1.sval,$3.sval, Compilador.getAmbito())){
-          //  System.out.println("val1:"+$1.sval+" val2:"+$3.sval);
-          //  crearTerceto(":=", $1.sval, $3.sval);
         //} else yyerror("Los tipos de las variables no coinciden");
 
 
@@ -197,7 +195,11 @@ variable
     ;
 
 invocacion
-    : ID {nombreFuncion = $1.sval;} '(' parametros_de_invocacion ')'
+    : ID
+    {
+        nombreFuncion = $1.sval;
+    }
+    '(' parametros_de_invocacion ')'
     {
         String ambito = Compilador.getAmbito();
         String var = $1.sval;
@@ -208,6 +210,7 @@ invocacion
             TablaDeSimbolos.eliminar(var);
             addEstructura("invocacion a funcion");
         }
+        System.out.println("$4: " + $4.sval);
         String[] param = $4.sval.split(",");
         Set<String> set = new HashSet<>();
         for (String p : param) {
@@ -219,10 +222,10 @@ invocacion
         if(TablaDeSimbolos.cantParametrosFormales(ambito.substring(1)+":"+var)!=cantParam){
             yyerror("cantidad de parametros reales distinta a parametros formales");
         }
-        int t = Compilador.tercetos.size();
+        int t = TablaDeSimbolos.buscarReturn(var+ambito);
         $$ = new ParserVal("["+t+"]");
-        TablaDeSimbolos.agregarVarAux(t);
-        crearTerceto("call",aux,"-");
+        crearTerceto("invocacion",aux,"["+t+"]");
+        Compilador.tercetos.addAll(Compilador.tercetosCR);
         backpatching(aux,t);
     }
     ;
@@ -235,9 +238,16 @@ parametros_de_invocacion
         if (!TablaDeSimbolos.parametroDeclarado(var, ambito)){
             yyerror("El parametro " + var + " no esta declarado en la funcion "+nombreFuncion);
         }
-        crearTerceto(":=", var+ambito,$1.sval);
+        if (!TablaDeSimbolos.esParametroValido($1.sval, var,Compilador.getAmbito(), nombreFuncion)){
+            yyerror("No se puede pasar una constante como a un parametro formal con semantica de copia resultado");
+        }
+        if (!TablaDeSimbolos.esCopiaResultado(var+ambito)){
+            crearTerceto(":=", var+ambito,$1.sval);
+        } else{
+            Compilador.tercetosCR.add(new Terceto (":=",$1.sval, var+ambito));
+        }
         TablaDeSimbolos.eliminar(var);
-        $$=$1;
+        $$=$3;
     }
     | parametro_real FLECHA {yyerror("Falta parametro formal");}
     | parametro_real {yyerror("Falta flecha y parametro formal");}
@@ -248,9 +258,13 @@ parametros_de_invocacion
         if (!TablaDeSimbolos.parametroDeclarado(var, ambito)){
             yyerror("El parametro " + var + " no esta declarado en la funcion "+nombreFuncion);
         }
-        crearTerceto(":=", var+ambito,$3.sval);
+         if (!TablaDeSimbolos.esCopiaResultado(var+ambito)){
+            crearTerceto(":=", var+ambito,$3.sval);
+        } else{
+            Compilador.tercetosCR.add(new Terceto (":=", $3.sval,var+ambito));
+        }
         TablaDeSimbolos.eliminar(var);
-        $$=new ParserVal($1.sval + "," + $3.sval);
+        $$=new ParserVal($1.sval + "," + $5.sval);
     }
     | parametros_de_invocacion ',' parametro_real FLECHA {yyerror("Falta parametro formal");}
     | parametros_de_invocacion ',' parametro_real {yyerror("Falta flecha y parametro formal");}
@@ -379,20 +393,18 @@ funcion
         if(TablaDeSimbolos.agregarVar(var, ambito, tipo, "nombre de funcion")){
            $$ = new ParserVal(var+ambito);
         } else yyerror("La funcion "+var+" ya fue declarada");
-
-        Compilador.entrarAmbito($2.sval);
+        crearTerceto("inicio de funcion", var+Compilador.getAmbito(), "-");
+        Compilador.entrarAmbito(var);
     }
-    parametros_formales ')' {
-
-        crearTerceto("inicio de funcion", Compilador.getAmbitoVolteado(), "-");
-    }
+    parametros_formales ')'
     '{' lista_sentencia_funcion '}' {
         if (!hayReturn){
             yyerror("falta return en la funcion "+ $2.sval);
-        }
-        hayReturn = true;
-        crearTerceto("fin de funcion", Compilador.getAmbitoVolteado(), "-");
+        }else hayReturn = false;
+
         Compilador.salirAmbito();
+        crearTerceto("fin de funcion", $2.sval+Compilador.getAmbito(), "-");
+
     }
     | tipo '(' parametros_formales ')' '{' lista_sentencia_funcion '}' { yyerror("falta declarar nombre de funcion");}
     | tipo ID '(' ')' '{' lista_sentencia_funcion '}' {yyerror("faltan parametros formales");}
@@ -451,16 +463,15 @@ sentencia_funcion
 return
     : RETURN '(' exp ')' punto_coma
     {
-        if (hayReturn){
+        if (hayReturn || (Compilador.getAmbito().lastIndexOf(":") == 0) ){
             yyerror("no se permite este return");
         }else{
-            if (Compilador.getAmbito().lastIndexOf(":") == 0){ //pregunto si estoy en main
-                yyerror("no se permite este return");
-            }
             hayReturn = true;
         }
         addEstructura("return");
-        crearTerceto("return", $3.sval, Compilador.getAmbitoVolteado());
+        int t = Compilador.tercetos.size();
+        crearTerceto("return", $3.sval, "["+t+"]");
+        TablaDeSimbolos.agregarVarAux(t);
         $$=$3;
         }
     ;

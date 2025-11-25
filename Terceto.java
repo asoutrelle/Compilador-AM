@@ -11,6 +11,11 @@ public class Terceto {
         this.val2 = valor;
         this.indice = indice;
     }
+    public Terceto(String operacion, String variable, String valor) {
+        this.operacion = operacion;
+        this.val1 = variable;
+        this.val2 = valor;
+    }
 
     public void print1(){
         System.out.println(Colores.MAGENTA+"(" + operacion + ", " + val1 + ", " + val2 + " )"+Colores.RESET);
