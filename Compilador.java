@@ -31,6 +31,11 @@ public class Compilador {
         }
         return ":"+String.join(":", pilaAmbitos);
     }
+    public static String getAmbitoVolteado(){
+        String s = String.join(":", pilaAmbitos);;
+        String[] partes = s.split(":");
+        return partes[1] + ":" + partes[0];
+    }
 
     public Compilador (){
 
@@ -74,7 +79,7 @@ public class Compilador {
                     "---------------------------------- TERCETOS DETECTADOS ----------------------------------" + Colores.RESET);
             for(int i = 0; i < tercetos.size(); i++){
                 System.out.print(Colores.MAGENTA+i+"."+Colores.RESET);
-                tercetos.get(i).print2();
+                tercetos.get(i).print1();
             }
             System.out.println(Colores.MAGENTA +
                     "-----------------------------------------------------------------------------------------" + Colores.RESET);
@@ -105,12 +110,14 @@ public class Compilador {
         } else{
             System.out.println(Colores.AMARILLO+"PARSER TERMINO MAL "+Colores.RESET);
         }
+        Traductor traductor = new Traductor();
         //analizadorLexico.printTokensDetectados();
         TablaDeSimbolos.imprimir();
         //parser.printEstructuras();
         compilador.printWarnings();
         compilador.printErrores();
         compilador.printTercetos();
+        traductor.generarAssembler();
     }
 
 }

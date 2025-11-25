@@ -80,21 +80,21 @@ public class TablaDeSimbolos {
         }
         return TS.get(val1).getTipo().equals(TS.get(val2).getTipo());
     }
-    public static boolean varDeclarada(String val, String ambito) {
+
+    public static String varDeclarada(String val, String ambito) {
         String aux = val + ambito;
         while (aux.lastIndexOf(":") != -1) {
             if (TS.containsKey(aux)) {
-                return true;
+                return aux;
             }
             int idx = aux.lastIndexOf(":");
             if (idx == -1) {
-                return false; // no hay más ámbitos para quitar
+                return null; // no hay mas ambitos
             } else {
-
                 aux = aux.substring(0, idx);
             }
         }
-        return false;
+        return null;
     }
 
 
@@ -127,44 +127,44 @@ public class TablaDeSimbolos {
         return TS.get(val).getTipo();
     }
 
-    public static boolean funcionDeclarada(String val, String ambito){
+    public static String funcionDeclarada(String val, String ambito){
         String aux = val + ambito;
         while (aux.lastIndexOf(":")!=-1) {
             if (TS.containsKey(aux)) {
                 Simbolo s = TS.get(aux);
                 if (s.getUso().equals("nombre de funcion")){
-                    return true;
+                    return aux;
                 }
             }
             int idx = aux.lastIndexOf(":");
             if (idx == -1) {
-                return false; // no hay más ámbitos para quitar
+                return null; // no hay más ámbitos para quitar
             } else {
                 aux = aux.substring(0, idx); // quitar la última parte
             }
         }
-        return false;
+        return null;
     }
 
     public static int cantParametrosFormales(String nombreFuncion){
+        System.out.println(nombreFuncion);
         int cant =0;
         for (HashMap.Entry<String, Simbolo> entry : TS.entrySet()) {
             String clave = entry.getKey();
-            String[] partes = clave.split(":");
-            String ultimo = partes[partes.length - 1];
+            int indiceComienzo = clave.indexOf(":");
+            String ambito = clave.substring(indiceComienzo+1);
             Simbolo s = entry.getValue();
-            if (ultimo.equals(nombreFuncion) && s.getSemantica() != null) {
+            if (ambito.equals(nombreFuncion) && s.getSemantica() != null) {
                 cant++;
             }
         }
+        System.out.println(cant);
         return cant;
     }
 
     public static void eliminar(String val){
         TS.remove(val);
     }
-
-
 
 
 

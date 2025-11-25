@@ -1,18 +1,22 @@
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
 
 public class Traductor {
     private static StringBuilder data = new StringBuilder();
-    private static StringBuilder code = new StringBuilder();
     private static StringBuilder prints = new StringBuilder();
+    private static StringBuilder main = new StringBuilder();
     private static StringBuilder etiqueta = new StringBuilder();
+    private static StringBuilder funciones = new StringBuilder();
+    private Map<String, List<Terceto>> tercetosFunc = new HashMap<>();
 
-    public static void generarAssembler() {
+    public void generarAssembler() {
         generarData();
+        generarFunc();
         generarCodigo();
+
+
         try (BufferedWriter bw = new BufferedWriter(new FileWriter("assemblers/salida.asm"))) {
             bw.write(".386\n" +
                     ".model flat, stdcall\n" +
@@ -30,10 +34,9 @@ public class Traductor {
             bw.write("msg_div0 db \"ERROR: division por cero\", 0\n");
             bw.write("msg_negativo db \"ERROR: resultado negativo\", 0\n");
             bw.newLine();
-            bw.write(".code\n"+
-                    "start:\n");
+            bw.write(".code\n");
 
-            bw.write(code.toString());
+            bw.write(funciones.toString());
             bw.newLine();
             bw.write(prints.toString());
             bw.newLine();
@@ -47,14 +50,14 @@ public class Traductor {
                     "invoke StdOut, addr msg_negativo\n" +
                     "invoke ExitProcess, 1\n");
 
-            bw.write("end start");
+            bw.write("end _start");
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static void generarData() {
+     private void generarData() {
         for (Map.Entry<String, Simbolo> var : TablaDeSimbolos.TS.entrySet()) {
             String nombreVar = var.getKey();
             Simbolo simbolo = var.getValue();
@@ -73,13 +76,30 @@ public class Traductor {
                         "invoke StdOut, chr$(13,10)\n");
             }
             if (simbolo.getUso().equals("variable auxiliar")) {
-                data.append(nombreVar + " dw" + " ?" + "\n");
+                data.append(nombreVar + " dw" + " ?" + "\n\n");
             }
         }
     }
+    private void generarCodigo() {
+        // 1. Primero las funciones que NO son start
+        for (Map.Entry<String, List<Terceto>> funcion : tercetosFunc.entrySet()) {
+            if (!funcion.getKey().equals("start")) {
+                generarAssemblerDeFuncion(funcion);
+            }
+        }
 
-    private static void generarCodigo() {
-        for (Terceto terceto : Compilador.tercetos) {
+        // 2. Después START al final
+        generarAssemblerDeFuncion(Map.entry("start", tercetosFunc.get("start")));
+    }
+
+
+    private void generarAssemblerDeFuncion(Map.Entry<String, List<Terceto>> funcion) {
+        String nombreFunc = funcion.getKey();
+        List<Terceto> tercetos = funcion.getValue();
+
+        funciones.append("_" + nombreFunc.replace(":", "_") + ":\n");
+
+        for (Terceto terceto : tercetos) {
             String op = terceto.getOperacion();
             String val1 = terceto.getVal1();
             String val2 = terceto.getVal2();
@@ -88,50 +108,75 @@ public class Traductor {
 
             switch (op) {
                 case ":=":
-                    code.append("mov " + "ax, " + val2 + "\n");
-                    code.append("mov " + val1 + ", ax" + "\n");
+                    funciones.append("mov ax, " + val2 + "\n");
+                    funciones.append("mov " + val1 + ", ax\n");
                     break;
                 case "+":
-
-                    code.append("mov " + "ax, " +val1 + "\n");
-                    code.append("add " + "ax, " + val2 + "\n");
-                    code.append("mov @aux"+ terceto.getIndice() +", ax" + "\n");
+                    funciones.append("mov ax, " + val1 + "\n");
+                    funciones.append("add ax, " + val2 + "\n");
+                    funciones.append("mov @aux" + terceto.getIndice() + ", ax\n");
                     break;
                 case "-":
-                    code.append("mov " + "ax, " +val1 + "\n");
-                    code.append("sub " + "ax, " + val2 + "\n");
-                    code.append("mov @aux"+ terceto.getIndice() +", ax" + "\n");
-                    code.append("js resultado_negativo\n");
+                    funciones.append("mov ax, " + val1 + "\n");
+                    funciones.append("sub ax, " + val2 + "\n");
+                    funciones.append("mov @aux" + terceto.getIndice() + ", ax\n");
+                    funciones.append("js resultado_negativo\n");
                     break;
                 case "*":
-                    code.append("mov bx, "+val2+"\n");
-                    code.append("mov " + "ax, " +val1 + "\n");
-                    code.append("mul bx\n");
-                    code.append("mov @aux"+ terceto.getIndice() +", ax" + "\n");
+                    funciones.append("mov bx, " + val2 + "\n");
+                    funciones.append("mov ax, " + val1 + "\n");
+                    funciones.append("mul bx\n");
+                    funciones.append("mov @aux" + terceto.getIndice() + ", ax\n");
                     break;
                 case "/":
-                    code.append("mov dx, 0\n"); // Si no inicializas DX, la división podría fallar si el dividendo es grande
-                    code.append("mov bx, "+val2+"\n");
-                    code.append("cmp bx, 0\n");
-                    code.append("je division_cero\n");
-                    code.append("mov " + "ax, " +val1 + "\n");
-                    code.append("div bx \n");
-                    code.append("mov @aux"+ terceto.getIndice() +", ax" + "\n");
+                    funciones.append("mov dx, 0\n");
+                    funciones.append("mov bx, " + val2 + "\n");
+                    funciones.append("cmp bx, 0\n");
+                    funciones.append("je division_cero\n");
+                    funciones.append("mov ax, " + val1 + "\n");
+                    funciones.append("div bx\n");
+                    funciones.append("mov @aux" + terceto.getIndice() + ", ax\n");
+                    break;
+                case "return":
+                    funciones.append("mov ax, " + val1+"\n");
+                    funciones.append("mov " + val2 + ", ax\nret\n");
+                    break;
+                case "call":
+                    funciones.append("call " + val1 + "\n");
                     break;
             }
         }
     }
 
-    private static String getString(String val2) {
-        if (TablaDeSimbolos.TS.containsKey(val2)){
-            if (TablaDeSimbolos.TS.get(val2).getUso().equals("constante")) {
-                val2 = val2.substring(0, val2.length() - 2); // quitar "UI"
+    private String getString(String val) {
+        if (TablaDeSimbolos.TS.containsKey(val)){
+            if (TablaDeSimbolos.TS.get(val).getUso().equals("constante")) {
+                val = val.substring(0, val.length() - 2); // quitar "UI"
             } else {
-                val2 = "_" + val2.replace(":","_");
+                val = "_" + val.replace(":","_");
             }
-        } else if (val2.contains("[")){
-            val2 = "@aux"+val2.replace("[","").replace("]","");
+        } else if (val.contains("[")){
+            val = "@aux"+val.replace("[","").replace("]","");
         }
-        return val2;
+        return val;
+    }
+
+    private void generarFunc() {
+        Stack<String> pilaNombreFuncion = new Stack<>(); // Apilamos
+        pilaNombreFuncion.push("start");
+        tercetosFunc.put("start", new ArrayList<>());
+
+        for (Terceto terceto : Compilador.tercetos){
+            if (terceto.getOperacion().equals("inicio de funcion")){
+                pilaNombreFuncion.push(terceto.getVal1());
+                tercetosFunc.put(terceto.getVal1(), new ArrayList<>());
+                tercetosFunc.get(terceto.getVal1()).add(terceto);
+            } else if (terceto.getOperacion().equals("fin de funcion")){
+                tercetosFunc.get(pilaNombreFuncion.peek()).add(terceto);
+                pilaNombreFuncion.pop();
+            } else {
+                tercetosFunc.get(pilaNombreFuncion.peek()).add(terceto);
+            }
+        }
     }
 }

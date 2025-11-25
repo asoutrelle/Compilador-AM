@@ -672,7 +672,7 @@ final static String yyrule[] = {
 "lista_constantes : lista_constantes CTE",
 };
 
-//#line 556 "grama.y"
+//#line 560 "grama.y"
 private ArrayList<Token> tokens = new ArrayList<>();
 private ArrayList<String> estructurasDetectadas = new ArrayList<>();
 private int cantUnidadesAnonimas = 1;
@@ -783,14 +783,14 @@ private void asigMultiple(String var, String cte) {
 
   private void completarBF(int index, int destino) {
         Terceto t = Compilador.tercetos.get(index);
-        t.setValor3("[" + destino + "]");
+        t.setValor2("[" + destino + "]");
         t.setMarcado(true);
         t.setMarcado(true);
     }
 
 private void completarBI(int index, int destino) {
     Terceto t = Compilador.tercetos.get(index);
-    t.setValor2("[" + destino + "]");
+    t.setValor1("[" + destino + "]");
     t.setMarcado(true);
   }
   private void yyWarning(String war){
@@ -813,7 +813,14 @@ private void completarBI(int index, int destino) {
         TablaDeSimbolos.agregar(valorStr,t, "uint", "variable auxiliar");
         return valorStr;
   }
-//#line 745 "Parser.java"
+  private void backpatching(String func,int index){
+          for (Terceto terceto : Compilador.tercetos) {
+              if(terceto.getVal2().equals(func)){
+                  terceto.setValor2("["+index+"]");
+              }
+          }
+      }
+//#line 752 "Parser.java"
 //###############################################################
 // method: yylexdebug : check lexer state
 //###############################################################
@@ -1101,13 +1108,11 @@ case 33:
 
         String ambito = Compilador.getAmbito();
         String var = val_peek(3).sval;
-        if(TablaDeSimbolos.varDeclarada(var, ambito)){
-            crearTerceto(":=", var, val_peek(1).sval);
-        }
+        crearTerceto(":=", var, val_peek(1).sval);
     }
 break;
 case 34:
-//#line 115 "grama.y"
+//#line 113 "grama.y"
 {
         crearTerceto("+", val_peek(2).sval, val_peek(0).sval);
         int t = Compilador.tercetos.size() - 1;
@@ -1116,7 +1121,7 @@ case 34:
     }
 break;
 case 35:
-//#line 122 "grama.y"
+//#line 120 "grama.y"
 {
         crearTerceto("-", val_peek(2).sval, val_peek(0).sval);
         int t = Compilador.tercetos.size() - 1;
@@ -1125,19 +1130,19 @@ case 35:
     }
 break;
 case 36:
-//#line 128 "grama.y"
+//#line 126 "grama.y"
 {yyerror("falta operando a izquierda de +");}
 break;
 case 37:
-//#line 129 "grama.y"
+//#line 127 "grama.y"
 {yyerror("falta operando a derecha de +");}
 break;
 case 38:
-//#line 130 "grama.y"
+//#line 128 "grama.y"
 {yyerror("falta operando a derecha de -");}
 break;
 case 40:
-//#line 136 "grama.y"
+//#line 134 "grama.y"
 {
         crearTerceto("*", val_peek(2).sval, val_peek(0).sval);
         int t = Compilador.tercetos.size() - 1;
@@ -1146,7 +1151,7 @@ case 40:
     }
 break;
 case 41:
-//#line 143 "grama.y"
+//#line 141 "grama.y"
 {
         crearTerceto("/", val_peek(2).sval, val_peek(0).sval);
         int t = Compilador.tercetos.size() - 1;
@@ -1155,57 +1160,57 @@ case 41:
     }
 break;
 case 42:
-//#line 149 "grama.y"
+//#line 147 "grama.y"
 {yyerror("falta operando a derecha de /");}
 break;
 case 43:
-//#line 150 "grama.y"
+//#line 148 "grama.y"
 {yyerror("falta operando a derecha de *");}
 break;
 case 44:
-//#line 151 "grama.y"
+//#line 149 "grama.y"
 {yyerror("falta operando a izquierda de /");}
 break;
 case 45:
-//#line 152 "grama.y"
+//#line 150 "grama.y"
 {yyerror("falta operando a izquierda de *");}
 break;
 case 49:
-//#line 159 "grama.y"
+//#line 157 "grama.y"
 {yyval=new ParserVal(val_peek(0).sval);}
 break;
 case 50:
-//#line 161 "grama.y"
+//#line 159 "grama.y"
 {
         addEstructura("trunc"); yyval=new ParserVal(truncar(val_peek(1).sval));
     }
 break;
 case 51:
-//#line 164 "grama.y"
+//#line 162 "grama.y"
 {addEstructura("trunc");yyerror("falta abrir parentesis en trunc");}
 break;
 case 52:
-//#line 165 "grama.y"
+//#line 163 "grama.y"
 {addEstructura("trunc");yyerror("falta cerrar parentesis en trunc");yyerrflag=0;}
 break;
 case 53:
-//#line 166 "grama.y"
+//#line 164 "grama.y"
 {addEstructura("trunc");yyerror("falta argumento en trunc");}
 break;
 case 54:
-//#line 167 "grama.y"
+//#line 165 "grama.y"
 {addEstructura("lambda");}
 break;
 case 55:
-//#line 171 "grama.y"
+//#line 169 "grama.y"
 {check_rango(val_peek(0).sval); yyval=new ParserVal(val_peek(0).sval);}
 break;
 case 56:
-//#line 172 "grama.y"
+//#line 170 "grama.y"
 {check_rango("-"+val_peek(0).sval); yyval=new ParserVal("-"+val_peek(1).sval);}
 break;
 case 57:
-//#line 177 "grama.y"
+//#line 175 "grama.y"
 {
         String aux = TablaDeSimbolos.varPrefijadaDeclarada(val_peek(0).sval, val_peek(2).sval, Compilador.getAmbito());
         if(aux.equals("")){
@@ -1218,28 +1223,30 @@ case 57:
     }
 break;
 case 58:
-//#line 188 "grama.y"
+//#line 186 "grama.y"
 {
         String ambito = Compilador.getAmbito();
         String var = val_peek(0).sval;
-        if(!TablaDeSimbolos.varDeclarada(var, ambito)){
+        String aux = TablaDeSimbolos.varDeclarada(var, ambito);
+        if(aux == null){
             yyerror("La variable "+ var +" no fue declarada");
         } else {
             TablaDeSimbolos.eliminar(var);
-            yyval=new ParserVal (var + ambito);
+            yyval=new ParserVal (aux);
         }
     }
 break;
 case 59:
-//#line 201 "grama.y"
+//#line 200 "grama.y"
 {nombreFuncion = val_peek(0).sval;}
 break;
 case 60:
-//#line 202 "grama.y"
+//#line 201 "grama.y"
 {
         String ambito = Compilador.getAmbito();
         String var = val_peek(4).sval;
-        if(!TablaDeSimbolos.funcionDeclarada(var,ambito)){
+        String aux = TablaDeSimbolos.funcionDeclarada(var,ambito);
+        if(aux == null){
             yyerror("La funcion " + var + " no esta declarada");
         } else{
             TablaDeSimbolos.eliminar(var);
@@ -1253,14 +1260,18 @@ case 60:
             }
         }
         int cantParam = param.length;
-        if(TablaDeSimbolos.cantParametrosFormales(val_peek(4).sval)!=cantParam){
+        if(TablaDeSimbolos.cantParametrosFormales(ambito.substring(1)+":"+var)!=cantParam){
             yyerror("cantidad de parametros reales distinta a parametros formales");
         }
-        yyval = new ParserVal(var+ambito);
+        int t = Compilador.tercetos.size();
+        yyval = new ParserVal("["+t+"]");
+        TablaDeSimbolos.agregarVarAux(t);
+        crearTerceto("call",aux,"-");
+        backpatching(aux,t);
     }
 break;
 case 61:
-//#line 228 "grama.y"
+//#line 232 "grama.y"
 {
         String ambito = Compilador.getAmbito()+":"+nombreFuncion;
         String var = val_peek(0).sval;
@@ -1273,15 +1284,15 @@ case 61:
     }
 break;
 case 62:
-//#line 238 "grama.y"
+//#line 242 "grama.y"
 {yyerror("Falta parametro formal");}
 break;
 case 63:
-//#line 239 "grama.y"
+//#line 243 "grama.y"
 {yyerror("Falta flecha y parametro formal");}
 break;
 case 64:
-//#line 241 "grama.y"
+//#line 245 "grama.y"
 {
         String ambito = Compilador.getAmbito()+":"+nombreFuncion;
         String var = val_peek(0).sval;
@@ -1294,19 +1305,19 @@ case 64:
     }
 break;
 case 65:
-//#line 251 "grama.y"
+//#line 255 "grama.y"
 {yyerror("Falta parametro formal");}
 break;
 case 66:
-//#line 252 "grama.y"
+//#line 256 "grama.y"
 {yyerror("Falta flecha y parametro formal");}
 break;
 case 67:
-//#line 253 "grama.y"
+//#line 257 "grama.y"
 {yyerror("error en parametros de invocacion");}
 break;
 case 69:
-//#line 262 "grama.y"
+//#line 266 "grama.y"
 {
         crearTerceto("print", val_peek(2).sval, "-");
          int t = Compilador.tercetos.size() - 1;
@@ -1314,93 +1325,93 @@ case 69:
     }
 break;
 case 70:
-//#line 267 "grama.y"
+//#line 271 "grama.y"
 {yyerror("falta argumento en print");}
 break;
 case 72:
-//#line 272 "grama.y"
+//#line 276 "grama.y"
 {yyerror("falta ;");}
 break;
 case 75:
-//#line 278 "grama.y"
+//#line 282 "grama.y"
 {yyerror("argumento invalido en print");}
 break;
 case 76:
-//#line 283 "grama.y"
+//#line 287 "grama.y"
 {
         int bi = Compilador.pilaSaltos.remove(Compilador.pilaSaltos.size()-1);
         completarBI(bi, Compilador.tercetos.size());
     }
 break;
 case 77:
-//#line 287 "grama.y"
+//#line 291 "grama.y"
 {yyerror("no hay sentencias en else");}
 break;
 case 79:
-//#line 292 "grama.y"
+//#line 296 "grama.y"
 {
         yyerror("falta endif");
     }
 break;
 case 80:
-//#line 296 "grama.y"
+//#line 300 "grama.y"
 {
         yyerror("falta endif");yyerror("no hay sentencias en else");
     }
 break;
 case 81:
-//#line 300 "grama.y"
+//#line 304 "grama.y"
 {
         yyerror("falta endif");
     }
 break;
 case 82:
-//#line 305 "grama.y"
+//#line 309 "grama.y"
 {yyerror("no hay sentencias en then");}
 break;
 case 83:
-//#line 306 "grama.y"
+//#line 310 "grama.y"
 {yyerror("no hay sentencias en then");yyerror("no hay sentencias en else");}
 break;
 case 84:
-//#line 307 "grama.y"
+//#line 311 "grama.y"
 {yyerror("no hay sentencias en then");}
 break;
 case 85:
-//#line 310 "grama.y"
+//#line 314 "grama.y"
 {yyerror("no hay sentencias en then");yyerror("falta endif");}
 break;
 case 86:
-//#line 311 "grama.y"
+//#line 315 "grama.y"
 {yyerror("no hay sentencias en then");yyerror("no hay sentencias en else");yyerror("falta endif");}
 break;
 case 87:
-//#line 312 "grama.y"
+//#line 316 "grama.y"
 {yyerror("no hay sentencias en then");yyerror("falta endif");}
 break;
 case 88:
-//#line 316 "grama.y"
+//#line 320 "grama.y"
 {
         int bf = Compilador.pilaSaltos.remove(Compilador.pilaSaltos.size()-1);
         completarBF(bf, Compilador.tercetos.size()+1);
     }
 break;
 case 89:
-//#line 323 "grama.y"
+//#line 327 "grama.y"
 {
         int bf = Compilador.pilaSaltos.remove(Compilador.pilaSaltos.size()-1);
         completarBF(bf, Compilador.tercetos.size());
     }
 break;
 case 90:
-//#line 329 "grama.y"
+//#line 333 "grama.y"
 {
         crearTerceto("BI", "-", "-");
          int bi = Compilador.tercetos.size() - 1;
         Compilador.pilaSaltos.add(bi);}
 break;
 case 91:
-//#line 336 "grama.y"
+//#line 340 "grama.y"
 {
         crearTerceto(val_peek(2).sval, val_peek(3).sval, val_peek(1).sval);
          int t = Compilador.tercetos.size() - 1;
@@ -1411,47 +1422,47 @@ case 91:
     }
 break;
 case 92:
-//#line 344 "grama.y"
+//#line 348 "grama.y"
 {yyerror("falta cerrar parentesis");}
 break;
 case 93:
-//#line 345 "grama.y"
+//#line 349 "grama.y"
 {yyerror("falta abrir parentesis");}
 break;
 case 94:
-//#line 346 "grama.y"
+//#line 350 "grama.y"
 {yyerror("faltan parentesis");}
 break;
 case 95:
-//#line 351 "grama.y"
+//#line 355 "grama.y"
 {yyval=new ParserVal("==");}
 break;
 case 96:
-//#line 352 "grama.y"
+//#line 356 "grama.y"
 {yyval=new ParserVal("=!");}
 break;
 case 97:
-//#line 353 "grama.y"
+//#line 357 "grama.y"
 {yyval=new ParserVal("<=");}
 break;
 case 98:
-//#line 354 "grama.y"
+//#line 358 "grama.y"
 {yyval=new ParserVal(">=");}
 break;
 case 99:
-//#line 355 "grama.y"
+//#line 359 "grama.y"
 {yyval=new ParserVal("<");}
 break;
 case 100:
-//#line 356 "grama.y"
+//#line 360 "grama.y"
 {yyval=new ParserVal(">");}
 break;
 case 101:
-//#line 357 "grama.y"
+//#line 361 "grama.y"
 {yyerror("en condicion");}
 break;
 case 104:
-//#line 371 "grama.y"
+//#line 375 "grama.y"
 {
         hayReturn = false;
         String ambito = Compilador.getAmbito();
@@ -1464,36 +1475,37 @@ case 104:
     }
 break;
 case 105:
-//#line 381 "grama.y"
+//#line 385 "grama.y"
 {
-        crearTerceto("inicio de funcion", val_peek(4).sval, "-");
+
+        crearTerceto("inicio de funcion", Compilador.getAmbitoVolteado(), "-");
     }
 break;
 case 106:
-//#line 384 "grama.y"
+//#line 389 "grama.y"
 {
         if (!hayReturn){
             yyerror("falta return en la funcion "+ val_peek(8).sval);
         }
         hayReturn = true;
-        crearTerceto("fin de funcion", val_peek(8).sval, "-");
+        crearTerceto("fin de funcion", Compilador.getAmbitoVolteado(), "-");
         Compilador.salirAmbito();
     }
 break;
 case 107:
-//#line 392 "grama.y"
+//#line 397 "grama.y"
 { yyerror("falta declarar nombre de funcion");}
 break;
 case 108:
-//#line 393 "grama.y"
+//#line 398 "grama.y"
 {yyerror("faltan parametros formales");}
 break;
 case 109:
-//#line 394 "grama.y"
+//#line 399 "grama.y"
 {yyerror("falta declarar nombre de funcion"); yyerror("faltan parametros formales");}
 break;
 case 110:
-//#line 399 "grama.y"
+//#line 404 "grama.y"
 {
         String ambito = Compilador.getAmbito();
         String var = val_peek(0).sval;
@@ -1503,7 +1515,7 @@ case 110:
     }
 break;
 case 111:
-//#line 407 "grama.y"
+//#line 412 "grama.y"
 {
         String ambito = Compilador.getAmbito();
         String var = val_peek(0).sval;
@@ -1513,7 +1525,7 @@ case 111:
     }
 break;
 case 112:
-//#line 414 "grama.y"
+//#line 419 "grama.y"
 {
         String ambito = Compilador.getAmbito();
         String var = val_peek(0).sval;
@@ -1523,7 +1535,7 @@ case 112:
     }
 break;
 case 113:
-//#line 421 "grama.y"
+//#line 426 "grama.y"
 {
         String ambito = Compilador.getAmbito();
         String var = val_peek(0).sval;
@@ -1533,15 +1545,15 @@ case 113:
     }
 break;
 case 114:
-//#line 428 "grama.y"
+//#line 433 "grama.y"
 {yyerror("error en parametro formal");}
 break;
 case 115:
-//#line 432 "grama.y"
+//#line 437 "grama.y"
 {tipo = "uint";}
 break;
 case 120:
-//#line 448 "grama.y"
+//#line 453 "grama.y"
 {
         if (hayReturn){
             yyerror("no se permite este return");
@@ -1552,71 +1564,70 @@ case 120:
             hayReturn = true;
         }
         addEstructura("return");
-        crearTerceto("return", val_peek(2).sval, "-");
-        int t = Compilador.tercetos.size() - 1;
+        crearTerceto("return", val_peek(2).sval, Compilador.getAmbitoVolteado());
         yyval=val_peek(2);
         }
 break;
 case 122:
-//#line 470 "grama.y"
+//#line 474 "grama.y"
 {yyerror("falta cuerpo sentencias");}
 break;
 case 123:
-//#line 471 "grama.y"
+//#line 475 "grama.y"
 {yyerror("falta de ;");}
 break;
 case 124:
-//#line 473 "grama.y"
+//#line 477 "grama.y"
 { yyerror("falta while");}
 break;
 case 125:
-//#line 474 "grama.y"
+//#line 478 "grama.y"
 {yyerror("falta cuerpo sentencias"); yyerror("falta while");}
 break;
 case 126:
-//#line 475 "grama.y"
+//#line 479 "grama.y"
 {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta while");}
 break;
 case 127:
-//#line 476 "grama.y"
+//#line 480 "grama.y"
 {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");yyerror("falta while");}
 break;
 case 128:
-//#line 479 "grama.y"
+//#line 483 "grama.y"
 {Compilador.pilaSaltos.add(Compilador.tercetos.size());}
 break;
 case 129:
-//#line 482 "grama.y"
+//#line 486 "grama.y"
 {
         int salto = Compilador.pilaSaltos.remove(0);
         crearTerceto("BI", "[" +salto+"]", "-");
     }
 break;
 case 130:
-//#line 490 "grama.y"
+//#line 494 "grama.y"
 {
         Compilador.entrarAmbito("ua"+cantUnidadesAnonimas);
         cantUnidadesAnonimas+=1;
     }
 break;
 case 131:
-//#line 496 "grama.y"
+//#line 500 "grama.y"
 {Compilador.salirAmbito();hayReturn = false;}
 break;
 case 132:
-//#line 497 "grama.y"
+//#line 501 "grama.y"
 {yyerror("no hay sentencias dentro de las llaves");}
 break;
 case 133:
-//#line 498 "grama.y"
+//#line 502 "grama.y"
 {Compilador.salirAmbito();}
 break;
 case 134:
-//#line 499 "grama.y"
+//#line 503 "grama.y"
 {yyerror("Error en sentencia");}
 break;
 case 135:
-//#line 505 "grama.y"
+//#line 509 "grama.y"
 {
         yyval= new ParserVal("lambda");
         crearTerceto("fin de lambda", "-", "-");
@@ -1624,19 +1635,19 @@ case 135:
     }
 break;
 case 136:
-//#line 510 "grama.y"
+//#line 514 "grama.y"
 { yyerror("falta abrir llave en cuerpo de sentencia lambda");}
 break;
 case 137:
-//#line 511 "grama.y"
+//#line 515 "grama.y"
 {yyerror("falta cerrar llave en cuerpo de sentencia lambda");}
 break;
 case 138:
-//#line 512 "grama.y"
+//#line 516 "grama.y"
 { yyerror("faltan llaves en cuerpo de sentencia lambda");}
 break;
 case 141:
-//#line 522 "grama.y"
+//#line 526 "grama.y"
 {
         String ambito = Compilador.getAmbito();
         String var = val_peek(0).sval;
@@ -1647,32 +1658,32 @@ case 141:
     }
 break;
 case 142:
-//#line 535 "grama.y"
+//#line 539 "grama.y"
 {
         asigMultiple(val_peek(3).sval,val_peek(1).sval);
     }
 break;
 case 144:
-//#line 542 "grama.y"
+//#line 546 "grama.y"
 {yyval=new ParserVal(val_peek(2).sval + "," + val_peek(0).sval);}
 break;
 case 145:
-//#line 543 "grama.y"
+//#line 547 "grama.y"
 {yyerror("falta , en lista de variables");}
 break;
 case 146:
-//#line 547 "grama.y"
+//#line 551 "grama.y"
 {yyval=val_peek(0);}
 break;
 case 147:
-//#line 548 "grama.y"
+//#line 552 "grama.y"
 {yyval=new ParserVal(val_peek(2).sval + "," + val_peek(0).sval);}
 break;
 case 148:
-//#line 549 "grama.y"
+//#line 553 "grama.y"
 {yyerror("falta , en lista de constantes");}
 break;
-//#line 1599 "Parser.java"
+//#line 1610 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####

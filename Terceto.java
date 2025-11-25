@@ -21,11 +21,11 @@ public class Terceto {
         System.out.println(Colores.MAGENTA+"(" + operacion + ", " + valor2 + ", " + valor3 + " )"+Colores.RESET);
     }
 
-    public void setValor2(String variable){
+    public void setValor1(String variable){
         this.val1 =variable;
     }
 
-    public void setValor3(String valor){
+    public void setValor2(String valor){
         this.val2 =valor;
     }
 

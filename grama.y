@@ -104,9 +104,7 @@ asig
 
         String ambito = Compilador.getAmbito();
         String var = $1.sval;
-        if(TablaDeSimbolos.varDeclarada(var, ambito)){
-            crearTerceto(":=", var, $3.sval);
-        }
+        crearTerceto(":=", var, $3.sval);
     }
     ;
 
@@ -188,11 +186,12 @@ variable
     {
         String ambito = Compilador.getAmbito();
         String var = $1.sval;
-        if(!TablaDeSimbolos.varDeclarada(var, ambito)){
+        String aux = TablaDeSimbolos.varDeclarada(var, ambito);
+        if(aux == null){
             yyerror("La variable "+ var +" no fue declarada");
         } else {
             TablaDeSimbolos.eliminar(var);
-            $$=new ParserVal (var + ambito);
+            $$=new ParserVal (aux);
         }
     }
     ;
@@ -202,7 +201,8 @@ invocacion
     {
         String ambito = Compilador.getAmbito();
         String var = $1.sval;
-        if(!TablaDeSimbolos.funcionDeclarada(var,ambito)){
+        String aux = TablaDeSimbolos.funcionDeclarada(var,ambito);
+        if(aux == null){
             yyerror("La funcion " + var + " no esta declarada");
         } else{
             TablaDeSimbolos.eliminar(var);
@@ -216,10 +216,14 @@ invocacion
             }
         }
         int cantParam = param.length;
-        if(TablaDeSimbolos.cantParametrosFormales($1.sval)!=cantParam){
+        if(TablaDeSimbolos.cantParametrosFormales(ambito.substring(1)+":"+var)!=cantParam){
             yyerror("cantidad de parametros reales distinta a parametros formales");
         }
-        $$ = new ParserVal(var+ambito);
+        int t = Compilador.tercetos.size();
+        $$ = new ParserVal("["+t+"]");
+        TablaDeSimbolos.agregarVarAux(t);
+        crearTerceto("call",aux,"-");
+        backpatching(aux,t);
     }
     ;
 
@@ -379,14 +383,15 @@ funcion
         Compilador.entrarAmbito($2.sval);
     }
     parametros_formales ')' {
-        crearTerceto("inicio de funcion", $2.sval, "-");
+
+        crearTerceto("inicio de funcion", Compilador.getAmbitoVolteado(), "-");
     }
     '{' lista_sentencia_funcion '}' {
         if (!hayReturn){
             yyerror("falta return en la funcion "+ $2.sval);
         }
         hayReturn = true;
-        crearTerceto("fin de funcion", $2.sval, "-");
+        crearTerceto("fin de funcion", Compilador.getAmbitoVolteado(), "-");
         Compilador.salirAmbito();
     }
     | tipo '(' parametros_formales ')' '{' lista_sentencia_funcion '}' { yyerror("falta declarar nombre de funcion");}
@@ -455,8 +460,7 @@ return
             hayReturn = true;
         }
         addEstructura("return");
-        crearTerceto("return", $3.sval, "-");
-        int t = Compilador.tercetos.size() - 1;
+        crearTerceto("return", $3.sval, Compilador.getAmbitoVolteado());
         $$=$3;
         }
     ;
@@ -663,14 +667,14 @@ private void asigMultiple(String var, String cte) {
 
   private void completarBF(int index, int destino) {
         Terceto t = Compilador.tercetos.get(index);
-        t.setValor3("[" + destino + "]");
+        t.setValor2("[" + destino + "]");
         t.setMarcado(true);
         t.setMarcado(true);
     }
 
 private void completarBI(int index, int destino) {
     Terceto t = Compilador.tercetos.get(index);
-    t.setValor2("[" + destino + "]");
+    t.setValor1("[" + destino + "]");
     t.setMarcado(true);
   }
   private void yyWarning(String war){
@@ -693,3 +697,10 @@ private void completarBI(int index, int destino) {
         TablaDeSimbolos.agregar(valorStr,t, "uint", "variable auxiliar");
         return valorStr;
   }
+  private void backpatching(String func,int index){
+          for (Terceto terceto : Compilador.tercetos) {
+              if(terceto.getVal2().equals(func)){
+                  terceto.setValor2("["+index+"]");
+              }
+          }
+      }
