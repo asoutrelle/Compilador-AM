@@ -105,7 +105,6 @@ public class Traductor {
             String val1 = terceto.getVal1();
             String val2 = terceto.getVal2();
 
-
             val1 = getString(val1);
             val2 = getString(val2);
 
@@ -211,12 +210,12 @@ public class Traductor {
                     funciones.append("cmp_end_" + terceto.getIndice() + ":\n\n");
                     break;
                 case "BF": // esto es para bifurcacion por falso
-                    funciones.append("; ---IF---\n");
+                    funciones.append("; ---BF---\n");
                     funciones.append("cmp "+val1+", 0\n");
                     funciones.append("je cmp_end_"+val2+"\n");
                     break;
                 case "BI": // esto es para el else bifurcacion incondicional
-                    funciones.append("; ---ELSE---\n");
+                    funciones.append("; ---BI---\n");
                     funciones.append("jmp cmp_end_"+val1+"\n");
                     funciones.append("cmp_end_"+val2+":\n");
                     break;
@@ -224,7 +223,18 @@ public class Traductor {
                     funciones.append("; ---ENDIF---\n");
                     funciones.append("cmp_end_@aux"+terceto.getIndice()+":\n");
                     break;
-
+                case "inicio while":
+                    funciones.append("; ---WHILE---\n");
+                    funciones.append("cmp_end_@aux"+terceto.getIndice()+":\n");
+                    break;
+                case "BIW": // esto proboca el bucle del while
+                    funciones.append("; ---BIW---\n");
+                    funciones.append("jmp cmp_end_"+val1+"\n");
+                    break;
+                case "fin while":
+                    funciones.append("; ---FIN WHILE---\n");
+                    funciones.append("cmp_end_@aux"+terceto.getIndice()+":\n");
+                    break;
             }
         }
     }

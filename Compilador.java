@@ -15,9 +15,6 @@ public class Compilador {
     public static ArrayList<Terceto> tercetosCR = new ArrayList<>();
 
 
-
-
-
     public static void entrarAmbito(String nombre) {
         pilaAmbitos.add(nombre);
         ambitoActual = nombre;
@@ -46,10 +43,6 @@ public class Compilador {
         Collections.reverse(Arrays.asList(partes));
 
         return String.join(":", partes);
-    }
-
-    public Compilador (){
-
     }
     public static void addError(String error){
         String str = Colores.ROJO + error + Colores.RESET;
@@ -81,8 +74,8 @@ public class Compilador {
             System.out.println(Colores.ROJO +
                     "-----------------------------------------------------------------------------------------" + Colores.RESET);
         }
-
     }
+
     public void printTercetos(){
 
         if(!tercetos.isEmpty()) {
@@ -94,9 +87,7 @@ public class Compilador {
             }
             System.out.println(Colores.MAGENTA +
                     "-----------------------------------------------------------------------------------------" + Colores.RESET);
-
         }
-
     }
 
     public static void main(String[] args) throws IOException {
@@ -130,9 +121,6 @@ public class Compilador {
         compilador.printTercetos();
         if (erroresDetectados.isEmpty()) {
             traductor.generarAssembler();
-        } else {
-            System.exit(1);
-        }
+        } else System.exit(1);
     }
-
 }

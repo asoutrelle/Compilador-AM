@@ -159,7 +159,8 @@ factor
     | CTE {$$=new ParserVal($1.sval);}
     | TRUNC '(' punto_flotante ')'
     {
-        addEstructura("trunc"); $$=new ParserVal(truncar($3.sval));
+        addEstructura("trunc");
+        $$=new ParserVal(truncar($3.sval));
     }
     | TRUNC  punto_flotante ')' {addEstructura("trunc");yyerror("falta abrir parentesis en trunc");}
     | TRUNC '(' error {addEstructura("trunc");yyerror("falta cerrar parentesis en trunc");yyerrflag=0;}
@@ -301,35 +302,35 @@ argumento_print
     ;
 /* -------------------------------------------------------- IF -------------------------------------------------------- */
 if
-    : IF cuerpo_condicion nuevo_ambito_ua cuerpo_sentencia_ejecutable completar_bf_else ELSE nuevo_ambito_ua crear_bi cuerpo_sentencia_ejecutable ENDIF punto_coma
+    : IF cuerpo_condicion  cuerpo_sentencia_ejecutable completar_bf_else ELSE  crear_bi cuerpo_sentencia_ejecutable ENDIF punto_coma
     {
         int bi = Compilador.pilaSaltos.remove(Compilador.pilaSaltos.size()-1);
         completarBI(bi);
     }
-    | IF cuerpo_condicion nuevo_ambito_ua cuerpo_sentencia_ejecutable completar_bf_else ELSE ENDIF punto_coma {yyerror("no hay sentencias en else");}
-    | IF cuerpo_condicion nuevo_ambito_ua cuerpo_sentencia_ejecutable completar_bf ENDIF punto_coma
+    | IF cuerpo_condicion  cuerpo_sentencia_ejecutable completar_bf_else ELSE ENDIF punto_coma {yyerror("no hay sentencias en else");}
+    | IF cuerpo_condicion  cuerpo_sentencia_ejecutable completar_bf ENDIF punto_coma
 
     /*sin endif*/
-    | IF cuerpo_condicion nuevo_ambito_ua cuerpo_sentencia_ejecutable completar_bf_else ELSE nuevo_ambito_ua crear_bi cuerpo_sentencia_ejecutable punto_coma
+    | IF cuerpo_condicion  cuerpo_sentencia_ejecutable completar_bf_else ELSE  crear_bi cuerpo_sentencia_ejecutable punto_coma
     {
         yyerror("falta endif");
     }
-    | IF cuerpo_condicion nuevo_ambito_ua cuerpo_sentencia_ejecutable completar_bf_else ELSE  punto_coma
+    | IF cuerpo_condicion  cuerpo_sentencia_ejecutable completar_bf_else ELSE  punto_coma
     {
         yyerror("falta endif");yyerror("no hay sentencias en else");
     }
-    | IF cuerpo_condicion nuevo_ambito_ua cuerpo_sentencia_ejecutable completar_bf punto_coma
+    | IF cuerpo_condicion  cuerpo_sentencia_ejecutable completar_bf punto_coma
     {
         yyerror("falta endif");
     }
 
     /*con endif, sin then*/
-    | IF cuerpo_condicion ELSE nuevo_ambito_ua crear_bi cuerpo_sentencia_ejecutable completar_bf ENDIF punto_coma {yyerror("no hay sentencias en then");}
+    | IF cuerpo_condicion ELSE  crear_bi cuerpo_sentencia_ejecutable completar_bf ENDIF punto_coma {yyerror("no hay sentencias en then");}
     | IF cuerpo_condicion ELSE  ENDIF punto_coma {yyerror("no hay sentencias en then");yyerror("no hay sentencias en else");}
     | IF cuerpo_condicion ENDIF punto_coma {yyerror("no hay sentencias en then");}
 
     /*sin endif, sin then*/
-    | IF cuerpo_condicion  ELSE nuevo_ambito_ua crear_bi cuerpo_sentencia_ejecutable punto_coma {yyerror("no hay sentencias en then");yyerror("falta endif");}
+    | IF cuerpo_condicion  ELSE  crear_bi cuerpo_sentencia_ejecutable punto_coma {yyerror("no hay sentencias en then");yyerror("falta endif");}
     | IF cuerpo_condicion  ELSE punto_coma {yyerror("no hay sentencias en then");yyerror("no hay sentencias en else");yyerror("falta endif");}
     | IF cuerpo_condicion  punto_coma {yyerror("no hay sentencias en then");yyerror("falta endif");}
     ;
@@ -486,34 +487,31 @@ return
 
 /* ------------------------------------------ DO WHILE ------------------------------------------ */
 do
-    : DO nuevo_ambito_ua inicio_while cuerpo_sentencia_ejecutable WHILE cuerpo_condicion crear_bi_while completar_bf punto_coma
-    | DO nuevo_ambito_ua inicio_while WHILE cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias");}
-    | DO nuevo_ambito_ua inicio_while cuerpo_sentencia_ejecutable WHILE cuerpo_condicion {yyerror("falta de ;");}
+    : DO  inicio_while cuerpo_sentencia_ejecutable WHILE cuerpo_condicion crear_bi_while completar_bf punto_coma
+    | DO  inicio_while WHILE cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias");}
+    | DO  inicio_while cuerpo_sentencia_ejecutable WHILE cuerpo_condicion {yyerror("falta de ;");}
 
-    | DO nuevo_ambito_ua inicio_while cuerpo_sentencia_ejecutable cuerpo_condicion punto_coma { yyerror("falta while");}
-    | DO nuevo_ambito_ua inicio_while cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias"); yyerror("falta while");}
-    | DO nuevo_ambito_ua inicio_while cuerpo_sentencia_ejecutable cuerpo_condicion {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta while");}
-    | DO nuevo_ambito_ua inicio_while  cuerpo_condicion {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");yyerror("falta while");}
+    | DO  inicio_while cuerpo_sentencia_ejecutable cuerpo_condicion punto_coma { yyerror("falta while");}
+    | DO  inicio_while cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias"); yyerror("falta while");}
+    | DO  inicio_while cuerpo_sentencia_ejecutable cuerpo_condicion {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta while");}
+    | DO  inicio_while  cuerpo_condicion {yyerror("falta de ) en condicion");yyerror("falta de ;");yyerror("falta cuerpo sentencias");yyerror("falta while");}
     ;
 inicio_while
-    : {Compilador.pilaSaltos.add(Compilador.tercetos.size());}
+    :
+    {
+        Compilador.pilaSaltos.add(Compilador.tercetos.size());
+        crearTerceto("inicio while","-","-", true);
+    }
     ;
 crear_bi_while
     : {
         int salto = Compilador.pilaSaltos.remove(0);
-        crearTerceto("BI", "[" +salto+"]", "-");
+        crearTerceto("BIW", "[" +salto+"]", "-");
     }
     ;
-    
-nuevo_ambito_ua
-    :
-    {
-        Compilador.entrarAmbito("ua"+cantUnidadesAnonimas);
-        cantUnidadesAnonimas+=1;
-    }
-    ;
+
 cuerpo_sentencia_ejecutable
-    : '{' lista_sentencia_ejecutable '}' {Compilador.salirAmbito();hayReturn = false;}
+    : '{' lista_sentencia_ejecutable '}' {hayReturn = false;}
     | '{' '}' {yyerror("no hay sentencias dentro de las llaves");}
     | sentencia_ejecutable {Compilador.salirAmbito();}
     | '{' error '}' {yyerror("Error en sentencia");}
@@ -521,15 +519,14 @@ cuerpo_sentencia_ejecutable
 
 /* -------------- EXPRESIONES LAMBDA -------------- */
 exp_lambda
-    : '('  tipo nuevo_ambito_ua  validar_id ')' '{' lista_sentencia_ejecutable '}' argumento_lambda
+    : '('  tipo   validar_id ')' '{' lista_sentencia_ejecutable '}' argumento_lambda
     {
         $$= new ParserVal("lambda");
         crearTerceto("fin de lambda", "-", "-");
-        Compilador.salirAmbito();
     }
-    |  '(' tipo nuevo_ambito_ua  validar_id ')'  lista_sentencia_ejecutable '}' argumento_lambda { yyerror("falta abrir llave en cuerpo de sentencia lambda");}
-    |  '(' tipo nuevo_ambito_ua  validar_id ')'  '{' lista_sentencia_ejecutable argumento_lambda {yyerror("falta cerrar llave en cuerpo de sentencia lambda");}
-    |  '(' tipo nuevo_ambito_ua  validar_id ')'   lista_sentencia_ejecutable argumento_lambda { yyerror("faltan llaves en cuerpo de sentencia lambda");}
+    |  '(' tipo   validar_id ')'  lista_sentencia_ejecutable '}' argumento_lambda { yyerror("falta abrir llave en cuerpo de sentencia lambda");}
+    |  '(' tipo   validar_id ')'  '{' lista_sentencia_ejecutable argumento_lambda {yyerror("falta cerrar llave en cuerpo de sentencia lambda");}
+    |  '(' tipo   validar_id ')'   lista_sentencia_ejecutable argumento_lambda { yyerror("faltan llaves en cuerpo de sentencia lambda");}
     ;
 
 argumento_lambda
@@ -715,6 +712,7 @@ private void completarBI(int index) {
         String valorStr = Long.toString(truncadoLong)+"UI";
         Token t = new Token(258,nroLinea());
         TablaDeSimbolos.agregar(valorStr,t, "uint", "variable auxiliar");
+        System.out.println("trunc: "+ valorStr);
         return valorStr;
   }
   private void backpatching(String func,int index){

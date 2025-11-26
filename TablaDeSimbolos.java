@@ -27,7 +27,6 @@ public class TablaDeSimbolos {
         }
     }
 
-
     public static void agregar(String val, Token token){
         Simbolo s = new Simbolo(val, token);
         if(!TS.containsKey(s.getValor())){
@@ -95,7 +94,6 @@ public class TablaDeSimbolos {
         return null;
     }
 
-
     public static String varPrefijadaDeclarada(String val, String ambitoVar, String ambito){
         int idx;
         while (ambito.lastIndexOf(":")!=-1) {
@@ -121,8 +119,9 @@ public class TablaDeSimbolos {
             }
         return false;
     }
+
     public static String getAmbito(String val){
-//        String s = TS.get(val).getTipo();
+        //String s = TS.get(val).getTipo();
         return TS.get(val).getTipo();
     }
 
