@@ -58,7 +58,11 @@ sentencia_declarativa
 
 sentencia_ejecutable
     : asig {addEstructura("asignacion");}
-    | if {addEstructura("sentencia if");}
+    | if
+    {
+        addEstructura("sentencia if");
+        crearTerceto("fin if","-","-");
+    }
     | salida_msj {addEstructura("print");}
     | return {addEstructura("return");}
     | asig_multiple {addEstructura("asignacion multiple");}
@@ -300,7 +304,7 @@ if
     : IF cuerpo_condicion nuevo_ambito_ua cuerpo_sentencia_ejecutable completar_bf_else ELSE nuevo_ambito_ua crear_bi cuerpo_sentencia_ejecutable ENDIF punto_coma
     {
         int bi = Compilador.pilaSaltos.remove(Compilador.pilaSaltos.size()-1);
-        completarBI(bi, Compilador.tercetos.size());
+        completarBI(bi);
     }
     | IF cuerpo_condicion nuevo_ambito_ua cuerpo_sentencia_ejecutable completar_bf_else ELSE ENDIF punto_coma {yyerror("no hay sentencias en else");}
     | IF cuerpo_condicion nuevo_ambito_ua cuerpo_sentencia_ejecutable completar_bf ENDIF punto_coma
@@ -355,6 +359,7 @@ cuerpo_condicion
         crearTerceto($3.sval, $2.sval, $4.sval);
          int t = Compilador.tercetos.size() - 1;
         crearTerceto("BF", "["+t+"]", "-");
+        TablaDeSimbolos.agregarVarAux(t);
          int bf = Compilador.tercetos.size() - 1;
         Compilador.pilaSaltos.add(bf);
         $$ = new ParserVal("[" + t + "]");
@@ -643,6 +648,9 @@ public void check_rango(String valor){
  private void crearTerceto(String operacion, String variable, String valor){
     Compilador.tercetos.add(new Terceto(operacion, variable, valor, Compilador.tercetos.size()));
   }
+  private void crearTerceto(String operacion, String variable, String valor, boolean marca){
+     Compilador.tercetos.add(new Terceto(operacion, variable, valor, Compilador.tercetos.size(), marca));
+   }
 
 private void asigMultiple(String var, String cte) {
 
@@ -680,12 +688,13 @@ private void asigMultiple(String var, String cte) {
         Terceto t = Compilador.tercetos.get(index);
         t.setValor2("[" + destino + "]");
         t.setMarcado(true);
-        t.setMarcado(true);
     }
 
-private void completarBI(int index, int destino) {
+private void completarBI(int index) {
     Terceto t = Compilador.tercetos.get(index);
-    t.setValor1("[" + destino + "]");
+    int val1 =Compilador.tercetos.size();
+    t.setValor1("[" + val1 + "]");
+    t.setValor2("[" + (index+1) + "]");
     t.setMarcado(true);
   }
   private void yyWarning(String war){

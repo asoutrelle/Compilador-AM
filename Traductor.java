@@ -151,6 +151,79 @@ public class Traductor {
                 case "trunc":
                     funciones.append(" \n");
                     break;
+                case ">":
+                    funciones.append("mov ax, " + val1 + "\n");
+                    funciones.append("mov bx, " + val2 + "\n");
+                    funciones.append("cmp ax, bx\n");
+                    funciones.append("mov @aux" + terceto.getIndice() + ", 0\n");        // por defecto falso
+                    funciones.append("jle cmp_end_" + terceto.getIndice() + "\n");       // ax <= bx → falso
+                    funciones.append("mov @aux" + terceto.getIndice() + ", 1\n");        // ax > bx → verdadero
+                    funciones.append("cmp_end_" + terceto.getIndice() + ":\n\n");
+                    break;
+
+                case "<":
+                    funciones.append("mov ax, " + val1 + "\n");
+                    funciones.append("mov bx, " + val2 + "\n");
+                    funciones.append("cmp ax, bx\n");
+                    funciones.append("mov @aux" + terceto.getIndice() + ", 0\n");
+                    funciones.append("jge cmp_end_" + terceto.getIndice() + "\n");       // ax >= bx
+                    funciones.append("mov @aux" + terceto.getIndice() + ", 1\n");        // ax < bx
+                    funciones.append("cmp_end_" + terceto.getIndice() + ":\n\n");
+                    break;
+
+                case ">=":
+                    funciones.append("mov ax, " + val1 + "\n");
+                    funciones.append("mov bx, " + val2 + "\n");
+                    funciones.append("cmp ax, bx\n");
+                    funciones.append("mov @aux" + terceto.getIndice() + ", 0\n");
+                    funciones.append("jl cmp_end_" + terceto.getIndice() + "\n");        // ax < bx
+                    funciones.append("mov @aux" + terceto.getIndice() + ", 1\n");        // ax >= bx
+                    funciones.append("cmp_end_" + terceto.getIndice() + ":\n\n");
+                    break;
+
+                case "<=":
+                    funciones.append("mov ax, " + val1 + "\n");
+                    funciones.append("mov bx, " + val2 + "\n");
+                    funciones.append("cmp ax, bx\n");
+                    funciones.append("mov @aux" + terceto.getIndice() + ", 0\n");
+                    funciones.append("jg cmp_end_" + terceto.getIndice() + "\n");        // ax > bx
+                    funciones.append("mov @aux" + terceto.getIndice() + ", 1\n");        // ax <= bx
+                    funciones.append("cmp_end_" + terceto.getIndice() + ":\n\n");
+                    break;
+
+                case "==":
+                    funciones.append("mov ax, " + val1 + "\n");
+                    funciones.append("mov bx, " + val2 + "\n");
+                    funciones.append("cmp ax, bx\n");
+                    funciones.append("mov @aux" + terceto.getIndice() + ", 0\n");
+                    funciones.append("jne cmp_end_" + terceto.getIndice() + "\n");       // no iguales
+                    funciones.append("mov @aux" + terceto.getIndice() + ", 1\n");        // iguales
+                    funciones.append("cmp_end_" + terceto.getIndice() + ":\n\n");
+                    break;
+
+                case "!=":
+                    funciones.append("mov ax, " + val1 + "\n");
+                    funciones.append("mov bx, " + val2 + "\n");
+                    funciones.append("cmp ax, bx\n");
+                    funciones.append("mov @aux" + terceto.getIndice() + ", 0\n");
+                    funciones.append("je cmp_end_" + terceto.getIndice() + "\n");        // iguales
+                    funciones.append("mov @aux" + terceto.getIndice() + ", 1\n");        // distintos
+                    funciones.append("cmp_end_" + terceto.getIndice() + ":\n\n");
+                    break;
+                case "BF": // esto es para bifurcacion por falso
+                    funciones.append("; ---IF---\n");
+                    funciones.append("cmp "+val1+", 0\n");
+                    funciones.append("je cmp_end_"+val2+"\n");
+                    break;
+                case "BI": // esto es para el else bifurcacion incondicional
+                    funciones.append("; ---ELSE---\n");
+                    funciones.append("jmp cmp_end_"+val1+"\n");
+                    funciones.append("cmp_end_"+val2+":\n");
+                    break;
+                case "fin if":
+                    funciones.append("; ---ENDIF---\n");
+                    funciones.append("cmp_end_@aux"+terceto.getIndice()+":\n");
+                    break;
 
             }
         }

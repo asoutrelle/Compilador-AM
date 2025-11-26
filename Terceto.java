@@ -5,12 +5,21 @@ public class Terceto {
     private int indice;
     private boolean marcado = false;
 
+    public Terceto(String operacion, String variable, String valor, int indice, boolean marcado) {
+        this.operacion = operacion;
+        this.val1 = variable;
+        this.val2 = valor;
+        this.indice = indice;
+        this.marcado = marcado;
+    }
+
     public Terceto(String operacion, String variable, String valor, int indice) {
         this.operacion = operacion;
         this.val1 = variable;
         this.val2 = valor;
         this.indice = indice;
     }
+
     public Terceto(String operacion, String variable, String valor) {
         this.operacion = operacion;
         this.val1 = variable;
