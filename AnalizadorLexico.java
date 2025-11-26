@@ -159,12 +159,4 @@ public class AnalizadorLexico {
         return cadena.toString();
     }
 
-
-
-
-
-    public void agregarTS(String valor, Token t){
-        valorTs = valor;
-        TablaDeSimbolos.agregar(valor, t, "indefinido");
-    }
 }

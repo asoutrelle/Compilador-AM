@@ -1,3 +1,4 @@
+import java.sql.SQLOutput;
 import java.util.*;
 
 public class TablaDeSimbolos {
@@ -35,6 +36,7 @@ public class TablaDeSimbolos {
     }
 
     public static boolean agregarVar(String valor, String ambito, String tipo, String uso){
+
         String aux = valor+ambito;
         if(TS.containsKey(aux)){
             return false;
@@ -158,24 +160,23 @@ public class TablaDeSimbolos {
     public static boolean esParametroValido(String paramReal, String paramFormal, String ambito, String nombreFuncion){
         int idx;
         String aux = paramFormal + ambito;
-        if(TS.get(paramReal).getUso().equals("constante")){
-            while (aux.lastIndexOf(":")!=-1) {
-                String var = aux + ":" + nombreFuncion;
-                if(TS.containsKey(var)){
-                    Simbolo s = TS.get(var);
-                    if(s.getSemantica().equals("copia resultado")){
-                        return false;
+            if (TS.get(paramReal).getUso().equals("constante")) {
+                while (aux.lastIndexOf(":") != -1) {
+                    String var = aux + ":" + nombreFuncion;
+                    if (TS.containsKey(var)) {
+                        Simbolo s = TS.get(var);
+                        if (s.getSemantica().equals("copia resultado")) {
+                            return false;
+                        }
                     }
+                    idx = aux.lastIndexOf(":");
+                    aux = aux.substring(0, idx);
                 }
-                idx = aux.lastIndexOf(":");
-                aux = aux.substring(0, idx);
             }
-        }
         return true;
     }
 
     public static boolean esCopiaResultado(String parametro){
-        System.out.println("parametro: " + parametro);
         if (TS.containsKey(parametro)) {
             return TS.get(parametro).getSemantica().equals("copia resultado");
         }
@@ -187,7 +188,6 @@ public class TablaDeSimbolos {
     }
 
     public static int buscarReturn(String nombreFuncion){
-        System.out.println("nombreFuncion: " + nombreFuncion );
         Deque<String> pila = new LinkedList<>();
 
         for (Terceto t : Compilador.tercetos) {

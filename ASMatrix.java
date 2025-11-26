@@ -40,7 +40,8 @@ public class ASMatrix {
                     valor = valor_truncado;
                 }
                 if(!(t == null)){
-                    analizadorLexico.agregarTS(valor, t);
+                    AnalizadorLexico.valorTs = valor;
+                    TablaDeSimbolos.agregar(valor, t);
                 }
                 analizadorLexico.vaciarCadena();
                 return t;
@@ -133,7 +134,8 @@ public class ASMatrix {
                 analizadorLexico.agregarCaracter();
                 String valor = analizadorLexico.devolverCadena();
                 Token t = analizadorLexico.reconocerToken(estadoAnterior);
-                analizadorLexico.agregarTS(valor,t);
+                analizadorLexico.valorTs = valor;
+                TablaDeSimbolos.agregar(valor,t, "string", "cadena");
                 analizadorLexico.vaciarCadena();
                 return t;
             }

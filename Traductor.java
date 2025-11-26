@@ -30,6 +30,7 @@ public class Traductor {
                     "include \\masm32\\include\\masm32rt.inc\n" +
                     "\n" +
                     ".data\n");
+            bw.write("buffer_print db 32 dup(?)\n\n");
             bw.write(data.toString());
             bw.write("msg_div0 db \"ERROR: division por cero\", 0\n");
             bw.write("msg_negativo db \"ERROR: resultado negativo\", 0\n");
@@ -69,11 +70,11 @@ public class Traductor {
                 data.append("buffer_" + nombreVar + " db 32 dup(0)\n");
                 data.append("msg_" + nombreVar + " db " + "\"_" + nombreVar + " = \" , 0\n\n");
 
-                prints.append("movzx eax, _" + nombreVar + "\n" +
+               /*prints.append("movzx eax, _" + nombreVar + "\n" +
                         "invoke dwtoa, eax, addr buffer_" + nombreVar + "\n" +
                         "invoke StdOut, addr msg_" + nombreVar + "\n" +
                         "invoke StdOut, addr buffer_" + nombreVar + "\n" +
-                        "invoke StdOut, chr$(13,10)\n");
+                        "invoke StdOut, chr$(13,10)\n");*/
             }
             if (simbolo.getUso().equals("variable auxiliar")) {
                 data.append(nombreVar + " dw" + " ?" + "\n\n");
@@ -104,7 +105,6 @@ public class Traductor {
             String op = terceto.getOperacion();
             String val1 = terceto.getVal1();
             String val2 = terceto.getVal2();
-
             val1 = getString(val1);
             val2 = getString(val2);
 
@@ -151,6 +151,7 @@ public class Traductor {
                     funciones.append(" \n");
                     break;
                 case ">":
+                    funciones.append("; --- > ---\n");
                     funciones.append("mov ax, " + val1 + "\n");
                     funciones.append("mov bx, " + val2 + "\n");
                     funciones.append("cmp ax, bx\n");
@@ -161,6 +162,7 @@ public class Traductor {
                     break;
 
                 case "<":
+                    funciones.append("; --- < ---\n");
                     funciones.append("mov ax, " + val1 + "\n");
                     funciones.append("mov bx, " + val2 + "\n");
                     funciones.append("cmp ax, bx\n");
@@ -171,6 +173,7 @@ public class Traductor {
                     break;
 
                 case ">=":
+                    funciones.append("; --- >= ---\n");
                     funciones.append("mov ax, " + val1 + "\n");
                     funciones.append("mov bx, " + val2 + "\n");
                     funciones.append("cmp ax, bx\n");
@@ -181,6 +184,7 @@ public class Traductor {
                     break;
 
                 case "<=":
+                    funciones.append("; --- <= ---\n");
                     funciones.append("mov ax, " + val1 + "\n");
                     funciones.append("mov bx, " + val2 + "\n");
                     funciones.append("cmp ax, bx\n");
@@ -191,6 +195,7 @@ public class Traductor {
                     break;
 
                 case "==":
+                    funciones.append("; --- == ---\n");
                     funciones.append("mov ax, " + val1 + "\n");
                     funciones.append("mov bx, " + val2 + "\n");
                     funciones.append("cmp ax, bx\n");
@@ -200,7 +205,8 @@ public class Traductor {
                     funciones.append("cmp_end_" + terceto.getIndice() + ":\n\n");
                     break;
 
-                case "!=":
+                case "=!":
+                    funciones.append("; --- != ---\n");
                     funciones.append("mov ax, " + val1 + "\n");
                     funciones.append("mov bx, " + val2 + "\n");
                     funciones.append("cmp ax, bx\n");
@@ -235,20 +241,39 @@ public class Traductor {
                     funciones.append("; ---FIN WHILE---\n");
                     funciones.append("cmp_end_@aux"+terceto.getIndice()+":\n");
                     break;
+                case "print":
+                    funciones.append("; --- PRINT ---\n");
+                    if (val1.startsWith("\"")) {
+                        // imprimir string literal
+                        String etiquetaStr = "_str_" + terceto.getIndice();
+                        data.append(etiquetaStr + " db " + val1 + ", 0\n");
+                        funciones.append("invoke StdOut, addr " + etiquetaStr + "\n");
+                        funciones.append("invoke StdOut, chr$(13,10)\n");
+                    } else {
+                        // imprimir número
+                        funciones.append("movzx eax, " + val1 + "\n");
+                        funciones.append("invoke dwtoa, eax, addr buffer_print\n");
+                        funciones.append("invoke StdOut, addr buffer_print\n");
+                        funciones.append("invoke StdOut, chr$(13,10)\n");
+                    }
+                    break;
             }
         }
     }
 
     private String getString(String val) {
+
         if (TablaDeSimbolos.TS.containsKey(val)){
-            if (TablaDeSimbolos.TS.get(val).getUso().equals("constante")) {
+            Simbolo s = TablaDeSimbolos.TS.get(val);
+            if (s.getUso().equals("constante")) {
                 val = val.substring(0, val.length() - 2);
                 return val;// quitar "UI"
-            } else {
+            } else if (s.getUso().equals("nombre de variable") || s.getUso().equals("nombre de funcion")){
                 val = "_" + val.replace(":","_");
                 return val;
             }
-        } else if (val.contains("[")){
+        }
+        if (val.contains("[")){
             val = "@aux"+val.replace("[","").replace("]","");
             return val;
         }

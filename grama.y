@@ -215,7 +215,6 @@ invocacion
             TablaDeSimbolos.eliminar(var);
             addEstructura("invocacion a funcion");
         }
-        System.out.println("$4: " + $4.sval);
         String[] param = $4.sval.split(",");
         Set<String> set = new HashSet<>();
         for (String p : param) {
@@ -284,7 +283,7 @@ salida_msj
     : PRINT '(' argumento_print ')' punto_coma
     {
         crearTerceto("print", $3.sval, "-");
-         int t = Compilador.tercetos.size() - 1;
+        int t = Compilador.tercetos.size() - 1;
         $$=new ParserVal("[" + t + "]");
     }
     | PRINT '('  ')' punto_coma {yyerror("falta argumento en print");}
@@ -300,6 +299,7 @@ argumento_print
     | CADENA
     | error {yyerror("argumento invalido en print");}
     ;
+
 /* -------------------------------------------------------- IF -------------------------------------------------------- */
 if
     : IF cuerpo_condicion  cuerpo_sentencia_ejecutable completar_bf_else ELSE  crear_bi cuerpo_sentencia_ejecutable ENDIF punto_coma
@@ -378,7 +378,7 @@ comparador
     | MAYORIGUAL {$$=new ParserVal(">=");}
     | '<' {$$=new ParserVal("<");}
     | '>' {$$=new ParserVal(">");}
-    | error {yyerror("en condicion");}
+    | error {yyerror("comparacion invalida");}
     ;
 
 
@@ -402,8 +402,8 @@ funcion
         crearTerceto("inicio de funcion", var+Compilador.getAmbito(), "-");
         Compilador.entrarAmbito(var);
     }
-    parametros_formales ')'
-    '{' lista_sentencia_funcion '}' {
+    parametros_formales ')' lista_sentencia_funcion_aux
+    {
         if (!hayReturn){
             yyerror("falta return en la funcion "+ $2.sval);
         }else hayReturn = false;
@@ -412,9 +412,15 @@ funcion
         crearTerceto("fin de funcion", $2.sval+Compilador.getAmbito(), "-");
 
     }
-    | tipo '(' parametros_formales ')' '{' lista_sentencia_funcion '}' { yyerror("falta declarar nombre de funcion");}
-    | tipo ID '(' ')' '{' lista_sentencia_funcion '}' {yyerror("faltan parametros formales");}
-    | tipo '(' ')' '{' lista_sentencia_funcion '}' {yyerror("falta declarar nombre de funcion"); yyerror("faltan parametros formales");}
+    | tipo '(' parametros_formales ')' lista_sentencia_funcion_aux { yyerror("falta declarar nombre de funcion");}
+    | tipo ID '(' ')' lista_sentencia_funcion_aux {yyerror("faltan parametros formales");}
+    | tipo '(' ')' lista_sentencia_funcion_aux {yyerror("falta declarar nombre de funcion"); yyerror("faltan parametros formales");}
+    | ID '(' parametros_formales ')' lista_sentencia_funcion_aux { yyerror("falta declarar el tipo de la funcion");}
+    ;
+
+lista_sentencia_funcion_aux
+    : '{' lista_sentencia_funcion '}'
+    | '{' '}' { yyerror("falta sentencias en la funcion " + $2.sval);}
     ;
 
 parametros_formales
@@ -487,7 +493,7 @@ return
 
 /* ------------------------------------------ DO WHILE ------------------------------------------ */
 do
-    : DO  inicio_while cuerpo_sentencia_ejecutable WHILE cuerpo_condicion crear_bi_while completar_bf punto_coma
+    : DO  inicio_while cuerpo_sentencia_ejecutable WHILE cuerpo_condicion crear_bi_while completar_bf_while punto_coma
     | DO  inicio_while WHILE cuerpo_condicion punto_coma {yyerror("falta cuerpo sentencias");}
     | DO  inicio_while cuerpo_sentencia_ejecutable WHILE cuerpo_condicion {yyerror("falta de ;");}
 
@@ -507,8 +513,17 @@ crear_bi_while
     : {
         int salto = Compilador.pilaSaltos.remove(0);
         crearTerceto("BIW", "[" +salto+"]", "-");
+        crearTerceto("fin while", "-", "-");
     }
     ;
+completar_bf_while
+    :
+    {
+         int bf = Compilador.pilaSaltos.remove(Compilador.pilaSaltos.size()-1);
+         completarBF(bf, Compilador.tercetos.size()-1);
+    }
+    ;
+
 
 cuerpo_sentencia_ejecutable
     : '{' lista_sentencia_ejecutable '}' {hayReturn = false;}
