@@ -1,0 +1,8 @@
+PROG
+{
+    uint A;
+    A:=1UI;
+    do{
+        A:=A+1UI;
+    }while(A<5UI);
+}

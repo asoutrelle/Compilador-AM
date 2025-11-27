@@ -1,0 +1,7 @@
+PROG
+{
+    uint A,B,C;
+    A:=3UI;
+    B:=0UI;
+    C:=A/B;
+}

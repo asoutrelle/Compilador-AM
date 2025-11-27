@@ -1,0 +1,17 @@
+PROG
+{
+    uint A,B,C;
+    A:=3UI;
+    uint A;
+    uint FUNC1(uint B){
+        B:=B+1UI;
+        return (B);
+    }
+    uint FUNC1(uint C){
+        C:=C+2UI;
+        return (C);
+    }
+    B:=FUNC1(2UI -> B);
+    A:=FUNC3(3UI -> D);
+    F:=10UI;
+}

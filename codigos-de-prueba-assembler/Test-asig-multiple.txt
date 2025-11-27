@@ -1,0 +1,7 @@
+PROG
+{
+    uint A, B, C;
+    A,B,C = 2UI,3UI,4UI;
+    A,B = 5UI,6UI,7UI;
+    A,B,C = 8UI,9UI;
+}

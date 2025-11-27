@@ -1,0 +1,10 @@
+PROG
+{
+    uint A;
+    A:=3UI;
+    if(A>=5UI){
+        A:=A-3UI;
+    }else{
+        A:=A+10UI;
+    }endif;
+}

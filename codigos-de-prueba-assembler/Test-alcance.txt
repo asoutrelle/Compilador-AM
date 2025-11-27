@@ -1,0 +1,11 @@
+PROG
+{
+    uint A,B;
+    uint FUNC1(uint C){
+        uint D;
+        D:=4UI;
+        return (C+D);
+    }
+    A:=FUNC1(2UI->C);
+    B:=D;
+}

@@ -1,0 +1,12 @@
+PROG
+{
+    uint A,B;
+    A:=3UI;
+    B:=4UI;
+    do{
+        if(A<4UI){
+            A:=A+1UI;
+        }endif;
+        B:=B+1UI;
+    }while(B<7UI);
+}

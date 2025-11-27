@@ -1,0 +1,10 @@
+PROG
+{
+    uint FUNC1(uint A){
+        if(A>3UI){
+            return(A);
+        }else{
+            return(FUNC1(A+1UI->A));
+        }endif
+    }
+}
