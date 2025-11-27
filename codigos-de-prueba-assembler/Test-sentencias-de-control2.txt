@@ -1,11 +1,12 @@
-PROG{
+PROG
+{
     uint A;
     A:=2UI;
     if(A<3UI){
         uint B;
         B:=3UI;
-        if(A>B){
+        if(A>B)
             A:=B;
-        }endif;
-    }endif;
+        endif;
+    } endif;
 }
