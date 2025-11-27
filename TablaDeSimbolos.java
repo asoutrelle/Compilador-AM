@@ -104,14 +104,12 @@ public class TablaDeSimbolos {
 
     public static boolean parametroDeclarado(String val, String ambito, String funcion){
         String aux = val + ambito; // aux = :PROG:F
-        System.out.println("buscando "+val+" en "+ambito+":"+funcion);
         if (TS.containsKey(aux+":"+funcion)) {
             return TS.get(aux+":"+funcion).getSemantica() != null;
         } else {
             int ultimoSeparador = ambito.lastIndexOf(":");
             String ambitoPadre = ambito.substring(0, ultimoSeparador);
             String clavePadre = val + ambitoPadre + ":" + funcion;
-            System.out.println("buscando "+val+" en "+ambitoPadre + ":" + funcion);
             if (TS.containsKey(clavePadre)) {
                 return TS.get(clavePadre).getSemantica() != null;
             }

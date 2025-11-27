@@ -100,7 +100,6 @@ lista_variables_declaracion
 asig
     : variable ASIG exp punto_coma
     {
-        System.out.println($1.sval+", "+$3.sval);
         if(!TablaDeSimbolos.esCompatible($1.sval,$3.sval)){
             yyerror("Los tipos de las variables no coinciden");
         }
@@ -734,7 +733,6 @@ private void completarBI(int index) {
         String valorStr = Long.toString(truncadoLong)+"UI";
         Token t = new Token(258,nroLinea());
         TablaDeSimbolos.agregar(valorStr,t, "uint", "variable auxiliar");
-        System.out.println("trunc: "+ valorStr);
         return valorStr;
   }
   private void backpatching(String func,int index){
