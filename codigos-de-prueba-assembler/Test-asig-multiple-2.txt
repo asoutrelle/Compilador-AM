@@ -1,0 +1,8 @@
+PROG
+{
+    uint A, B, C;
+    A,B,C = 2UI,3UI,4UI;
+    print(A);
+    print(B);
+    print(C);
+}
