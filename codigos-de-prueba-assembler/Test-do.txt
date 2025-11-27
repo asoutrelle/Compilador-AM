@@ -5,4 +5,5 @@ PROG
     do{
         A:=A+1UI;
     }while(A<5UI);
+    print(A);
 }
