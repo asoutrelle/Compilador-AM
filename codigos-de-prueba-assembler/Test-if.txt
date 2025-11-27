@@ -7,4 +7,5 @@ PROG
     }else{
         A:=A+10UI;
     }endif;
+    print(A);
 }
