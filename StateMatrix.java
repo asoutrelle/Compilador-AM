@@ -48,7 +48,6 @@ public class StateMatrix {
     public static Token siguiente_estado(char caracter, int nroLinea) throws IOException {
         Token tokenEncontrado = null;
         if (!mapa.containsKey(caracter)) {
-            System.out.println("No se encuentra el estado de la matriz");
             tokenEncontrado = ASMatrix.ejecutarAccion(estado_actual, 29, caracter, nroLinea);
             estado_actual = matrix[estado_actual][29];
         } else {

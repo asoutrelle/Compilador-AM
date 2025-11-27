@@ -63,22 +63,12 @@ public class TablaDeSimbolos {
         return true;
     }
 
-    public static boolean esCompatible(String val1, String val2, String ambito){
-        val1 = val1+ambito;
-        val2 = val2+ambito;
-        while(!TS.containsKey(val1)){
-            int idx = val1.lastIndexOf(":");
-            val1 = val1.substring(0, idx);
-            if (idx == -1) {
-                return false;
-            }
+    public static boolean esCompatible(String val1, String val2){
+        if (val1.contains("[")){
+            val1 = "@aux"+val2.replace("[","").replace("]","");
         }
-        while(!TS.containsKey(val2)){
-            int idx = val2.lastIndexOf(":");
-            val2 = val2.substring(0, idx);
-            if (idx == -1) {
-                return false;
-            }
+        if (val2.contains("[")){
+            val2 = "@aux"+val2.replace("[","").replace("]","");
         }
         return TS.get(val1).getTipo().equals(TS.get(val2).getTipo());
     }
@@ -112,13 +102,20 @@ public class TablaDeSimbolos {
         return "";
     }
 
-    public static boolean parametroDeclarado(String val, String ambito){
-        String aux = val + ambito;
-            if (TS.containsKey(aux)) {
-                if(TS.get(aux).getSemantica()!=null) {
-                    return true;
-                }
+    public static boolean parametroDeclarado(String val, String ambito, String funcion){
+        String aux = val + ambito; // aux = :PROG:F
+        System.out.println("buscando "+val+" en "+ambito+":"+funcion);
+        if (TS.containsKey(aux+":"+funcion)) {
+            return TS.get(aux+":"+funcion).getSemantica() != null;
+        } else {
+            int ultimoSeparador = ambito.lastIndexOf(":");
+            String ambitoPadre = ambito.substring(0, ultimoSeparador);
+            String clavePadre = val + ambitoPadre + ":" + funcion;
+            System.out.println("buscando "+val+" en "+ambitoPadre + ":" + funcion);
+            if (TS.containsKey(clavePadre)) {
+                return TS.get(clavePadre).getSemantica() != null;
             }
+        }
         return false;
     }
 
@@ -159,6 +156,9 @@ public class TablaDeSimbolos {
 
     public static boolean esParametroValido(String paramReal, String paramFormal, String ambito, String nombreFuncion){
         int idx;
+        if (paramReal.contains("[")){ //checkear
+            return true;
+        }
         String aux = paramFormal + ambito;
             if (TS.get(paramReal).getUso().equals("constante")) {
                 while (aux.lastIndexOf(":") != -1) {

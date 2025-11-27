@@ -31,13 +31,15 @@ public class Traductor {
                     "\n" +
                     ".data\n");
             bw.write("buffer_print db 32 dup(?)\n\n");
-            bw.write(data.toString());
             bw.write("msg_div0 db \"ERROR: division por cero\", 0\n");
             bw.write("msg_negativo db \"ERROR: resultado negativo\", 0\n");
+            bw.write("newcw  dw ?\n\n");
+            bw.write(data.toString());
             bw.newLine();
             bw.write(".code\n");
 
             bw.write(funciones.toString());
+
             bw.newLine();
             bw.write(prints.toString());
             bw.newLine();
@@ -99,8 +101,15 @@ public class Traductor {
         List<Terceto> tercetos = funcion.getValue();
         boolean val1EsCopiaResultado = false;
         boolean val2EsCopiaResultado = false;
-        funciones.append("_" + nombreFunc.replace(":", "_") + ":\n");
 
+        funciones.append("_" + nombreFunc.replace(":", "_") + ":\n");
+        funciones.append("finit\n" +
+                "; ---- Configurar TRUNC permanente ----\n" +
+                "fnstcw newcw\n" +
+                "mov ax, newcw\n" +
+                "or ah, 0Ch\n" +
+                "mov newcw, ax\n" +
+                "fldcw newcw\n\n");
         for (Terceto terceto : tercetos) {
             String op = terceto.getOperacion();
             String val1 = terceto.getVal1();
@@ -138,17 +147,6 @@ public class Traductor {
                     funciones.append("mov ax, " + val1 + "\n");
                     funciones.append("div bx\n");
                     funciones.append("mov @aux" + terceto.getIndice() + ", ax\n");
-                    break;
-                case "return":
-                    funciones.append("mov ax, " + val1+"\n");
-                    funciones.append("mov " + val2 + ", ax\n");
-                    funciones.append("ret\n");
-                    break;
-                case "invocacion":
-                    funciones.append("call " + val1 + "\n");
-                    break;
-                case "trunc":
-                    funciones.append(" \n");
                     break;
                 case ">":
                     funciones.append("; --- > ---\n");
@@ -257,6 +255,23 @@ public class Traductor {
                         funciones.append("invoke StdOut, chr$(13,10)\n");
                     }
                     break;
+                case "return":
+                    funciones.append("; --- RETURN ---\n");
+                    funciones.append("mov ax, " + val1+"\n");
+                    funciones.append("mov " + val2 + ", ax\n");
+                    funciones.append("ret\n");
+                    break;
+                case "invocacion":
+                    funciones.append("; --- INVOCACION ---\n");
+                    funciones.append("call " + val1 + "\n");
+                    break;
+                case "trunc":
+                    funciones.append("; --- TRUNC ---\n");
+                    data.append("_float_"+terceto.getIndice() +" dd "+ val1 + "\n");
+
+                    funciones.append("fld _float_"+terceto.getIndice() +"\n");
+                    funciones.append("fistp @aux"+terceto.getIndice() +"\n");
+                    break;
             }
         }
     }
@@ -265,10 +280,14 @@ public class Traductor {
 
         if (TablaDeSimbolos.TS.containsKey(val)){
             Simbolo s = TablaDeSimbolos.TS.get(val);
-            if (s.getUso().equals("constante")) {
-                val = val.substring(0, val.length() - 2);
-                return val;// quitar "UI"
-            } else if (s.getUso().equals("nombre de variable") || s.getUso().equals("nombre de funcion")){
+            if (s.getUso().equals("constante")){
+
+                if(s.getTipo().equals("uint")) {
+                    val = val.substring(0, val.length() - 2);
+                    return val;// quitar "UI"
+                } else return val;
+            }
+            if (s.getUso().equals("nombre de variable") || s.getUso().equals("nombre de funcion")){
                 val = "_" + val.replace(":","_");
                 return val;
             }

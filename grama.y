@@ -100,9 +100,10 @@ lista_variables_declaracion
 asig
     : variable ASIG exp punto_coma
     {
-        //if(TablaDeSimbolos.esCompatible($1.sval,$3.sval, Compilador.getAmbito())){
-        //} else yyerror("Los tipos de las variables no coinciden");
-
+        System.out.println($1.sval+", "+$3.sval);
+        if(!TablaDeSimbolos.esCompatible($1.sval,$3.sval)){
+            yyerror("Los tipos de las variables no coinciden");
+        }
 
         String ambito = Compilador.getAmbito();
         String var = $1.sval;
@@ -160,12 +161,16 @@ factor
     | TRUNC '(' punto_flotante ')'
     {
         addEstructura("trunc");
-        $$=new ParserVal(truncar($3.sval));
+        crearTerceto("trunc",$3.sval,"-");
+        int t = Compilador.tercetos.size() - 1;
+        TablaDeSimbolos.agregarVarAux(t);
+        $$ = new ParserVal("["+t+"]");
     }
     | TRUNC  punto_flotante ')' {addEstructura("trunc");yyerror("falta abrir parentesis en trunc");}
     | TRUNC '(' error {addEstructura("trunc");yyerror("falta cerrar parentesis en trunc");yyerrflag=0;}
     | TRUNC  '(' ')' {addEstructura("trunc");yyerror("falta argumento en trunc");}
     | exp_lambda {addEstructura("lambda");}
+    | punto_flotante {yyerror("no se permiten puntos flotantes");}
     ;
 
 punto_flotante
@@ -202,7 +207,7 @@ variable
 invocacion
     : ID
     {
-        nombreFuncion = $1.sval;
+        nombreFuncion =$1.sval;
     }
     '(' parametros_de_invocacion ')'
     {
@@ -237,14 +242,16 @@ invocacion
 parametros_de_invocacion
     : parametro_real FLECHA ID
     {
-        String ambito = Compilador.getAmbito()+":"+nombreFuncion;
+        String ambito = Compilador.getAmbito();
         String var = $3.sval;
-        if (!TablaDeSimbolos.parametroDeclarado(var, ambito)){
+
+        if (!TablaDeSimbolos.parametroDeclarado(var, ambito, nombreFuncion)){
             yyerror("El parametro " + var + " no esta declarado en la funcion "+nombreFuncion);
         }
         if (!TablaDeSimbolos.esParametroValido($1.sval, var,Compilador.getAmbito(), nombreFuncion)){
             yyerror("No se puede pasar una constante como a un parametro formal con semantica de copia resultado");
         }
+        ambito = Compilador.getAmbito()+":"+nombreFuncion;
         if (!TablaDeSimbolos.esCopiaResultado(var+ambito)){
             crearTerceto(":=", var+ambito,$1.sval);
         } else{
@@ -257,11 +264,12 @@ parametros_de_invocacion
     | parametro_real {yyerror("Falta flecha y parametro formal");}
     | parametros_de_invocacion ',' parametro_real FLECHA ID
     {
-        String ambito = Compilador.getAmbito()+":"+nombreFuncion;
+        String ambito = Compilador.getAmbito();
         String var = $5.sval;
-        if (!TablaDeSimbolos.parametroDeclarado(var, ambito)){
+        if (!TablaDeSimbolos.parametroDeclarado(var, ambito, nombreFuncion)){
             yyerror("El parametro " + var + " no esta declarado en la funcion "+nombreFuncion);
         }
+        ambito = Compilador.getAmbito()+":"+nombreFuncion;
          if (!TablaDeSimbolos.esCopiaResultado(var+ambito)){
             crearTerceto(":=", var+ambito,$3.sval);
         } else{
