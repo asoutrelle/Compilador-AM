@@ -1,26 +1,5 @@
 @echo off
 
-REM ---------------------------------------
-REM Validar que se pase un parametro
-REM ---------------------------------------
-if "%~1"=="" (
-    echo ERROR: Debe indicar la ruta del archivo de codigo.
-    echo Ejemplo:
-    echo    run.bat codigo.txt
-    echo    run.bat C:\Users\matii\prog\codigo.txt
-    exit /b 1
-)
-
-set ARCHIVO=%~1
-
-if not exist "%ARCHIVO%" (
-    echo ERROR: El archivo "%ARCHIVO%" no existe.
-    exit /b 1
-)
-
-echo Usando archivo: %ARCHIVO%
-echo.
-
 echo Ejecutando yacc...
 yacc -J -v grama.y
 if errorlevel 1 (
@@ -36,10 +15,16 @@ if errorlevel 1 (
 )
 
 echo Ejecutando Compilador...
+if "%~1"=="" (
+    echo Uso: run.bat archivo.txt
+    echo Ejemplo: run.bat codigos-de-prueba\codigo1.txt
+    goto end
+)
 echo ---------------------------------- PROGRAMA ----------------------------------
-java Compilador "%ARCHIVO%"
+java Compilador "%~1"
 if errorlevel 1 goto end
 
+mkdir assemblers 2>nul
 cd .\assemblers
 
 rem Ejecutar ml oculto
@@ -53,10 +38,7 @@ if errorlevel 1 (
 link /SUBSYSTEM:CONSOLE .\salida.obj >nul
 cd ..
 
-echo ---------------------------------- CODIGO ----------------------------------
-type "%ARCHIVO%"
 echo.
 echo ---------------------------------- SALIDA DE ASSEMBLER ----------------------------------
 .\assemblers\salida.exe
-
 :end
