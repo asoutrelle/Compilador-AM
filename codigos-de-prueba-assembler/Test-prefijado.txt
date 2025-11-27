@@ -8,5 +8,5 @@ PROG
         B:=B+PROG.A;
         return (B);
     }
-    D:=FUNC1(5UI -> B)
+    D:=FUNC1(5UI -> B);
 }
