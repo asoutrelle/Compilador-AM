@@ -174,7 +174,7 @@ factor
 
 punto_flotante
     : PF64 {check_rango($1.sval); $$=new ParserVal($1.sval);}
-    | '-' PF64 {check_rango("-"+$2.sval); $$=new ParserVal("-"+$1.sval);}
+    | '-' PF64 {check_rango("-"+$2.sval); $$=new ParserVal("-"+$2.sval);}
     ;
 
 variable

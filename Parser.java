@@ -1233,7 +1233,7 @@ case 56:
 break;
 case 57:
 //#line 177 "grama.y"
-{check_rango("-"+val_peek(0).sval); yyval=new ParserVal("-"+val_peek(1).sval);}
+{check_rango("-"+val_peek(0).sval); yyval=new ParserVal("-"+val_peek(0).sval);}
 break;
 case 58:
 //#line 182 "grama.y"

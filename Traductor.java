@@ -277,15 +277,19 @@ public class Traductor {
     }
 
     private String getString(String val) {
-
         if (TablaDeSimbolos.TS.containsKey(val)){
             Simbolo s = TablaDeSimbolos.TS.get(val);
             if (s.getUso().equals("constante")){
 
                 if(s.getTipo().equals("uint")) {
                     val = val.substring(0, val.length() - 2);
-                    return val;// quitar "UI"
-                } else return val;
+                } else {
+                    System.out.println("valor pf: "+val);
+                    return val.replace(" ", "")
+                            .replace("D", "E")
+                            .replace("+", "");
+                }
+                return val;// quitar "UI"
             }
             if (s.getUso().equals("nombre de variable") || s.getUso().equals("nombre de funcion")){
                 val = "_" + val.replace(":","_");
