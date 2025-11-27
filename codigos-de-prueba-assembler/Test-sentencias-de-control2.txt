@@ -9,4 +9,5 @@ PROG
             A:=B;
         endif;
     } endif;
+    print(A);
 }
