@@ -169,6 +169,7 @@ factor
     | TRUNC '(' error {addEstructura("trunc");yyerror("falta cerrar parentesis en trunc");yyerrflag=0;}
     | TRUNC  '(' ')' {addEstructura("trunc");yyerror("falta argumento en trunc");}
     | exp_lambda {addEstructura("lambda");}
+    | punto_flotante {yyerror("no se permite punto flotante");}
     ;
 
 punto_flotante

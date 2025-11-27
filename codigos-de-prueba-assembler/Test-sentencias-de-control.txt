@@ -9,4 +9,6 @@ PROG
         }endif;
         B:=B+1UI;
     }while(B<7UI);
+    print(A);
+    print(B);
 }

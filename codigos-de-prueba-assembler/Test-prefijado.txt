@@ -9,4 +9,5 @@ PROG
         return (B);
     }
     D:=FUNC1(5UI -> B);
+    print(D);
 }

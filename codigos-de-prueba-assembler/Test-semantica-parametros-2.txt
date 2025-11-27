@@ -5,7 +5,7 @@ PROG
         return(A+B);
     }
     uint C,D,E;
-    C:=1UI
+    C:=1UI;
     D:=FUNC1(C->A, 2UI->B);
     print(C);
 }
