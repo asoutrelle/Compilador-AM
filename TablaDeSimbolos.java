@@ -70,7 +70,10 @@ public class TablaDeSimbolos {
         if (val2.contains("[")){
             val2 = "@aux"+val2.replace("[","").replace("]","");
         }
-        return TS.get(val1).getTipo().equals(TS.get(val2).getTipo());
+        if(TS.containsKey(val1) && TS.containsKey(val2)){
+            return TS.get(val1).getTipo().equals(TS.get(val2).getTipo());
+        }
+        return false;
     }
 
     public static String varDeclarada(String val, String ambito) {
