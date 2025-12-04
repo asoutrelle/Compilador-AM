@@ -1,4 +1,5 @@
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -6,7 +7,6 @@ import java.util.*;
 public class Traductor {
     private static StringBuilder data = new StringBuilder();
     private static StringBuilder prints = new StringBuilder();
-    private static StringBuilder main = new StringBuilder();
     private static StringBuilder etiqueta = new StringBuilder();
     private static StringBuilder funciones = new StringBuilder();
     private Map<String, List<Terceto>> tercetosFunc = new HashMap<>();
@@ -16,47 +16,56 @@ public class Traductor {
         generarFunc();
         generarCodigo();
 
+        try {
+            // Crear carpeta externa si no existe
+            File carpeta = new File("assemblers");
+            if (!carpeta.exists()) {
+                carpeta.mkdirs();
+            }
 
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter("assemblers/salida.asm"))) {
-            bw.write(".386\n" +
-                    ".model flat, stdcall\n" +
-                    "option casemap:none\n" +
-                    "\n" +
-                    "include \\masm32\\include\\windows.inc\n" +
-                    "include \\masm32\\include\\kernel32.inc\n" +
-                    "includelib \\masm32\\lib\\kernel32.lib\n" +
-                    "include \\masm32\\include\\masm32.inc\n" +
-                    "includelib \\masm32\\lib\\masm32.lib\n" +
-                    "include \\masm32\\include\\masm32rt.inc\n" +
-                    "\n" +
-                    ".data\n");
-            bw.write("buffer_print db 32 dup(?)\n\n");
-            bw.write("msg_div0 db \"ERROR: division por cero\", 0\n");
-            bw.write("msg_negativo db \"ERROR: resultado negativo\", 0\n");
-            bw.write("newcw  dw ?\n\n");
-            bw.write(data.toString());
-            bw.newLine();
-            bw.write(".code\n");
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter("assemblers/salida.asm"))) {
+                bw.write(".386\n" +
+                        ".model flat, stdcall\n" +
+                        "option casemap:none\n" +
+                        "\n" +
+                        "include \\masm32\\include\\windows.inc\n" +
+                        "include \\masm32\\include\\kernel32.inc\n" +
+                        "includelib \\masm32\\lib\\kernel32.lib\n" +
+                        "include \\masm32\\include\\masm32.inc\n" +
+                        "includelib \\masm32\\lib\\masm32.lib\n" +
+                        "include \\masm32\\include\\masm32rt.inc\n" +
+                        "\n" +
+                        ".data\n");
+                bw.write("buffer_print db 32 dup(?)\n\n");
+                bw.write("msg_div0 db \"ERROR: division por cero\", 0\n");
+                bw.write("msg_negativo db \"ERROR: resultado negativo\", 0\n");
+                bw.write("newcw  dw ?\n\n");
+                bw.write(data.toString());
+                bw.newLine();
+                bw.write(".code\n");
 
-            bw.write(funciones.toString());
+                bw.write(funciones.toString());
 
-            bw.newLine();
-            bw.write(prints.toString());
-            bw.newLine();
-            bw.write(etiqueta.toString());
+                bw.newLine();
+                bw.write(prints.toString());
+                bw.newLine();
+                bw.write(etiqueta.toString());
 
-            bw.write("invoke ExitProcess, 0\n");
-            bw.write("division_cero:\n" +
-                    "invoke StdOut, addr msg_div0\n" +
-                    "invoke ExitProcess, 1\n");
-            bw.write("resultado_negativo:\n" +
-                    "invoke StdOut, addr msg_negativo\n" +
-                    "invoke ExitProcess, 1\n");
+                bw.write("invoke ExitProcess, 0\n");
+                bw.write("division_cero:\n" +
+                        "invoke StdOut, addr msg_div0\n" +
+                        "invoke ExitProcess, 1\n");
+                bw.write("resultado_negativo:\n" +
+                        "invoke StdOut, addr msg_negativo\n" +
+                        "invoke ExitProcess, 1\n");
 
-            bw.write("end _start");
+                bw.write("end _start");
 
-        } catch (IOException e) {
-            e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -71,12 +80,6 @@ public class Traductor {
                 data.append("_" + nombreVar + " dw" + " ?" + "\n");
                 data.append("buffer_" + nombreVar + " db 32 dup(0)\n");
                 data.append("msg_" + nombreVar + " db " + "\"_" + nombreVar + " = \" , 0\n\n");
-
-               /*prints.append("movzx eax, _" + nombreVar + "\n" +
-                        "invoke dwtoa, eax, addr buffer_" + nombreVar + "\n" +
-                        "invoke StdOut, addr msg_" + nombreVar + "\n" +
-                        "invoke StdOut, addr buffer_" + nombreVar + "\n" +
-                        "invoke StdOut, chr$(13,10)\n");*/
             }
             if (simbolo.getUso().equals("variable auxiliar")) {
                 data.append(nombreVar + " dw" + " ?" + "\n\n");
@@ -99,8 +102,6 @@ public class Traductor {
     private void generarAssemblerDeFuncion(Map.Entry<String, List<Terceto>> funcion) {
         String nombreFunc = funcion.getKey();
         List<Terceto> tercetos = funcion.getValue();
-        boolean val1EsCopiaResultado = false;
-        boolean val2EsCopiaResultado = false;
 
         funciones.append("_" + nombreFunc.replace(":", "_") + ":\n");
         funciones.append("finit\n" +

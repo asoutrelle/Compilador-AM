@@ -1,6 +1,4 @@
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -98,11 +96,11 @@ public class Compilador {
         }
         Compilador compilador = new Compilador();
 
-        int[][] matriz_estados = CSVtoMatrix.CsvToMatrix("MatrizEstado - Hoja 1.csv");
+        int[][] matriz_estados = CSVtoMatrix.CsvToMatrix("resources/MatrizEstado - Hoja 1.csv");
         StateMatrix matrisEstados = new StateMatrix(matriz_estados);
         AnalizadorLexico analizadorLexico = new AnalizadorLexico(args[0]);
 
-        int[][] matriz_as = CSVtoMatrix.CsvToMatrix("MatrizAS - Hoja 1.csv");
+        int[][] matriz_as = CSVtoMatrix.CsvToMatrix("resources/MatrizAS - Hoja 1.csv");
         ASMatrix matrizas = new ASMatrix(matriz_as, analizadorLexico);
 
         Parser parser = new Parser();
