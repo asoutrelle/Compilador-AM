@@ -1,5 +1,8 @@
 @echo off
 
+for /f "tokens=2 delims=: " %%i in ('reg query HKCU\Console /v VirtualTerminalLevel 2^>nul') do set "vt=%%i"
+if not defined vt reg add HKCU\Console /f /v VirtualTerminalLevel /t REG_DWORD /d 1 >nul
+
 echo Ejecutando yacc...
 yacc -J -v grama.y
 if errorlevel 1 (
