@@ -1,19 +1,5 @@
 @echo off
 
-echo Ejecutando yacc...
-yacc -J -v grama.y
-if errorlevel 1 (
-    echo Error en yacc
-    exit /b 1
-)
-
-echo Compilando Java...
-javac -d . *.java
-if errorlevel 1 (
-    echo Error compilando Java
-    exit /b 1
-)
-
 echo Ejecutando Compilador...
 if "%~1"=="" (
     echo Uso: run.bat archivo.txt
@@ -21,7 +7,7 @@ if "%~1"=="" (
     goto end
 )
 echo ---------------------------------- PROGRAMA ----------------------------------
-java Compilador "%~1"
+java -jar Compilador-AM.jar "%~1"
 if errorlevel 1 goto end
 
 mkdir assemblers 2>nul
@@ -38,6 +24,9 @@ if errorlevel 1 (
 link /SUBSYSTEM:CONSOLE .\salida.obj >nul
 cd ..
 
+echo.
+echo ---------------------------------- CODIGO ----------------------------------
+type "%~1"
 echo.
 echo ---------------------------------- SALIDA DE ASSEMBLER ----------------------------------
 .\assemblers\salida.exe
